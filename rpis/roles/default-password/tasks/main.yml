@@ -1,7 +1,0 @@
----
-
-- name: Set a new password for the default account
-  become: yes
-  user:
-    name: "pi"
-    password: "{{ config_password }}"

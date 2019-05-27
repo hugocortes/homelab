@@ -1,18 +1,19 @@
 ---
 # ansible-playbook --user USER --ask-pass -i 'IP,' playbooks/default.yaml
 
-- name: Configures hostname and resets default password
-  hosts: all
+- name: Configures raspberry pi defaults
+  hosts: rpi
   become: yes
   roles:
-    - hostname
-    - password
+    - expand-filesystem
+    - create-user
+    - default-ssh
+    - default-password
   vars_prompt:
-    - name: "config_hostname"
-      prompt: "Hostname"
-      private: no
     - name: "config_password"
       prompt: "Password"
       private: yes
       encrypt: "sha512_crypt"
       confirm: yes
+  vars_files:
+    - ../vars.yml

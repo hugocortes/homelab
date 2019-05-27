@@ -1,0 +1,7 @@
+---
+
+- name: Set a new password for the default account {{ default_config_user['name'] }}
+  become: yes
+  user:
+    name: "{{ default_config_user['name'] }}"
+    password: "{{ config_password }}"
