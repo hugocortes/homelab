@@ -1,5 +1,5 @@
 ---
-# ansible-playbook -i inventory/hosts playbooks/intialize.yml
+# ansible-playbook -i inventory/hosts playbooks/intialize.yaml
 
 - name: Initializes the server
   hosts: all
@@ -10,4 +10,4 @@
       tags: "update"
     - secure
   vars_files:
-    - ../vars.yml
+    - ../vars.yaml

@@ -16,4 +16,4 @@
       encrypt: "sha512_crypt"
       confirm: yes
   vars_files:
-    - ../vars.yml
+    - ../vars.yaml
