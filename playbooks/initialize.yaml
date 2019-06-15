@@ -1,5 +1,4 @@
 ---
-# ansible-playbook -i inventory/hosts playbooks/intialize.yaml
 
 - name: Initializes the server
   hosts: all

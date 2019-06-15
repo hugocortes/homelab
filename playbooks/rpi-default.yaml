@@ -1,5 +1,4 @@
 ---
-# ansible-playbook --user USER --ask-pass -i 'IP,' playbooks/default.yaml
 
 - name: Configures raspberry pi defaults
   hosts: rpi
