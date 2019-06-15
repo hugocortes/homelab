@@ -1,8 +1,14 @@
 ---
 
+- name: Get the current hostname
+  ignore_errors: yes # Empty grep is flagged as an error due to rc: 1
+  shell: hostnamectl | grep "{{ inventory_hostname }}"
+  register: result
+
 - name: Set the hostname
   become: yes
   command: hostnamectl set-hostname "{{ inventory_hostname }}"
+  when: result.stdout == ""
 
 - name: Update /etc/hosts with new hostname (pi)
   become: yes
