@@ -1,0 +1,46 @@
+---
+
+- name: Disable SSH password authentication
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
+    - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+    - { regexp: "Port [0-9]+$", line: "Port {{ config_ssh_port }}" }
+  notify: restart ssh
+
+- name: Add {{ config_user['name'] }} to sudoers
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: "^{{ config_user['name'] }}"
+    line: "{{ config_user['name'] }} ALL=(ALL) NOPASSWD: ALL"
+    state: present
+    validate: 'visudo -cf %s'
+
+- name: Install unattended upgrades
+  apt:
+    name: unattended-upgrades
+    state: present
+
+- name: Install fail2ban
+  apt:
+    name: fail2ban
+    state: present
+  notify: ensure fail2ban is running
+
+- name: Fail2ban sshban jail
+  blockinfile:
+    dest: /etc/fail2ban/jail.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK #"
+    block: |
+      [sshban]
+      enabled   = true
+      port      = ssh
+      logpath   = %(sshd_log)s
+      banaction = iptables-allports
+      maxretry  = 10
+      bantime   = 86400
+      filter    = sshd

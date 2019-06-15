@@ -1,0 +1,17 @@
+---
+
+- name: restart ssh
+  service:
+    name: ssh
+    state: restarted
+  notify: change ssh port
+
+- name: change ssh port
+  set_fact:
+    ansible_port: "{{ config_ssh_port }}"
+
+- name: ensure fail2ban is running
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
