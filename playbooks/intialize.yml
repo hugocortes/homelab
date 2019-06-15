@@ -6,7 +6,8 @@
   become: yes
   roles:
     - hostname
-    - update
+    - name: "update"
+      tags: "update"
     - secure
   vars_files:
     - ../vars.yml
