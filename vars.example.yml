@@ -1,0 +1,18 @@
+---
+
+# have the FS fill the SD card
+config_expand_filesystem: true
+# user to create
+config_user:
+  uid:
+  guid:
+  name:
+  password:
+  path_to_ssh_keys: # https://github.com/username.keys or directory
+# default pi user
+default_config_user:
+  name: pi
+  password: raspberry
+config_ssh_port: 22
+config_reboot_max_wait_time: 300
+config_reboot_min_wait_time: 5
