@@ -16,3 +16,7 @@ default_config_user:
 config_ssh_port: 22
 config_reboot_max_wait_time: 300
 config_reboot_min_wait_time: 5
+config_transmission_user:
+config_transmission_pass:
+config_plex_gid:
+config_nfs_mount_cmd:

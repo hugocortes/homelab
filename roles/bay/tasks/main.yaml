@@ -1,0 +1,50 @@
+---
+
+- name: Install transmission
+  apt:
+    name: transmission-daemon
+    state: present
+
+- name: Create transmission dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "debian-transmission"
+    group: "debian-transmission"
+    mode: '0755'
+  with_items:
+  - "/mnt/media"
+  - "/home/{{ config_user['name'] }}/transmission/inprogress"
+
+- name: stop transmission
+  service:
+    name: transmission-daemon
+    state: stopped
+
+- name: Modify default transmission settings
+  lineinfile:
+    dest: /etc/transmission-daemon/settings.json
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+  - { regexp: '"incomplete-dir":', line: '"incomplete-dir":"/home/{{ config_user["name"] }}/transmission/inprogress",' }
+  - { regexp: '"download-dir":', line: '"download-dir":"/mnt/media",' }
+  - { regexp: '"rpc-username":', line: '"rpc-username":"{{ config_transmission_user }}",' }
+  - { regexp: '"rpc-password":', line: '"rpc-password":"{{ config_transmission_pass }}",' }
+  - { regexp: '"rpc-whitelist-enabled":', line: '"rpc-whitelist-enabled":"false",' }
+  notify: start transmission
+
+- name: Install nfs utils
+  apt:
+    name: 'nfs-common'
+    state: present
+
+- name: Auto mount nfs share
+  lineinfile:
+    dest: /etc/fstab
+    regexp: "{{ config_nfs_mount_cmd }}"
+    line: "{{ config_nfs_mount_cmd }}"
+    state: present
+    insertbefore: "exit 0"
+  notify: reboot
