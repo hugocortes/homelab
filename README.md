@@ -9,7 +9,7 @@ Homelab Terraform and Ansible playbooks
 
 Running:
 ```sh
-ansible-playbook --user pi --ask-pass -i inventory/hosts playbooks/rpi-default.yaml
+ansible-playbook --ask-pass -i inventory/hosts.ini playbooks/rpi-default.yaml
 ```
 
 ## All Hosts
