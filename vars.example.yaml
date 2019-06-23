@@ -13,6 +13,24 @@ config_user:
 default_config_user:
   name: pi
   password: raspberry
+config_influxdb_collectd:
+  host: 0.0.0.0
+  db: collectd
+  writers:
+  - user:
+    pass:
+  reader:
+    user:
+    pass:
+config_influxdb_pfsense:
+  host: 0.0.0.0
+  db: pfsense
+  writer:
+    user:
+    pass:
+  reader:
+    user:
+    pass:
 config_ssh_port: 22
 config_reboot_max_wait_time: 300
 config_reboot_min_wait_time: 5

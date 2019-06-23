@@ -1,0 +1,102 @@
+---
+
+- name: Install pip
+  apt:
+    name: python3-pip
+    state: present
+
+- name: Install influxdb pip
+  pip:
+    name: influxdb
+
+- name: Create influxdb dirs
+  file:
+    path: "/mnt/hdd/influxdb"
+    state: directory
+    owner: "influxdb"
+    group: "influxdb"
+    mode: "0755"
+
+- name: Retrieve types db
+  get_url:
+    url: https://raw.githubusercontent.com/collectd/collectd/master/src/types.db
+    dest: /mnt/hdd/influxdb/types.db
+    mode: 0755
+
+- name: Configure influxdb settings
+  blockinfile:
+    insertafter: "{{ item.after }}"
+    dest: /etc/influxdb/influxdb.conf
+    marker: "# {mark} {{ item.mark }} ANSIBLE MANAGED BLOCK #"
+    block: "{{ item.block }}"
+  with_items:
+  - after: '^\[http\]$'
+    mark: "http"
+    block: |
+      enabled = true
+      bind-address = ":8086"
+  - after: '^\[\[collectd\]\]$'
+    mark: "collectd"
+    block: |
+      enabled = true
+      bind-address = ":{{ config_influxdb['port'] }}"
+      database = "{{ config_influxdb_collectd['db'] }}"
+      typesdb = "/mnt/hdd/influxdb/types.db"
+
+- name: Configure influxdb directories
+  lineinfile:
+    dest: /etc/influxdb/influxdb.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+  - regexp: dir = .*/meta"
+    line: dir = "/mnt/hdd/influxdb/meta"
+  - regexp: dir = .*/data"
+    line: dir = "/mnt/hdd/influxdb/data"
+  - regexp: wal-dir = .*/wal"
+    line: wal-dir = "/mnt/hdd/influxdb/wal"
+  notify: restart influxdb
+
+- name: Create collectd database
+  influxdb_database:
+    hostname: "{{ config_influxdb_collectd['host'] }}"
+    database_name: "{{ config_influxdb_collectd['db'] }}"
+
+- name: Create collectd writers
+  influxdb_user:
+    user_name: "{{ item.user }}"
+    user_password: "{{ item.pass }}"
+    grants:
+    - database: "{{ config_influxdb_collectd['db'] }}"
+      privilege: "WRITE"
+  with_items: "{{ config_influxdb_collectd['writers'] }}"
+
+- name: Create collectd reader
+  influxdb_user:
+    user_name: "{{ config_influxdb_collectd['reader']['user'] }}"
+    user_password: "{{ config_influxdb_collectd['reader']['pass'] }}"
+    grants:
+    - database: "{{ config_influxdb_collectd['db'] }}"
+      privilege: "READ"
+
+- name: Create pfsense database
+  influxdb_database:
+    hostname: "{{ config_influxdb_pfsense['host'] }}"
+    database_name: "{{ config_influxdb_pfsense['db'] }}"
+
+- name: Create pfsense writer
+  influxdb_user:
+    user_name: "{{ config_influxdb_pfsense['writer']['user'] }}"
+    user_password: "{{ config_influxdb_pfsense['writer']['pass'] }}"
+    grants:
+    - database: "{{ config_influxdb_pfsense['db'] }}"
+      privilege: "WRITE"
+
+- name: Create pfsense reader
+  influxdb_user:
+    user_name: "{{ config_influxdb_pfsense['reader']['user'] }}"
+    user_password: "{{ config_influxdb_pfsense['reader']['pass'] }}"
+    grants:
+    - database: "{{ config_influxdb_pfsense['db'] }}"
+      privilege: "READ"
