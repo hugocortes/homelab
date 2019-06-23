@@ -65,12 +65,11 @@
 
 - name: Create collectd writers
   influxdb_user:
-    user_name: "{{ item.user }}"
-    user_password: "{{ item.pass }}"
+    user_name: "{{ config_influxdb_collectd['writer']['user'] }}"
+    user_password: "{{ config_influxdb_collectd['writer']['pass'] }}"
     grants:
     - database: "{{ config_influxdb_collectd['db'] }}"
       privilege: "WRITE"
-  with_items: "{{ config_influxdb_collectd['writers'] }}"
 
 - name: Create collectd reader
   influxdb_user:
