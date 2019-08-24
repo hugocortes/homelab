@@ -1,11 +1,11 @@
 ---
 
-- name: Install transmission
+- name: install transmission
   apt:
     name: transmission-daemon
     state: present
 
-- name: Create transmission dirs
+- name: create transmission dirs
   file:
     path: "{{ item }}"
     state: directory
@@ -21,7 +21,7 @@
     name: transmission-daemon
     state: stopped
 
-- name: Modify default transmission settings
+- name: modify default transmission settings
   lineinfile:
     dest: /etc/transmission-daemon/settings.json
     regexp: "{{ item.regexp }}"
@@ -35,12 +35,12 @@
   - { regexp: '"rpc-whitelist-enabled":', line: '"rpc-whitelist-enabled":"false",' }
   notify: start transmission
 
-- name: Install nfs utils
+- name: install nfs utils
   apt:
-    name: 'nfs-common'
+    name: nfs-common
     state: present
 
-- name: Auto mount nfs share
+- name: auto mount nfs share
   lineinfile:
     dest: /etc/fstab
     regexp: "{{ config_nfs_mount_cmd }}"

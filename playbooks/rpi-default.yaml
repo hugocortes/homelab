@@ -1,6 +1,6 @@
 ---
 
-- name: Configures raspberry pi defaults
+- name: configures raspberry pi defaults
   hosts: rpi
   become: yes
   roles:

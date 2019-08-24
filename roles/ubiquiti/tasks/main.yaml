@@ -1,16 +1,16 @@
 ---
 
-- name: Install dependencies
+- name: install dependencies
   apt:
     name: ["haveged", "openjdk-8-jre-headless"]
     state: present
 
-- name: Add apt repository
+- name: add apt repository
   apt_repository:
     repo: deb http://www.ui.com/downloads/unifi/debian stable ubiquiti
     state: present
 
-- name: Add ubiquiti gpg key
+- name: add ubiquiti gpg key
   apt_key:
     keyring: /etc/apt/trusted.gpg.d/unifi-repo.gpg
     url: https://dl.ubnt.com/unifi/unifi-repo.gpg

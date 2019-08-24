@@ -1,6 +1,6 @@
 ---
 
-- name: Create user {{ config_user['name'] }}
+- name: create user {{ config_user['name'] }}
   become: yes
   user:
     name: "{{ config_user['name'] }}"
@@ -9,7 +9,7 @@
     groups: adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,input,netdev,gpio,i2c,spi
     uid: "{{ config_user['uid'] }}"
 
-- name: Add {{ config_user['name'] }} to sudoers
+- name: add {{ config_user['name'] }} to sudoers
   lineinfile:
     dest: /etc/sudoers
     regexp: "^{{ config_user['name'] }}"
@@ -17,7 +17,7 @@
     state: present
     validate: 'visudo -cf %s'
 
-- name: Add ssh keys to {{ config_user['name'] }}
+- name: add ssh keys to {{ config_user['name'] }}
   become: yes
   authorized_key:
     user: "{{ config_user['name'] }}"

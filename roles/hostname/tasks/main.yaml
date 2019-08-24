@@ -1,16 +1,16 @@
 ---
 
-- name: Get the current hostname
+- name: get the current hostname
   ignore_errors: yes # Empty grep is flagged as an error due to rc: 1
   shell: hostnamectl | grep "{{ inventory_hostname }}"
   register: result
 
-- name: Set the hostname
+- name: set the hostname
   become: yes
   command: hostnamectl set-hostname "{{ inventory_hostname }}"
   when: result.stdout == ""
 
-- name: Update /etc/hosts with new hostname (pi)
+- name: update /etc/hosts with new hostname (pi)
   become: yes
   lineinfile:
     dest: /etc/hosts
@@ -19,7 +19,7 @@
     state: present
   when: "'rpi' in group_names"
 
-- name: Update /etc/hosts with new hostname
+- name: update /etc/hosts with new hostname
   become: yes
   lineinfile:
     dest: /etc/hosts
@@ -28,7 +28,7 @@
     state: present
   when: "'rpi' not in group_names"
 
-- name: Update cloud.cfg to preserve hostname
+- name: update cloud.cfg to preserve hostname
   become: yes
   lineinfile:
     dest: /etc/cloud/cloud.cfg

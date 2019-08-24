@@ -1,11 +1,11 @@
 ---
 
-- name: Install collectd
+- name: install collectd
   apt:
     name: ["collectd", "collectd-utils"]
     state: present
 
-- name: Configure collectd settings
+- name: configure collectd settings
   lineinfile:
     dest: /etc/collectd/collectd.conf
     regexp: "{{ item.regexp }}"
@@ -23,7 +23,7 @@
   - regexp: '^#LoadPlugin network$'
     line: LoadPlugin network
 
-- name: Configure influxdb network
+- name: configure influxdb network
   blockinfile:
     dest: /etc/collectd/collectd.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK #"
@@ -32,7 +32,7 @@
         Server "{{ config_influxdb['host'] }}" "{{ config_influxdb['port'] }}"
       </Plugin>
 
-- name: Restart collectd
+- name: restart collectd
   service:
     name: collectd
     state: restarted

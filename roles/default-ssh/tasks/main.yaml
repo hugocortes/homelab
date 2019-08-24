@@ -1,6 +1,6 @@
 ---
 
-- name: Add ssh keys to default user {{ default_config_user['name'] }}
+- name: add ssh keys to default user {{ default_config_user['name'] }}
   become: yes
   authorized_key:
     user: "{{ default_config_user['name'] }}"

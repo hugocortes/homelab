@@ -1,15 +1,15 @@
 ---
 
-- name: Install pip
+- name: install pip
   apt:
     name: python3-pip
     state: present
 
-- name: Install influxdb pip
+- name: install influxdb pip
   pip:
     name: influxdb
 
-- name: Create influxdb dirs
+- name: create influxdb dirs
   file:
     path: "/mnt/hdd/influxdb"
     state: directory
@@ -17,13 +17,13 @@
     group: "influxdb"
     mode: "0755"
 
-- name: Retrieve types db
+- name: retrieve types db
   get_url:
     url: https://raw.githubusercontent.com/collectd/collectd/master/src/types.db
     dest: /mnt/hdd/influxdb/types.db
     mode: 0755
 
-- name: Configure influxdb settings
+- name: configure influxdb settings
   blockinfile:
     insertafter: "{{ item.after }}"
     dest: /etc/influxdb/influxdb.conf
@@ -43,7 +43,7 @@
       database = "{{ config_influxdb_collectd['db'] }}"
       typesdb = "/mnt/hdd/influxdb/types.db"
 
-- name: Configure influxdb directories
+- name: configure influxdb directories
   lineinfile:
     dest: /etc/influxdb/influxdb.conf
     regexp: "{{ item.regexp }}"
@@ -58,12 +58,12 @@
     line: wal-dir = "/mnt/hdd/influxdb/wal"
   notify: restart influxdb
 
-- name: Create collectd database
+- name: create collectd database
   influxdb_database:
     hostname: "{{ config_influxdb_collectd['host'] }}"
     database_name: "{{ config_influxdb_collectd['db'] }}"
 
-- name: Create collectd writers
+- name: create collectd writers
   influxdb_user:
     user_name: "{{ config_influxdb_collectd['writer']['user'] }}"
     user_password: "{{ config_influxdb_collectd['writer']['pass'] }}"
@@ -71,7 +71,7 @@
     - database: "{{ config_influxdb_collectd['db'] }}"
       privilege: "WRITE"
 
-- name: Create collectd reader
+- name: create collectd reader
   influxdb_user:
     user_name: "{{ config_influxdb_collectd['reader']['user'] }}"
     user_password: "{{ config_influxdb_collectd['reader']['pass'] }}"
@@ -79,12 +79,12 @@
     - database: "{{ config_influxdb_collectd['db'] }}"
       privilege: "READ"
 
-- name: Create pfsense database
+- name: create pfsense database
   influxdb_database:
     hostname: "{{ config_influxdb_pfsense['host'] }}"
     database_name: "{{ config_influxdb_pfsense['db'] }}"
 
-- name: Create pfsense writer
+- name: create pfsense writer
   influxdb_user:
     user_name: "{{ config_influxdb_pfsense['writer']['user'] }}"
     user_password: "{{ config_influxdb_pfsense['writer']['pass'] }}"
@@ -92,7 +92,7 @@
     - database: "{{ config_influxdb_pfsense['db'] }}"
       privilege: "WRITE"
 
-- name: Create pfsense reader
+- name: create pfsense reader
   influxdb_user:
     user_name: "{{ config_influxdb_pfsense['reader']['user'] }}"
     user_password: "{{ config_influxdb_pfsense['reader']['pass'] }}"

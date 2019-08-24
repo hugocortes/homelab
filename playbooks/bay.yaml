@@ -1,6 +1,6 @@
 ---
 
-- name: Prepare for voyage
+- name: prepare for voyage
   hosts: rpi
   become: yes
   roles:

@@ -1,6 +1,6 @@
 ---
 
-- name: Configure monitoring on hosts
+- name: configure monitoring on hosts
   hosts: all
   become: yes
   roles:

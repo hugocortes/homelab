@@ -1,6 +1,6 @@
 ---
 
-- name: Configure influxdb
+- name: configure influxdb
   hosts: servers
   become: yes
   roles:

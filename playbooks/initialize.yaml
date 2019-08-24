@@ -1,6 +1,6 @@
 ---
 
-- name: Initializes the server
+- NAME: initializes the server
   hosts: all
   become: yes
   roles:
