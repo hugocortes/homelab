@@ -1,0 +1,31 @@
+---
+
+- name: Install dependencies
+  apt:
+    name: ["haveged", "openjdk-8-jre-headless"]
+    state: present
+
+- name: Add apt repository
+  apt_repository:
+    repo: deb http://www.ui.com/downloads/unifi/debian stable ubiquiti
+    state: present
+
+- name: Add ubiquiti gpg key
+  apt_key:
+    keyring: /etc/apt/trusted.gpg.d/unifi-repo.gpg
+    url: https://dl.ubnt.com/unifi/unifi-repo.gpg
+    state: present
+
+- name: update apt pkgs
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: install unifi controller
+  apt:
+    name: unifi
+    state: present
+    cache_valid_time: 3600
+  become: yes
+  notify:
+  - reboot
