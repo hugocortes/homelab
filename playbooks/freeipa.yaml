@@ -1,0 +1,21 @@
+---
+
+- name: initialize freeipa
+  hosts: freeipa
+  become: yes
+  roles:
+  - secure
+  - name: firewalld
+    ports:
+    - 464/tcp
+    - 88/udp
+    - 123/udp
+    services:
+    - http
+    - https
+    - ldap
+    - ldaps
+    - kerberos
+    - ntp
+  vars_files:
+  - ../vars.yaml

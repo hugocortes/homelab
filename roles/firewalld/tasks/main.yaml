@@ -1,0 +1,36 @@
+---
+
+- name: enable firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: set eth0 as dmz interface
+  firewalld:
+    zone: dmz
+    interface: eth0
+    permanent: yes
+    state: enabled
+
+- name: enable custom ports on dmz
+  firewalld:
+    zone: dmz
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+  - "{{ ports }}"
+
+- name: enable services on dmz
+  firewalld:
+    zone: dmz
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+  with_items:
+  - "{{ services }}"
+
+- name: set dmz as default zone
+  command: firewall-cmd --set-default-zone=dmz
+  notify: restart firewalld
