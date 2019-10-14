@@ -1,0 +1,11 @@
+---
+
+- name: initialize the server
+  hosts: all
+  become: yes
+  roles:
+  - name: update
+    tags: update
+  - secure
+  vars_files:
+  - ../vars.yaml

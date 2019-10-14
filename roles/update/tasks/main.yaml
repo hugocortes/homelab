@@ -6,3 +6,11 @@
     upgrade: "yes"
     update_cache: "yes"
     cache_valid_time: 86400
+  when: ansible_os_family == "Debian"
+
+- name: upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
