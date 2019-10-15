@@ -1,0 +1,6 @@
+---
+
+- name: install ipa-server
+  yum:
+    name: ipa-server
+    state: latest
