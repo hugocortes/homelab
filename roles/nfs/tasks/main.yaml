@@ -1,0 +1,20 @@
+---
+
+- name: install nfs common
+  yum:
+    name: nfs-utils
+    state: present
+
+- name: create nfs mount path dir
+  file:
+    path: "{{ nfs_mount_path }}"
+    state: directory
+
+- name: auto mount nfs share
+  lineinfile:
+    dest: /etc/fstab
+    regexp: "{{ nfs_mount_cmd }}"
+    line: "{{ nfs_mount_cmd }}"
+    state: present
+    insertbefore: "exit 0"
+  notify: reboot
