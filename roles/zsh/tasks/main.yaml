@@ -1,0 +1,6 @@
+---
+
+- name: install zsh
+  yum:
+    name: zsh
+    state: latest
