@@ -9,5 +9,5 @@
 
 - name: wait for reboot
   wait_for_connection:
-    delay: "{{ config_reboot_min_wait_time }}"
-    timeout: "{{ config_reboot_max_wait_time }}"
+    delay: "{{ reboot_min_wait_time }}"
+    timeout: "{{ reboot_max_wait_time }}"

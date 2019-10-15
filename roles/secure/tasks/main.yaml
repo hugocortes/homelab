@@ -1,9 +1,9 @@
 ---
 
-- name: set ssh key for {{ config_user['name'] }}
+- name: set ssh key for {{ ansible_user }}
   authorized_key:
-    user: "{{ config_user['name'] }}"
-    key: "{{ config_user['ssh_keys_url'] }}"
+    user: "{{ ansible_user }}"
+    key: "{{ server_ssh_keys_url }}"
     state: present
 
 - name: disable ssh password authentication
