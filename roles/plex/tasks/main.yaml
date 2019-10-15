@@ -1,0 +1,61 @@
+---
+
+- name: create expected dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+  - /mnt/storage/media/movies
+  - /mnt/storage/media/tv-shows
+
+- name: add plex repo
+  yum_repository:
+    name: plex
+    description: plex yum repo
+    baseurl: https://downloads.plex.tv/repo/rpm/$basearch/
+    gpgkey: https://downloads.plex.tv/plex-keys/PlexSign.key
+    gpgcheck: true
+  become: yes
+
+- name: install plex
+  yum:
+    name: plexmediaserver
+    state: latest
+    update_cache: yes
+
+- name: enable plex
+  service:
+    name: plexmediaserver
+    state: stopped
+
+- name: run plex as different user
+  lineinfile:
+    dest: /usr/lib/systemd/system/plexmediaserver.service
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+  - { regexp: "^User=", line: "User=ipa_plex" }
+  - { regexp: "^Group=", line: "Group=ipa_plex" }
+
+- name: change plex ownership
+  file:
+    dest: /var/lib/plexmediaserver
+    owner: ipa_plex
+    group: ipa_plex
+    recurse: yes
+
+- name: systemd reload
+  systemd:
+    daemon_reload: yes
+
+- name: enable plex
+  service:
+    name: plexmediaserver
+    state: started
+
+- name: enable plex
+  service:
+    name: plexmediaserver
+    enabled: yes
+  notify: restart plex
