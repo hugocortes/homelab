@@ -1,0 +1,17 @@
+---
+
+- name: configure transmission
+  hosts: transmission
+  become: yes
+  roles:
+  - name: nfs
+    nfs_mount_paths:
+    - "{{ media_nfs_mount_path }}"
+    nfs_mount_cmds:
+    - "{{ media_nfs_mount_cmd }}"
+  - name: firewalld
+    ports:
+    - 9091/tcp
+    services: []
+  - name: transmission
+    service_user: u_transmission

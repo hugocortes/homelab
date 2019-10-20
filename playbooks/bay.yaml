@@ -1,9 +1,0 @@
----
-
-- name: prepare for voyage
-  hosts: rpi
-  become: yes
-  roles:
-    - bay
-  vars_files:
-    - ../vars.yaml

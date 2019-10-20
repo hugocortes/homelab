@@ -1,0 +1,76 @@
+---
+
+- name: install transmission
+  yum:
+    name: transmission-daemon
+    state: present
+
+- name: create transmission dirs
+  file:
+    path: /home/{{ service_user }}/transmission/inprogress
+    state: directory
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+
+- name: stop transmission
+  service:
+    name: transmission-daemon
+    state: stopped
+
+- name: enable transmission
+  service:
+    name: transmission-daemon
+    enabled: yes
+
+- name: run transmission as different user
+  lineinfile:
+    dest: /usr/lib/systemd/system/transmission-daemon.service
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+  - { regexp: "^User=", line: "User={{ service_user }}" }
+
+- name: change transmission ownership
+  file:
+    dest: /var/lib/transmission
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    recurse: yes
+
+- name: restart systemd
+  systemd:
+    daemon_reload: yes
+
+- name: stop transmission
+  service:
+    name: transmission-daemon
+    state: stopped
+
+- name: modify default transmission settings
+  lineinfile:
+    dest: /home/{{ service_user }}/.config/transmission-daemon/settings.json
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: "^{$"
+    state: present
+  with_items:
+  - { regexp: '"incomplete-dir":', line: '"incomplete-dir":"/home/{{ service_user }}/transmission/inprogress",' }
+  - { regexp: '"download-dir":', line: '"download-dir":"/mnt/storage",' }
+  - { regexp: '"rpc-authentication-required":', line: '"rpc-authentication-required":"true",' }
+  - { regexp: '"rpc-username":', line: '"rpc-username":"{{ transmission_user }}",' }
+  - { regexp: '"rpc-password":', line: '"rpc-password":"{{ transmission_pass }}",' }
+  - { regexp: '"rpc-host-whitelist-enabled":', line: '"rpc-host-whitelist-enabled":"false",' }
+  - { regexp: '"rpc-whitelist":', line: '"rpc-whitelist":"",' }
+  - { regexp: '"rpc-whitelist-enabled":', line: '"rpc-whitelist-enabled":"false",' }
+  - { regexp: '"rpc-url":', line: '"rpc-url":"/transmission/",'}
+
+- name: stop transmission
+  service:
+    name: transmission-daemon
+    state: stopped
+
+- name: start transmission
+  service:
+    name: transmission-daemon
+    state: started
