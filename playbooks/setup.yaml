@@ -7,5 +7,4 @@
   - name: update
     tags: update
   - secure
-  vars_files:
-  - ../vars.yaml
+  - zsh

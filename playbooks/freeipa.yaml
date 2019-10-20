@@ -4,7 +4,7 @@
   hosts: freeipa
   become: yes
   roles:
-  - secure
+  - freeipa
   - name: firewalld
     ports:
     - 464/tcp
@@ -17,5 +17,3 @@
     - ldaps
     - kerberos
     - ntp
-  vars_files:
-  - ../vars.yaml
