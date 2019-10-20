@@ -1,13 +1,5 @@
 ---
 
-- name: create expected dirs
-  file:
-    path: "{{ item }}"
-    state: directory
-  with_items:
-  - /mnt/storage/media/movies
-  - /mnt/storage/media/tv-shows
-
 - name: add plex repo
   yum_repository:
     name: plex
@@ -35,14 +27,14 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-  - { regexp: "^User=", line: "User=ipa_plex" }
-  - { regexp: "^Group=", line: "Group=ipa_plex" }
+  - { regexp: "^User=", line: "User={{ service_user }}" }
+  - { regexp: "^Group=", line: "Group={{ service_group }}" }
 
 - name: change plex ownership
   file:
     dest: /var/lib/plexmediaserver
-    owner: ipa_plex
-    group: ipa_plex
+    owner: "{{ service_user }}"
+    group: "{{ service_group }}"
     recurse: yes
 
 - name: systemd reload

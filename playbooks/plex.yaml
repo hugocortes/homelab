@@ -1,0 +1,20 @@
+---
+
+- name: configure plex
+  hosts: plex
+  become: yes
+  roles:
+  - name: nfs
+    nfs_mount_paths:
+    - "{{ movies_nfs_mount_path }}"
+    - "{{ tv_shows_nfs_mount_path }}"
+    nfs_mount_cmds:
+    - "{{ movies_nfs_mount_cmd }}"
+    - "{{ tv_shows_nfs_mount_cmd }}"
+  - name: firewalld
+    ports:
+    - 32400/tcp
+    services: []
+  - name: plex
+    service_user: u_plex
+    service_group: u_plex
