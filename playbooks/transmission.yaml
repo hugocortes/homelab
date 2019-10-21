@@ -6,9 +6,11 @@
   roles:
   - name: nfs
     nfs_mount_paths:
-    - "{{ media_nfs_mount_path }}"
+    - "{{ movies_nfs_mount_path }}"
+    - "{{ tv_shows_nfs_mount_path }}"
     nfs_mount_cmds:
-    - "{{ media_nfs_mount_cmd }}"
+    - "{{ movies_nfs_mount_cmd }}"
+    - "{{ tv_shows_nfs_mount_cmd }}"
   - name: firewalld
     ports:
     - 9091/tcp
