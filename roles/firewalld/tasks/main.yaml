@@ -33,4 +33,8 @@
 
 - name: set dmz as default zone
   command: firewall-cmd --set-default-zone=dmz
-  notify: restart firewalld
+
+- name: restart firewalld
+  service:
+    name: firewalld
+    state: restarted

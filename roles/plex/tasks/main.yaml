@@ -27,8 +27,8 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-  - { regexp: "^User=", line: "User={{ service_user }}" }
-  - { regexp: "^Group=", line: "Group={{ service_group }}" }
+  - { regexp: ^User=, line: "User={{ service_user }}" }
+  - { regexp: ^Group=, line: "Group={{ service_group }}" }
 
 - name: change plex ownership
   file:
