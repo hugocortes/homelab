@@ -1,0 +1,13 @@
+---
+
+- name: configure jackett
+  hosts: jackett
+  become: yes
+  roles:
+  - name: firewalld
+    ports:
+    - 9117/tcp
+    services: []
+  - name: jackett
+    service_user: u_jackett
+    service_group: u_jackett

@@ -1,0 +1,62 @@
+---
+
+- name: install required deps
+  yum:
+    name:
+    - lttng-ust
+    - libcurl
+    - openssl-libs
+    - krb5-libs
+    - libicu
+    - zlib
+
+- name: download service
+  get_url:
+    url: https://github.com/Jackett/Jackett/releases/download/v0.12.847/Jackett.Binaries.LinuxAMDx64.tar.gz
+    dest: /tmp/service.tar.gz
+  register: source
+
+- name: unarchive service
+  unarchive:
+    src: /tmp/service.tar.gz
+    dest: /var/lib
+    copy: no
+
+- name: install service
+  command: sh /var/lib/Jackett/install_service_systemd.sh
+
+- name: stop service
+  service:
+    name: jackett
+    state: stopped
+
+- name: run transmission as different user
+  lineinfile:
+    dest: /etc/systemd/system/jackett.service
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+  - { regexp: ^User=, line: "User={{ service_user }}" }
+  - { regexp: ^Group=, line: "Group={{ service_group }}" }
+
+- name: change service ownership
+  file:
+    dest: /var/lib/Jackett
+    owner: "{{ service_user }}"
+    group: "{{ service_group }}"
+    recurse: yes
+
+- name: systemd reload
+  systemd:
+    daemon_reload: yes
+
+- name: enable service
+  service:
+    name: jackett
+    enabled: yes
+
+- name: start service
+  service:
+    name: jackett
+    state: started
