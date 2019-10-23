@@ -1,0 +1,88 @@
+---
+
+- name: ensure home directory exists
+  file:
+    path: /home/{{ service_user }}
+    owner: "{{ service_user }}"
+    group: "{{ service_group }}"
+    mode: "0755"
+    state: directory
+
+- name: install required deps
+  yum:
+    name:
+    - mono-core
+    - mono-devel
+    - mono-locale-extras
+    - curl
+    - mediainfo
+
+- name: file exists
+  shell: |
+    find /tmp -iname Radarr.develop.*.linux.tar.gz
+  register: service
+
+- name: download service
+  shell: |
+    cd /tmp
+    curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 )
+  when: service.stdout_lines | length == 0
+
+- name: file exists
+  shell: |
+    find /tmp -iname Radarr.develop.*.linux.tar.gz
+  register: service
+
+- name: unarchive service
+  unarchive:
+    src: "{{ service.stdout_lines[0] }}"
+    dest: /var/lib
+    copy: no
+
+- name: create service conf
+  copy:
+    content: |
+      [Unit]
+      Description=Radarr Daemon
+      After=syslog.target network.target
+
+      [Service]
+      SyslogIdentifier=radarr
+      User={{ service_user }}
+      Group={{ service_group }}
+      Type=simple
+
+      ExecStart=/usr/bin/mono --debug /var/lib/Radarr/Radarr.exe -nobrowser
+      TimeoutStopSec=20
+      KillMode=process
+      Restart=on-failure
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/radarr.service
+    force: no
+    group: root
+    owner: root
+    mode: 1755
+
+- name: change service ownership
+  file:
+    dest: /var/lib/Radarr
+    owner: "{{ service_user }}"
+    group: "{{ service_group }}"
+    recurse: yes
+
+- name: systemd reload
+  systemd:
+    daemon_reload: yes
+
+- name: enable service
+  service:
+    name: radarr
+    enabled: yes
+
+- name: start service
+  service:
+    name: radarr
+    state: started
