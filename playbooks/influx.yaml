@@ -1,9 +1,0 @@
----
-
-- name: configure influxdb
-  hosts: servers
-  become: yes
-  roles:
-    - influxdb
-  vars_files:
-    - ../vars.yaml
