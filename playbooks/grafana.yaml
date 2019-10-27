@@ -1,0 +1,13 @@
+---
+
+- name: configure grafana
+  hosts: grafana
+  become: yes
+  roles:
+  - name: firewalld
+    ports:
+    - 3000/tcp
+    services: []
+  - name: grafana
+    service_user: u_grafana
+    service_group: u_grafana
