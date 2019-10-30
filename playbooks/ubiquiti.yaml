@@ -1,9 +1,0 @@
----
-
-- name: configure ubiquti controller
-  hosts: ubiquiti-controller
-  become: yes
-  roles:
-  - ubiquiti
-  vars_files:
-  - ../vars.yaml
