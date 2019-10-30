@@ -4,6 +4,8 @@
   hosts: plex
   become: yes
   roles:
+  - name: certbot
+    tags: certbot
   - name: nfs
     nfs_mount_paths:
     - "{{ movies_nfs_mount_path }}"
