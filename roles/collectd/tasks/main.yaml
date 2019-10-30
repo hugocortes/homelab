@@ -1,35 +1,48 @@
 ---
 
 - name: install collectd
-  apt:
-    name: ["collectd", "collectd-utils"]
+  yum:
+    name:
+    - collectd
+    - collectd-rrdtool
     state: present
 
-- name: configure collectd settings
+- name: configure settings
   lineinfile:
-    dest: /etc/collectd/collectd.conf
+    dest: /etc/collectd.conf
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
   - regexp: Hostname\s
     line: Hostname "{{ inventory_hostname }}"
-  - regexp: '^#BaseDir "/var/lib/collectd"$'
-    line: BaseDir "/var/lib/collectd"
-  - regexp: '^#PluginDir "/usr/lib/collectd"$'
-    line: PluginDir "/usr/lib/collectd"
   - regexp: TypesDB\s
     line: TypesDB "/usr/share/collectd/types.db"
-  - regexp: '^#LoadPlugin network$'
+  - regexp: ^[#]?BaseDir\s
+    line: BaseDir "/var/lib/collectd"
+  - regexp: ^[#]?PluginDir\s
+    line: PluginDir "/usr/lib64/collectd"
+  - regexp: ^[#]?Interval\s
+    line: Interval 60
+
+- name: load plugins
+  lineinfile:
+    dest: /etc/collectd.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: ^TypesDB\s
+    state: present
+  with_items:
+  - regexp: '^LoadPlugin network$'
     line: LoadPlugin network
 
 - name: configure influxdb network
   blockinfile:
-    dest: /etc/collectd/collectd.conf
+    dest: /etc/collectd.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK #"
     block: |
       <Plugin network>
-        Server "{{ config_influxdb['host'] }}" "{{ config_influxdb['port'] }}"
+        Server "{{ influxdb_host }}" "{{ influxdb_port }}"
       </Plugin>
 
 - name: restart collectd

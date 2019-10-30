@@ -15,11 +15,14 @@
     - 8088/tcp
     - 2003/tcp
     - 25826/udp
+    - 8089/udp
     services: []
   - name: influxdb
     service_user: u_influxdb
     service_group: u_influxdb
+    proxmox_port: "8089"
     http_port: "8086"
     collectd_port: "25826"
     collectd_db: collectd
     telegraf_db: telegraf
+    proxmox_db: proxmox

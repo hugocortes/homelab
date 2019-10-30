@@ -8,6 +8,12 @@
     cache_valid_time: 86400
   when: ansible_os_family == "Debian"
 
+- name: install dnf
+  yum:
+    name: dnf
+    state: latest
+  when: ansible_os_family == "RedHat"
+
 - name: upgrade all packages
   yum:
     name: '*'

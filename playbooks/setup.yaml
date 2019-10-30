@@ -8,3 +8,5 @@
     tags: update
   - secure
   - zsh
+  - name: collectd
+    tags: collectd

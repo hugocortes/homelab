@@ -27,7 +27,7 @@
 
 - name: stop service
   service:
-    name: influxd.service
+    name: influxd
     state: stopped
 
 - name: retrieve types db
@@ -57,6 +57,21 @@
       bind-address = ":{{ collectd_port }}"
       database = "{{ collectd_db }}"
       typesdb = "{{ influxdb_nfs_mount_path }}/types.db"
+
+- name: configure multi udp blocks
+  blockinfile:
+    dest: /etc/influxdb/influxdb.conf
+    marker: "# {mark} {{ item.mark }} ANSIBLE MANAGED BLOCK #"
+    block: "{{ item.block }}"
+  with_items:
+  - mark: "{{ proxmox_db }}_udp"
+    block: |
+      [[udp]]
+        enabled = true
+        bind-address = "0.0.0.0:{{ proxmox_port }}"
+        database = "{{ proxmox_db }}"
+        batch-size = 1000
+        batch-timeout = "1s"
 
 - name: configure influxdb directories
   lineinfile:
@@ -97,12 +112,12 @@
 
 - name: enable service
   service:
-    name: influxd.service
+    name: influxd
     enabled: yes
 
 - name: start service
   service:
-    name: influxd.service
+    name: influxd
     state: restarted
 
 - name: wait for port
@@ -115,30 +130,32 @@
     hostname: "0.0.0.0"
     database_name: "{{ item }}"  
   with_items:
+  - "{{ proxmox_db }}"
   - "{{ collectd_db }}"
   - "{{ telegraf_db }}"
 
-- name: create {{ collectd_db }} users
+- name: create users
   influxdb_user:
     user_name: "{{ item.user }}"
     user_password: "{{ item.pass }}"
-    grants:
-    - database: "{{ item.db }}"
-      privilege: "{{ item.privilege }}"
+    grants: "{{ item.grants }}"
   with_items:
   - user: "{{ influxdb_collectd_writer_user }}"
     pass: "{{ influxdb_collectd_writer_pass }}"
-    db: "{{ collectd_db }}"
-    privilege: "WRITE"
-  - user: "{{ influxdb_collectd_reader_user }}"
-    pass: "{{ influxdb_collectd_reader_pass }}"
-    db: "{{ collectd_db }}"
-    privilege: "READ"
+    grants:
+    - database: "{{ collectd_db }}"
+      privilege: "WRITE"
   - user: "{{ influxdb_telegraf_writer_user }}"
     pass: "{{ influxdb_telegraf_writer_pass }}"
-    db: "{{ telegraf_db }}"
-    privilege: "WRITE"
-  - user: "{{ influxdb_telegraf_reader_user }}"
-    pass: "{{ influxdb_telegraf_reader_pass }}"
-    db: "{{ telegraf_db }}"
-    privilege: "READ"
+    grants:
+    - database: "{{ telegraf_db }}"
+      privilege: "WRITE"
+  - user: "{{ influxdb_grafana_user }}"
+    pass: "{{ influxdb_grafana_pass }}"
+    grants:
+    - database: "{{ proxmox_db }}"
+      privilege: "READ"
+    - database: "{{ collectd_db }}"
+      privilege: "READ"
+    - database: "{{ telegraf_db }}"
+      privilege: "READ"
