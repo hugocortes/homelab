@@ -14,7 +14,6 @@
   get_url:
     url: https://github.com/Jackett/Jackett/releases/download/v0.12.847/Jackett.Binaries.LinuxAMDx64.tar.gz
     dest: /tmp/service.tar.gz
-  register: source
 
 - name: unarchive service
   unarchive:

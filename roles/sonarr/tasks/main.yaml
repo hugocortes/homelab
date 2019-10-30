@@ -8,51 +8,87 @@
     mode: 0755
     state: directory
 
+- name: add rpm key
+  rpm_key:
+    state: present
+    key: http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+
+- name: add mono repo
+  yum_repository:
+    name: mono
+    description: mono project
+    baseurl: http://download.mono-project.com/repo/centos/
+
 - name: install required deps
   yum:
+    state: present
     name:
+    - yum-utils
+    - wget
+    - mediainfo
+    - libzen
+    - libmediainfo
+    - curl
+    - gettext
     - mono-core
     - mono-devel
-    - mono-locale-extras
-    - curl
-    - mediainfo
+    - sqlite.x86_64
+    - git
+    - par2cmdline
+    - p7zip
+    - unzip
+    - tar
+    - gcc
+    - python-feedparser
+    - python-configobj
+    - python-cheetah
+    - python-dbus
+    - python-devel
+    - libxslt-devel
 
 - name: file exists
   shell: |
-    find /tmp -iname Radarr.develop.*.linux.tar.gz
+    find /tmp -iname NzbDrone.master.tar.gz
   register: service
 
 - name: download service
   shell: |
     cd /tmp
-    curl -L -O $( curl -s https://api.github.com/repos/Radarr/Radarr/releases | grep linux.tar.gz | grep browser_download_url | head -1 | cut -d \" -f 4 )
+    wget http://update.sonarr.tv/v2/master/mono/NzbDrone.master.tar.gz
   when: service.stdout_lines | length == 0
 
 - name: file exists
   shell: |
-    find /tmp -iname Radarr.develop.*.linux.tar.gz
+    find /tmp -iname NzbDrone.master.tar.gz
   register: service
+
+- name: create tmp sonarr dir
+  file:
+    path: /var/lib/sonarr/bin
+    mode: 0755
+    state: directory
 
 - name: unarchive service
   unarchive:
     src: "{{ service.stdout_lines[0] }}"
-    dest: /var/lib
+    dest: /var/lib/sonarr/bin
     copy: no
+    extra_opts: [--strip-components=1]
 
 - name: create service conf
   copy:
     content: |
       [Unit]
-      Description=Radarr Daemon
+      Description=Sonarr Daemon
       After=syslog.target network.target
 
       [Service]
-      SyslogIdentifier=radarr
+      SyslogIdentifier=sonarr
       User={{ service_user }}
       Group={{ service_group }}
       Type=simple
 
-      ExecStart=/usr/bin/mono --debug /var/lib/Radarr/Radarr.exe -nobrowser
+      ExecStart=/usr/bin/mono /var/lib/sonarr/bin/NzbDrone.exe -nobrowser -data /var/lib/sonarr
       TimeoutStopSec=20
       KillMode=process
       Restart=on-failure
@@ -60,7 +96,7 @@
 
       [Install]
       WantedBy=multi-user.target
-    dest: /etc/systemd/system/radarr.service
+    dest: /etc/systemd/system/sonarr.service
     force: no
     group: root
     owner: root
@@ -68,7 +104,7 @@
 
 - name: change service ownership
   file:
-    dest: /var/lib/Radarr
+    dest: /var/lib/sonarr
     owner: "{{ service_user }}"
     group: "{{ service_group }}"
     recurse: yes
@@ -79,10 +115,10 @@
 
 - name: enable service
   service:
-    name: radarr
+    name: sonarr
     enabled: yes
 
 - name: start service
   service:
-    name: radarr
+    name: sonarr
     state: started

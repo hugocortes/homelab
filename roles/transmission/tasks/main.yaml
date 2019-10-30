@@ -1,16 +1,18 @@
 ---
 
+- name: ensure necessary directories are present
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0770
+  with_items:
+  - "{{ downloads_nfs_mount_path }}/in-progress"
+  - "{{ downloads_nfs_mount_path }}/done"
+
 - name: install transmission
   yum:
     name: transmission-daemon
     state: present
-
-- name: create transmission dirs
-  file:
-    path: /home/{{ service_user }}/transmission/inprogress
-    state: directory
-    owner: "{{ service_user }}"
-    group: "{{ service_user }}"
 
 - name: stop transmission
   service:
@@ -55,8 +57,8 @@
     insertafter: "^{$"
     state: present
   with_items:
-  - { regexp: '"incomplete-dir":', line: '"incomplete-dir":"/home/{{ service_user }}/transmission/inprogress",' }
-  - { regexp: '"download-dir":', line: '"download-dir":"/mnt/storage",' }
+  - { regexp: '"incomplete-dir":', line: '"incomplete-dir":"{{ downloads_nfs_mount_path }}/in-progress",' }
+  - { regexp: '"download-dir":', line: '"download-dir":"{{ downloads_nfs_mount_path }}/done",' }
   - { regexp: '"rpc-authentication-required":', line: '"rpc-authentication-required":"true",' }
   - { regexp: '"rpc-username":', line: '"rpc-username":"{{ transmission_user }}",' }
   - { regexp: '"rpc-password":', line: '"rpc-password":"{{ transmission_pass }}",' }
@@ -64,6 +66,8 @@
   - { regexp: '"rpc-whitelist":', line: '"rpc-whitelist":"",' }
   - { regexp: '"rpc-whitelist-enabled":', line: '"rpc-whitelist-enabled":"false",' }
   - { regexp: '"rpc-url":', line: '"rpc-url":"/transmission/",'}
+  - { regexp: '"ratio-limit":', line: '"ratio-limit":0,'}
+  - { regexp: '"umask":', line: '"umask":7,'}
 
 - name: stop transmission
   service:
