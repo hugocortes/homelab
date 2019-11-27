@@ -1,0 +1,13 @@
+---
+
+- name: configure dokuwiki
+  hosts: dokuwiki
+  become: yes
+  roles:
+  - name: firewalld
+    ports: []
+    services:
+    - http
+    - https
+  - name: dokuwiki
+    conf_mount: "{{ wiki_documents_path }}"

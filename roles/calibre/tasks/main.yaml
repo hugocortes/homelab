@@ -2,7 +2,7 @@
 
 - name: create volumes
   docker_volume:
-    name: "sonarr_{{ item.name }}"
+    name: "{{ item.name }}"
     driver_options:
       type: nfs
       device: ":/{{ item.mount }}"
@@ -10,23 +10,21 @@
   with_items:
   - name: conf
     mount: "{{ conf_mount }}"
-  - name: downloads
-    mount: "{{ downloads_mount }}"
-  - name: tv_shows
-    mount: "{{ tv_shows_mount }}"
+  - name: ebooks
+    mount: "{{ ebooks_mount }}"
 
 - name: start container
   docker_container:
-    name: sonarr
-    image: linuxserver/sonarr:latest
+    name: calibre
+    image: linuxserver/calibre-web:latest
     restart_policy: unless-stopped
     env:
       TZ: America/Los_Angeles
-      PUID: "{{ sonarr_docker_user_id | string }}"
+      DOCKER_MODS: linuxserver/calibre-web:calibre
+      PUID: "{{ calibre_docker_user_id | string }}"
       PGID: "0"
     ports:
-    - 8989:8989
+    - 80:8083
     volumes:
-    - sonarr_conf:/config
-    - sonarr_downloads:/downloads
-    - sonarr_tv_shows:/tv
+    - conf:/config
+    - ebooks:/books

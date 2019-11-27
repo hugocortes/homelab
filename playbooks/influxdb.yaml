@@ -4,11 +4,6 @@
   hosts: influxdb
   become: yes
   roles:
-  - name: nfs
-    nfs_mount_paths:
-    - "{{ influxdb_nfs_mount_path }}"
-    nfs_mount_cmds:
-    - "{{ influxdb_nfs_mount_cmd }}"
   - name: firewalld
     ports:
     - 8086/tcp
@@ -18,11 +13,7 @@
     - 8089/udp
     services: []
   - name: influxdb
-    service_user: u_influxdb
-    service_group: u_influxdb
-    proxmox_port: "8089"
-    http_port: "8086"
-    collectd_port: "25826"
-    collectd_db: collectd
+    conf_mount: "{{ influxdb_docker_path }}"
+    data_mount: "{{ influxdb_database_path }}"
     telegraf_db: telegraf
     proxmox_db: proxmox

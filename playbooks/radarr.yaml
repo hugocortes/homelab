@@ -4,17 +4,12 @@
   hosts: radarr
   become: yes
   roles:
-  - name: nfs
-    nfs_mount_paths:
-    - "{{ downloads_nfs_mount_path }}"
-    - "{{ movies_nfs_mount_path }}"
-    nfs_mount_cmds:
-    - "{{ downloads_nfs_mount_cmd }}"
-    - "{{ movies_nfs_mount_cmd }}"
   - name: firewalld
-    ports:
-    - 7878/tcp
-    services: []
+    ports: []
+    services:
+    - http
+    - https
   - name: radarr
-    service_user: u_radarr
-    service_group: u_radarr
+    conf_mount: "{{ radarr_docker_path }}"
+    downloads_mount: "{{ downloads_media_path }}"
+    movies_mount: "{{ movies_media_path }}"

@@ -4,17 +4,12 @@
   hosts: sonarr
   become: yes
   roles:
-  - name: nfs
-    nfs_mount_paths:
-    - "{{ downloads_nfs_mount_path }}"
-    - "{{ tv_shows_nfs_mount_path }}"
-    nfs_mount_cmds:
-    - "{{ downloads_nfs_mount_cmd }}"
-    - "{{ tv_shows_nfs_mount_cmd }}"
   - name: firewalld
-    ports:
-    - 8989/tcp
-    services: []
+    ports: []
+    services:
+    - http
+    - https
   - name: sonarr
-    service_user: u_sonarr
-    service_group: u_sonarr
+    conf_mount: "{{ sonarr_docker_path }}"
+    downloads_mount: "{{ downloads_media_path }}"
+    tv_shows_mount: "{{ tv_shows_media_path }}"

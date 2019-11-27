@@ -1,2 +1,3 @@
 vars.yaml
 hosts.ini
+*.env

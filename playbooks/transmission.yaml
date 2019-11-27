@@ -4,15 +4,13 @@
   hosts: transmission
   become: yes
   roles:
-  - name: nfs
-    nfs_mount_paths:
-    - "{{ downloads_nfs_mount_path }}"
-    nfs_mount_cmds:
-    - "{{ downloads_nfs_mount_cmd }}"
   - name: firewalld
     ports:
-    - 9091/tcp
     - 51413/tcp
-    services: []
+    - 51413/udp
+    services:
+    - http
+    - https
   - name: transmission
-    service_user: u_transmission
+    conf_mount: "{{ transmission_docker_path }}"
+    downloads_mount: "{{ downloads_media_path }}"

@@ -15,10 +15,15 @@
 - name: auto mount nfs share
   lineinfile:
     dest: /etc/fstab
-    regexp: "{{ item }}"
-    line: "{{ item }}"
+    regexp: "{{ nfs_host }}:{{ item }} {{ item }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
+    line: "{{ nfs_host }}:{{ item }} {{ item }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
     state: present
     insertbefore: "exit 0"
   with_items:
-  - "{{ nfs_mount_cmds }}"
-  notify: reboot
+  - "{{ nfs_mount_paths }}"
+  register: fstab
+
+- name: reboot
+  reboot:
+    reboot_timeout: 60
+  when: fstab is changed

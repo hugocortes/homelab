@@ -1,5 +1,105 @@
 ---
 
+- name: mount conf dir
+  mount:
+    path: /tmp/mnt
+    src: "{{ nfs_host }}:{{ conf_mount }}"
+    fstype: nfs4
+    opts: defaults,proto=tcp,port=2049,rw
+    state: mounted
+
+- name: ensure conf dirs exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+  - /tmp/mnt/collectd
+  - /tmp/mnt/influxdb
+
+- name: retrieve types db
+  get_url:
+    url: https://raw.githubusercontent.com/collectd/collectd/master/src/types.db
+    dest: /tmp/mnt/collectd/types.db
+    mode: 0755
+
+- name: check conf exists
+  stat:
+    path: /tmp/mnt/influxdb/influxdb.conf
+  register: conf
+
+- name: retrieve default conf
+  docker_container:
+    name: influxdb-tmp
+    image: influxdb:latest
+    command: influxd config
+    detach: no
+  register: default_conf
+  when: conf.stat.exists == false
+
+- name: write output to file
+  copy:
+    content: "{{ default_conf.ansible_facts.docker_container.Output }}"
+    dest: /tmp/mnt/influxdb/influxdb.conf
+  when: conf.stat.exists == false
+
+- name: remove temp container
+  docker_container:
+    name: influxdb-tmp
+    state: absent
+  ignore_errors: yes
+
+- name: default custom configuration
+  replace:
+    dest: /tmp/mnt/influxdb/influxdb.conf
+    replace: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+  with_items:
+  - regexp: (\[\[collectd\]\][^\[]*)\s?enabled\s?=\s?false
+    line: '\1enabled = true'
+  - regexp: (\[\[udp\]\][^\[]*)\s?enabled\s?=\s?false
+    line: '\1enabled = true'
+  - regexp: (\[\[udp\]\][^\[]*)\s?database\s?=\s?\"udp\"
+    line: '\1database = "{{ proxmox_db }}"'
+  - regexp: "Merging with configuration at: /etc/influxdb/influxdb.conf"
+    line: ""
+
+- name: unmount conf dir
+  mount:
+    path: /tmp/mnt
+    state: unmounted
+
+- name: create volumes
+  docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ nfs_host }},vers=4,tcp,rw,port=2049"
+  with_items:
+  - name: conf
+    mount: "{{ conf_mount }}/influxdb"
+  - name: conf_collectd
+    mount: "{{ conf_mount }}/collectd"
+  - name: data
+    mount: "{{ data_mount }}"
+
+- name: start container
+  docker_container:
+    name: influxdb
+    image: influxdb:latest
+    restart_policy: unless-stopped
+    user: "{{ influxdb_docker_user_id }}:0"
+    ports:
+    - 8086:8086
+    - 8088:8088
+    - 2003:2003
+    - 25826:25826/udp
+    - 8089:8089/udp
+    volumes:
+    - conf:/etc/influxdb
+    - conf_collectd:/usr/share/collectd
+    - data:/var/lib/influxdb
+
 - name: install pip
   yum:
     name:
@@ -11,127 +111,13 @@
   pip:
     name: influxdb
 
-- name: add influxdb repo
-  yum_repository:
-    name: influxdb
-    description: InfluxDB Repository - RHEL \$releasever
-    baseurl: https://repos.influxdata.com/rhel/\$releasever/\$basearch/stable
-    enabled: yes
-    gpgcheck: yes
-    gpgkey: https://repos.influxdata.com/influxdb.key
-
-- name: install influxdb
-  yum:
-    name: influxdb
-    state: latest
-
-- name: stop service
-  service:
-    name: influxd
-    state: stopped
-
-- name: retrieve types db
-  get_url:
-    url: https://raw.githubusercontent.com/collectd/collectd/master/src/types.db
-    dest: "{{ influxdb_nfs_mount_path }}/types.db"
-    mode: 0755
-  become: true
-  become_user: "{{ service_user }}"
-
-- name: configure influxdb settings
-  blockinfile:
-    insertafter: "{{ item.after }}"
-    dest: /etc/influxdb/influxdb.conf
-    marker: "# {mark} {{ item.mark }} ANSIBLE MANAGED BLOCK #"
-    block: "{{ item.block }}"
-  with_items:
-  - after: ^\[http\]$
-    mark: http
-    block: |
-      enabled = true
-      bind-address = ":{{ http_port }}"
-  - after: '^\[\[collectd\]\]$'
-    mark: collectd
-    block: |
-      enabled = true
-      bind-address = ":{{ collectd_port }}"
-      database = "{{ collectd_db }}"
-      typesdb = "{{ influxdb_nfs_mount_path }}/types.db"
-
-- name: configure multi udp blocks
-  blockinfile:
-    dest: /etc/influxdb/influxdb.conf
-    marker: "# {mark} {{ item.mark }} ANSIBLE MANAGED BLOCK #"
-    block: "{{ item.block }}"
-  with_items:
-  - mark: "{{ proxmox_db }}_udp"
-    block: |
-      [[udp]]
-        enabled = true
-        bind-address = "0.0.0.0:{{ proxmox_port }}"
-        database = "{{ proxmox_db }}"
-        batch-size = 1000
-        batch-timeout = "1s"
-
-- name: configure influxdb directories
-  lineinfile:
-    dest: /etc/influxdb/influxdb.conf
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-  - regexp: dir = .*/meta"
-    line: dir = "{{ influxdb_nfs_mount_path }}/meta"
-  - regexp: dir = .*/data"
-    line: dir = "{{ influxdb_nfs_mount_path }}/data"
-  - regexp: wal-dir = .*/wal"
-    line: wal-dir = "{{ influxdb_nfs_mount_path }}/wal"
-
-- name: run service as different user
-  lineinfile:
-    dest: /usr/lib/systemd/system/influxdb.service
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-  - { regexp: ^User=, line: "User={{ service_user }}" }
-  - { regexp: ^Group=, line: "Group={{ service_group }}" }
-
-- name: change service ownership
-  file:
-    dest: "{{ item }}"
-    owner: "{{ service_user }}"
-    group: "{{ service_group }}"
-  with_items:
-  - /usr/bin/influxd
-  - /etc/influxdb/influxdb.conf
-
-- name: systemd reload
-  systemd:
-    daemon_reload: yes
-
-- name: enable service
-  service:
-    name: influxd
-    enabled: yes
-
-- name: start service
-  service:
-    name: influxd
-    state: restarted
-
-- name: wait for port
-  wait_for:
-    port: 8086
-    delay: 5
-
 - name: create databases
   influxdb_database:
     hostname: "0.0.0.0"
     database_name: "{{ item }}"  
   with_items:
+  - collectd
   - "{{ proxmox_db }}"
-  - "{{ collectd_db }}"
   - "{{ telegraf_db }}"
 
 - name: create users
@@ -143,7 +129,7 @@
   - user: "{{ influxdb_collectd_writer_user }}"
     pass: "{{ influxdb_collectd_writer_pass }}"
     grants:
-    - database: "{{ collectd_db }}"
+    - database: collectd
       privilege: "WRITE"
   - user: "{{ influxdb_telegraf_writer_user }}"
     pass: "{{ influxdb_telegraf_writer_pass }}"
@@ -153,9 +139,9 @@
   - user: "{{ influxdb_grafana_user }}"
     pass: "{{ influxdb_grafana_pass }}"
     grants:
-    - database: "{{ proxmox_db }}"
+    - database: collectd
       privilege: "READ"
-    - database: "{{ collectd_db }}"
+    - database: "{{ proxmox_db }}"
       privilege: "READ"
     - database: "{{ telegraf_db }}"
       privilege: "READ"

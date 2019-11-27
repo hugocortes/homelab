@@ -10,3 +10,13 @@
   - zsh
   - name: collectd
     tags: collectd
+    when: "'docker' not in group_names"
+  - name: docker
+    service_user: u_docker
+    when: "'docker' in group_names"
+  - name: firewalld
+    ports:
+    - 9100/tcp
+    - 8080/tcp
+    services: []
+    when: "'docker' in group_names"

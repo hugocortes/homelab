@@ -1,0 +1,14 @@
+---
+
+- name: configure calibre
+  hosts: calibre
+  become: yes
+  roles:
+  - name: firewalld
+    ports: []
+    services:
+    - http
+    - https
+  - name: calibre
+    conf_mount: "{{ calibre_docker_path }}"
+    ebooks_mount: "{{ ebooks_media_path }}"

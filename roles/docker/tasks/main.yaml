@@ -1,0 +1,83 @@
+---
+
+- name: install dependencies
+  yum:
+    name:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    state: present
+
+- name: add service repos
+  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: install service
+  yum:
+    name:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    state: latest
+
+- name: enable service
+  service:
+    name: docker
+    enabled: yes
+
+- name: start service
+  service:
+    name: docker
+    state: started
+
+- name: install pip
+  yum:
+    name:
+    - python3-pip
+    - python2-pip
+    state: present
+  register: pip
+
+- name: install docker pip
+  pip:
+    name: docker
+
+- name: reboot
+  reboot:
+    reboot_timeout: 60
+  when: pip is changed
+
+- name: start watchtower
+  docker_container:
+    name: watchtower
+    image: containrrr/watchtower:latest
+    restart_policy: unless-stopped
+    volumes: 
+    - /var/run/docker.sock:/var/run/docker.sock
+
+- name: start node-exporter
+  docker_container:
+    name: node-exporter
+    image: prom/node-exporter:latest
+    restart_policy: unless-stopped
+    command: --path.rootfs=/hostfs
+    user: 995:995
+    hostname: "{{ inventory_hostname }}"
+    ports:
+    - 9100:9100
+    volumes:
+    - /:/hostfs
+
+- name: start cadvisor
+  docker_container:
+    name: cadvisor
+    image: google/cadvisor:latest
+    restart_policy: unless-stopped
+    hostname: "{{ inventory_hostname }}"
+    ports:
+    - 8080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:ro
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro

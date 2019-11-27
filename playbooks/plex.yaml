@@ -6,17 +6,20 @@
   roles:
   - name: certbot
     tags: certbot
-  - name: nfs
-    nfs_mount_paths:
-    - "{{ movies_nfs_mount_path }}"
-    - "{{ tv_shows_nfs_mount_path }}"
-    nfs_mount_cmds:
-    - "{{ movies_nfs_mount_cmd }}"
-    - "{{ tv_shows_nfs_mount_cmd }}"
   - name: firewalld
     ports:
     - 32400/tcp
+    - 3005/tcp
+    - 8324/tcp
+    - 32469/tcp
+    - 1900/udp
+    - 32410/udp
+    - 32412/udp
+    - 32413/udp
+    - 32414/udp
     services: []
   - name: plex
-    service_user: u_plex
-    service_group: u_plex
+    conf_mount: "{{ plex_docker_path }}"
+    transcode_mount: "{{ transcode_media_path }}"
+    movies_mount: "{{ movies_media_path }}"
+    tv_shows_mount: "{{ tv_shows_media_path }}"

@@ -1,80 +1,32 @@
 ---
 
-- name: ensure necessary directories are present
-  file:
-    path: "{{ item }}"
-    state: directory
-    mode: 0770
+- name: create volumes
+  docker_volume:
+    name: "transmission_{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ nfs_host }},vers=4,tcp,rw,port=2049"
   with_items:
-  - "{{ downloads_nfs_mount_path }}/in-progress"
-  - "{{ downloads_nfs_mount_path }}/done"
+  - name: conf
+    mount: "{{ conf_mount }}"
+  - name: downloads
+    mount: "{{ downloads_mount }}"
 
-- name: install transmission
-  yum:
-    name: transmission-daemon
-    state: present
-
-- name: stop transmission
-  service:
-    name: transmission-daemon
-    state: stopped
-
-- name: enable transmission
-  service:
-    name: transmission-daemon
-    enabled: yes
-
-- name: run transmission as different user
-  lineinfile:
-    dest: /usr/lib/systemd/system/transmission-daemon.service
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-  - { regexp: "^User=", line: "User={{ service_user }}" }
-
-- name: change transmission ownership
-  file:
-    dest: /var/lib/transmission
-    owner: "{{ service_user }}"
-    group: "{{ service_user }}"
-    recurse: yes
-
-- name: restart systemd
-  systemd:
-    daemon_reload: yes
-
-- name: stop transmission
-  service:
-    name: transmission-daemon
-    state: stopped
-
-- name: modify default transmission settings
-  lineinfile:
-    dest: /home/{{ service_user }}/.config/transmission-daemon/settings.json
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    insertafter: "^{$"
-    state: present
-  with_items:
-  - { regexp: '"incomplete-dir":', line: '"incomplete-dir":"{{ downloads_nfs_mount_path }}/in-progress",' }
-  - { regexp: '"download-dir":', line: '"download-dir":"{{ downloads_nfs_mount_path }}/done",' }
-  - { regexp: '"rpc-authentication-required":', line: '"rpc-authentication-required":"true",' }
-  - { regexp: '"rpc-username":', line: '"rpc-username":"{{ transmission_user }}",' }
-  - { regexp: '"rpc-password":', line: '"rpc-password":"{{ transmission_pass }}",' }
-  - { regexp: '"rpc-host-whitelist-enabled":', line: '"rpc-host-whitelist-enabled":"false",' }
-  - { regexp: '"rpc-whitelist":', line: '"rpc-whitelist":"",' }
-  - { regexp: '"rpc-whitelist-enabled":', line: '"rpc-whitelist-enabled":"false",' }
-  - { regexp: '"rpc-url":', line: '"rpc-url":"/transmission/",'}
-  - { regexp: '"ratio-limit":', line: '"ratio-limit":0,'}
-  - { regexp: '"umask":', line: '"umask":7,'}
-
-- name: stop transmission
-  service:
-    name: transmission-daemon
-    state: stopped
-
-- name: start transmission
-  service:
-    name: transmission-daemon
-    state: started
+- name: start container
+  docker_container:
+    name: transmission
+    image: linuxserver/transmission:latest
+    restart_policy: unless-stopped
+    network_mode: host
+    env:
+      TZ: America/Los_Angeles
+      PUID: "{{ radarr_docker_user_id | string }}"
+      PGID: "0"
+    ports:
+    - 9091:9091
+    - 51413:51413
+    - 51413:51413/udp
+    volumes:
+    - transmission_conf:/config
+    - transmission_downloads:/downloads

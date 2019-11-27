@@ -20,3 +20,9 @@
     state: latest
     update_cache: yes
   when: ansible_os_family == "RedHat"
+
+- name: install nfs common
+  yum:
+    name: nfs-utils
+    state: present
+  when: ansible_os_family == "RedHat"

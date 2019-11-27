@@ -3,7 +3,7 @@
 - name: create env
   copy:
     src: .env
-    dest: /etc/grafana.env
+    dest: /etc/dokuwiki.env
     force: no
     group: root
     owner: root
@@ -22,12 +22,12 @@
 
 - name: start container
   docker_container:
-    name: grafana
-    image: grafana/grafana:latest
+    name: dokuwiki
+    image: bitnami/dokuwiki:latest
     restart_policy: unless-stopped
-    env_file: /etc/grafana.env
-    user: "{{ grafana_docker_user_id }}:0"
+    env_file: /etc/dokuwiki.env
     ports:
-    - 80:3000
+    - 80:80
+    - 443:443
     volumes:
-    - conf:/var/lib/grafana
+    - conf:/bitnami

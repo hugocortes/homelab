@@ -5,9 +5,9 @@
   become: yes
   roles:
   - name: firewalld
-    ports:
-    - 3000/tcp
-    services: []
+    ports: []
+    services:
+    - http
+    - https
   - name: grafana
-    service_user: u_grafana
-    service_group: u_grafana
+    conf_mount: "{{ grafana_docker_path }}"
