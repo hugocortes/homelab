@@ -1,0 +1,68 @@
+---
+
+- name: mount data dir
+  mount:
+    path: /tmp/mnt
+    src: "{{ nfs_host }}:{{ data_mount }}"
+    fstype: nfs4
+    opts: defaults,proto=tcp,port=2049,rw
+    state: mounted
+
+- name: check conf exists
+  stat:
+    path: /tmp/mnt/postgresql.conf
+  register: conf
+
+- name: retrieve default conf
+  docker_container:
+    name: postgres-tmp
+    image: postgres:12
+    command: cat /usr/share/postgresql/postgresql.conf.sample
+    detach: no
+  register: default_conf
+  when: conf.stat.exists == false
+
+- name: create conf file
+  copy:
+    content: "{{ default_conf.ansible_facts.docker_container.Output }}"
+    dest: /tmp/mnt/postgresql.conf
+  when: conf.stat.exists == false
+
+- name: remove temp container
+  docker_container:
+    name: postgres-tmp
+    state: absent
+  ignore_errors: yes
+
+- name: unmount conf dir
+  mount:
+    path: /tmp/mnt
+    state: unmounted
+
+- name: create volumes
+  docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ nfs_host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+  with_items:
+  - name: data
+    mount: "{{ data_mount }}"
+
+- name: start container
+  docker_container:
+    name: postgres
+    image: postgres:12
+    restart_policy: unless-stopped
+    user: "{{ postgres_docker_user_id }}:0"
+    command:
+    - "-c 'config_file=/var/lib/postgresql/data/conf/postgresql.conf'"
+    ports:
+    - 5432:5432
+    env:
+      POSTGRES_USER: "{{ postgres_admin_user }}"
+      POSTGRES_PASSWORD: "{{ postgres_admin_pass }}"
+      PGDATA: /var/lib/postgresql/data/data
+    volumes:
+    - data:/var/lib/postgresql/data

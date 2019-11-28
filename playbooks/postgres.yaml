@@ -1,0 +1,12 @@
+---
+
+- name: configure postgres
+  hosts: postgres
+  become: yes
+  roles:
+  - name: firewalld
+    ports:
+    - 5432/tcp
+    services: []
+  - name: postgres
+    data_mount: "{{ postgres_database_path }}"
