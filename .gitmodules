@@ -1,3 +1,6 @@
 [submodule "ansible-freeipa"]
 	path = ansible-freeipa
 	url = git@github.com:freeipa/ansible-freeipa.git
+[submodule "kube"]
+	path = kubespray
+	url = git@github.com:kubernetes-sigs/kubespray.git
