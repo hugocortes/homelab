@@ -6,10 +6,18 @@
     - collectd
     - collectd-rrdtool
     state: present
+  when: ansible_os_family == "RedHat"
+
+- name: install collectd
+  apt:
+    name:
+    - collectd
+    state: present
+  when: ansible_os_family == "Debian"
 
 - name: configure settings
   lineinfile:
-    dest: /etc/collectd.conf
+    dest: "{{ '/etc/collectd/collectd.conf' if ansible_os_family == 'Debian' else '/etc/collectd.conf' }}"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
@@ -21,13 +29,13 @@
   - regexp: ^[#]?BaseDir\s
     line: BaseDir "/var/lib/collectd"
   - regexp: ^[#]?PluginDir\s
-    line: PluginDir "/usr/lib64/collectd"
+    line: "{{ 'PluginDir \"/usr/lib/collectd/\"' if ansible_os_family == 'Debian' else 'PluginDir \"/usr/lib64/collectd\"' }}"
   - regexp: ^[#]?Interval\s
     line: Interval 60
 
 - name: load plugins
   lineinfile:
-    dest: /etc/collectd.conf
+    dest: "{{ '/etc/collectd/collectd.conf' if ansible_os_family == 'Debian' else '/etc/collectd.conf' }}"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     insertafter: ^TypesDB\s
@@ -38,7 +46,7 @@
 
 - name: configure influxdb network
   blockinfile:
-    dest: /etc/collectd.conf
+    dest: "{{ '/etc/collectd/collectd.conf' if ansible_os_family == 'Debian' else '/etc/collectd.conf' }}"
     marker: "# {mark} ANSIBLE MANAGED BLOCK #"
     block: |
       <Plugin network>

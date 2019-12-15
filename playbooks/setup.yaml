@@ -19,4 +19,4 @@
     - 9100/tcp
     - 8080/tcp
     services: []
-    when: "'docker' in group_names"
+    when: "'docker' in group_names and ansible_os_family == 'Debian'"
