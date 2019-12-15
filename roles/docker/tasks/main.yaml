@@ -8,9 +8,6 @@
     - lvm2
     state: present
 
-- name: add service repos
-  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
 - name: install service
   yum:
     name:
@@ -45,14 +42,6 @@
   reboot:
     reboot_timeout: 60
   when: pip is changed
-
-- name: start watchtower
-  docker_container:
-    name: watchtower
-    image: containrrr/watchtower:latest
-    restart_policy: unless-stopped
-    volumes: 
-    - /var/run/docker.sock:/var/run/docker.sock
 
 - name: start node-exporter
   docker_container:
