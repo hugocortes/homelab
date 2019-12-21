@@ -1,0 +1,23 @@
+---
+
+- name: create volumes
+  docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ nfs_host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+  with_items:
+  - name: data
+    mount: "{{ data_mount }}"
+
+- name: start container
+  docker_container:
+    name: redis
+    image: redis:5
+    restart_policy: unless-stopped
+    user: "{{ redis_docker_user_id }}:0"
+    ports:
+    - 6379:6379
+    volumes:
+    - data:/data
