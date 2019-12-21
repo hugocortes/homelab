@@ -1,0 +1,52 @@
+---
+
+- name: configure kubernetes etcd
+  hosts: etcd
+  become: yes
+  roles:
+  - name: firewalld
+    ports:
+    - 2379-2380/tcp
+    services: []
+
+- name: configure kubernetes master
+  hosts: kube-master
+  become: yes
+  roles:
+  - name: firewalld
+    ports:
+    - 4149/tcp
+    - 6443/tcp
+    - 10251/tcp
+    - 10252/tcp
+    - 10256/tcp
+    services:
+    - https
+
+- name: configure kubernetes nodes
+  hosts: kubernetes
+  become: yes
+  roles:
+  - name: firewalld
+    ports:
+    - 30000-32767/tcp
+    - 10250/tcp
+    - 10255/tcp
+    - 6783/tcp
+    # flannel
+    - 8285/udp
+    - 8472/udp
+    services: []
+
+- name: disable firewalld for worker nodes
+  hosts: kube-node
+  become: yes
+  tasks:
+  - name: disable firewalld
+    service:
+      name: firewalld
+      enabled: no
+  - name: stop firewalld
+    service:
+      name: firewalld
+      state: stopped

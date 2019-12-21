@@ -16,12 +16,6 @@
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
   notify: restart ssh
 
-- name: install epel release
-  yum:
-    name: epel-release
-    state: present
-  when: ansible_os_family == "RedHat"
-
 - name: install fail2ban
   yum:
     name:
@@ -30,18 +24,6 @@
     state: present
   notify: ensure fail2ban is running
   when: ansible_os_family == "RedHat"
-
-- name: install fail2ban
-  apt:
-    name:
-    - fail2ban
-    state: present
-  notify: ensure fail2ban is running
-  when: ansible_os_family == "Debian"
-
-- name: enable ldap folder
-  shell: echo 'session required pam_mkhomedir.so' >> /etc/pam.d/common-session
-  when: ansible_os_family == "Debian"
 
 - name: fail2ban sshban jail
   blockinfile:

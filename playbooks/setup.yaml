@@ -1,7 +1,7 @@
 ---
 
 - name: initialize the server
-  hosts: all
+  hosts: servers
   become: yes
   roles:
   - name: update
@@ -12,7 +12,6 @@
     tags: collectd
     when: "'docker' not in group_names"
   - name: docker
-    service_user: u_docker
     when: "'docker' in group_names"
   - name: firewalld
     ports:

@@ -3,7 +3,7 @@
 - name: mount conf dir
   mount:
     path: /tmp/mnt
-    src: "{{ nfs_host }}:{{ conf_mount }}"
+    src: "{{ nfs_host }}:{{ data_mount }}/conf"
     fstype: nfs4
     opts: defaults,proto=tcp,port=2049,rw
     state: mounted
@@ -77,11 +77,11 @@
       o: "addr={{ nfs_host }},vers=4,tcp,rw,port=2049"
   with_items:
   - name: conf
-    mount: "{{ conf_mount }}/influxdb"
+    mount: "{{ data_mount }}/conf/influxdb"
   - name: conf_collectd
-    mount: "{{ conf_mount }}/collectd"
+    mount: "{{ data_mount }}/conf/collectd"
   - name: data
-    mount: "{{ data_mount }}"
+    mount: "{{ data_mount }}/data"
 
 - name: start container
   docker_container:

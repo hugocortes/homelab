@@ -53,6 +53,11 @@
         Server "{{ influxdb_host }}" "{{ influxdb_port }}"
       </Plugin>
 
+- name: enable service
+  service:
+    name: collectd
+    enabled: yes
+
 - name: restart collectd
   service:
     name: collectd

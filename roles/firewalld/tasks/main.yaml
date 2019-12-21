@@ -9,9 +9,16 @@
 - name: set eth0 as dmz interface
   firewalld:
     zone: dmz
-    interface: eth0
+    interface: "{{ interface if interface is defined else 'eth0' }}"
     permanent: yes
     state: enabled
+
+- name: enable masquerade for kubernetes
+  firewalld:
+    masquerade: "yes"
+    permanent: yes
+    state: enabled
+  when: "'kubernetes' in group_names"
 
 - name: enable custom ports on dmz
   firewalld:

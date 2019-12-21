@@ -9,7 +9,6 @@
     services:
     - http
   - name: prometheus
-    conf_mount: "{{ prometheus_docker_path }}"
     data_mount: "{{ prometheus_database_path }}"
   vars:
     docker_hosts: "{{ groups['docker'] | map('extract', hostvars, 'ansible_host') | list }}"

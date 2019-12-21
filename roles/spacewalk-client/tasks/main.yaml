@@ -56,9 +56,6 @@
     shell: mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/backup
     ignore_errors: yes
 
-  - name: clean yum
-    shell: yum clean all && yum clean metadata && yum repolist all
-
   - name: configure yum rhn plugin
     lineinfile:
       dest: /etc/yum/pluginconf.d/rhnplugin.conf
@@ -70,6 +67,10 @@
       line: gpgcheck = 0
     - regexp: ^enabled
       line: enabled = 1
+
+  - name: clean yum
+    shell: yum clean all && yum clean metadata && yum clean headers && yum clean packages && yum repolist all
+
   when: ansible_os_family == "RedHat"
 
 - name: enable osad
@@ -81,5 +82,5 @@
 - name: enable rhnsd
   service:
     name: rhnsd
-    state: started
-    enabled: yes
+    state: stopped
+    enabled: no
