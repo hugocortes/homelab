@@ -1,0 +1,18 @@
+---
+
+- name: start container
+  docker_container:
+    name: keycloak
+    image: jboss/keycloak
+    restart_policy: unless-stopped
+    ports:
+    - 80:8080
+    env:
+      # KEYCLOAK_USER: "{{ keycloak_user }}"
+      # KEYCLOAK_PASSWORD: "{{ keycloak_pass }}"
+      DB_VENDOR: postgres
+      DB_ADDR: "{{ postgres_host }}"
+      DB_PORT: "{{ postgres_port | string }}"
+      DB_DATABASE: "{{ keycloak_db }}"
+      DB_USER: "{{ keycloak_db_user }}"
+      DB_PASSWORD: "{{ keycloak_db_pass }}"

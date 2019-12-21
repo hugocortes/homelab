@@ -1,0 +1,12 @@
+---
+
+- name: configure keycloak
+  hosts: keycloak
+  become: yes
+  roles:
+  - name: firewalld
+    ports: []
+    services:
+    - http
+    - https
+  - name: keycloak
