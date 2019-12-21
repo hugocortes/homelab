@@ -1,0 +1,7 @@
+---
+
+- name: secure freeipa clients
+  hosts: ipaclients,ipaserver
+  become: yes
+  roles:
+  - name: freeipa-client

@@ -1,0 +1,16 @@
+---
+
+- name: enable ldap folder
+  shell: echo 'session required pam_mkhomedir.so' >> /etc/pam.d/common-session
+  when: ansible_os_family == "Debian"
+
+- name: disable root authentication
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
+    - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+  notify: restart ssh
