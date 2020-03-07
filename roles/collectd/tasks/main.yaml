@@ -43,14 +43,27 @@
   with_items:
   - regexp: '^LoadPlugin network$'
     line: LoadPlugin network
+  - regexp: '^LoadPlugin df$'
+    line: LoadPlugin df
+  - regexp: '^LoadPlugin fhcount$'
+    line: LoadPlugin fhcount
 
 - name: configure influxdb network
   blockinfile:
     dest: "{{ '/etc/collectd/collectd.conf' if ansible_os_family == 'Debian' else '/etc/collectd.conf' }}"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK #"
+    marker: "# {mark}-network ANSIBLE MANAGED BLOCK #"
     block: |
       <Plugin network>
         Server "{{ influxdb_host }}" "{{ influxdb_port }}"
+      </Plugin>
+
+- name: configure df plugin
+  blockinfile:
+    dest: "{{ '/etc/collectd/collectd.conf' if ansible_os_family == 'Debian' else '/etc/collectd.conf' }}"
+    marker: "# {mark}-df ANSIBLE MANAGED BLOCK #"
+    block: |
+      <Plugin df>
+        ReportInodes true
       </Plugin>
 
 - name: enable service

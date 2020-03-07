@@ -10,7 +10,6 @@
   - zsh
   - name: collectd
     tags: collectd
-    when: "'docker' not in group_names"
   - name: docker
     when: "'docker' in group_names"
   - name: firewalld

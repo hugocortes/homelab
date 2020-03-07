@@ -13,4 +13,4 @@
   with_items:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
-  notify: restart ssh
+  notify: reboot machine

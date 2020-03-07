@@ -10,3 +10,7 @@
     name: fail2ban
     state: started
     enabled: yes
+
+- name: reboot machine
+  reboot:
+    reboot_timeout: 300

@@ -5,6 +5,7 @@
     user: "{{ ansible_user }}"
     key: "{{ server_ssh_keys_url }}"
     state: present
+  when: ansible_user == "root"
 
 - name: disable ssh password authentication
   lineinfile:
