@@ -27,10 +27,10 @@
       GRAYLOG_ELASTICSEARCH_HOSTS: "{{ graylog_es_hosts }}"
     ports:
     - 9000:9000
-    - 12201:12201
-    - 12201:12201/udp
-    - 1514:1514
+    # - 12201:12201
+    # - 12201:12201/udp
     - 514:514/udp
+    - 515:515/udp
     volumes:
     - conf:/usr/share/graylog/data/journal
     - content:/usr/share/graylog/data/content

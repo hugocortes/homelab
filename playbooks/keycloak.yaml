@@ -10,3 +10,4 @@
     - http
     - https
   - name: keycloak
+    conf_mount: "{{ keycloak_docker_path }}"

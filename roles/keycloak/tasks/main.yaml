@@ -1,18 +1,36 @@
 ---
 
+- name: create volumes
+  docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ nfs_host }},vers=4,tcp,rw,port=2049"
+  with_items:
+  - name: conf
+    mount: "{{ conf_mount }}"
+
 - name: start container
   docker_container:
     name: keycloak
     image: jboss/keycloak
     restart_policy: unless-stopped
+    user: "{{ keycloak_docker_user_id }}:0"
     ports:
     - 80:8080
+    - 443:8443
     env:
       # KEYCLOAK_USER: "{{ keycloak_user }}"
       # KEYCLOAK_PASSWORD: "{{ keycloak_pass }}"
+      PROXY_ADDRESS_FORWARDING: "true"
+      KEYCLOAK_HTTP_PORT: "8080"
+      KEYCLOAK_HTTPS_PORT: "8443"
       DB_VENDOR: postgres
       DB_ADDR: "{{ postgres_host }}"
       DB_PORT: "{{ postgres_port | string }}"
       DB_DATABASE: "{{ keycloak_db }}"
       DB_USER: "{{ keycloak_db_user }}"
       DB_PASSWORD: "{{ keycloak_db_pass }}"
+    volumes:
+    - conf:/etc/x509/https
