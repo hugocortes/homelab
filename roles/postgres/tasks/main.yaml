@@ -67,3 +67,15 @@
       PGUSER: postgres
     volumes:
     - data:/var/lib/postgresql/data
+
+- name: start exporter container
+  docker_container:
+    name: postgresql-metrics
+    image: wrouesnel/postgres_exporter
+    restart_policy: unless-stopped
+    ports:
+    - 9187:9187
+    env:
+      DATA_SOURCE_URI: "{{ postgres_host }}:{{ postgres_port }}/?sslmode=disable"
+      DATA_SOURCE_USER: "{{ postgres_admin_user }}"
+      DATA_SOURCE_PASS: "{{ postgres_admin_pass }}"

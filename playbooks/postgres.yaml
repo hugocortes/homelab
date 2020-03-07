@@ -7,6 +7,7 @@
   - name: firewalld
     ports:
     - 5432/tcp
+    - 9187/tcp
     services: []
   - name: postgres
     data_mount: "{{ postgres_database_path }}"
