@@ -47,14 +47,19 @@
     when: "'kubernetes' in group_names"
     ignore_errors: yes
 
-  - name: ensure repo backup dir exists
-    file:
-      path: /etc/yum.repos.d/backup
-      state: directory
+  - name: find all yum repos
+    find:
+      paths: /etc/yum.repos.d/
+      patterns: "*.repo"
+    register: repos
 
-  - name: move repos into backup
-    shell: mv /etc/yum.repos.d/*.repo /etc/yum.repos.d/backup
-    ignore_errors: yes
+  - name: disable all repos
+    lineinfile:
+      dest: "{{ item.path }}"
+      regexp: "^enabled=1"
+      line: "enabled=0"
+      state: present
+    with_items: "{{ repos.files }}"
 
   - name: configure yum rhn plugin
     lineinfile:
@@ -68,8 +73,15 @@
     - regexp: ^enabled
       line: enabled = 1
 
+  - name: disable additional repos
+    command: "yum-config-manager --disable {{ item }}"
+    with_items:
+    - CentOS-7 - Base
+    - CentOS-7 - Extras
+    - CentOS-7 - Updates
+
   - name: clean yum
-    shell: yum clean all && yum clean metadata && yum clean headers && yum clean packages && yum repolist all
+    shell: yum clean all && yum clean metadata && yum clean headers && yum clean packages && yum repolist
 
   when: ansible_os_family == "RedHat"
 
@@ -79,8 +91,14 @@
     state: started
     enabled: yes
 
-- name: enable rhnsd
+# - name: enable rhnsd
+#   service:
+#     name: rhnsd
+#     state: stopped
+#     enabled: no
+
+- name: enable rhnsd timer
   service:
-    name: rhnsd
-    state: stopped
-    enabled: no
+    name: rhnsd.timer
+    state: started
+    enabled: yes

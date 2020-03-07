@@ -4,19 +4,21 @@
   become: true
   apt:
     upgrade: "yes"
-    update_cache: yes
     cache_valid_time: 86400
   when: ansible_os_family == "Debian"
 
+- name: clean spacewalk repos
+  shell: yum clean all && yum clean metadata && yum clean headers && yum clean packages && yum repolist
+  when: ansible_os_family == "RedHat" and "spacewalkclients" in group_names
+
+- name: update all packages
+  command: yum update -y
+  when: ansible_os_family == "RedHat"
+
 - name: upgrade all packages
-  yum:
-    name: '*'
-    state: latest
-    update_cache: yes
+  command: yum upgrade
   when: ansible_os_family == "RedHat"
 
 - name: install nfs common
-  yum:
-    name: nfs-utils
-    state: present
+  command: yum install nfs-utils -y
   when: ansible_os_family == "RedHat"
