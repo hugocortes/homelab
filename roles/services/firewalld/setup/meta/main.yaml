@@ -2,4 +2,4 @@
 
 dependencies:
 - role: global
-- role: firewalld/setup
+- role: services/firewalld
