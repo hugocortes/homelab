@@ -1,0 +1,140 @@
+---
+
+- name: install spacewalk on centos
+  block:
+  - name: install spacewalk server ca
+    yum:
+      name: "http://{{ spacewalk_hostname }}/pub/rhn-org-trusted-ssl-cert-1.0-2.noarch.rpm"
+      state: present
+      disable_gpg_check: yes
+
+  - name: configure centos 8
+    block:
+    - name: add spacewalk client repo for centos8
+      yum_repository:
+        name: spacewalk-client
+        description: Spacewalk Client EPEL
+        baseurl: https://copr-be.cloud.fedoraproject.org/results/%40spacewalkproject/nightly/epel-8-x86_64
+        gpgcheck: no
+
+    - name: install dependencies
+      dnf:
+        name:
+        - rhn-client-tools
+        - rhn-check
+        - rhn-setup
+        - rhnsd
+        - yum-rhn-plugin
+        - osad
+        state: present
+
+    - name: register to centos channel
+      rhn_register:
+        state: present
+        activationkey: 1-centos8-base
+        server_url: https://{{ spacewalk_hostname }}/XMLRPC
+      when: not is_docker and not is_kubernetes
+      ignore_errors: yes
+
+    - name: configure spacewalk repo plugin
+      lineinfile:
+        dest: /etc/yum/pluginconf.d/spacewalk.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+      - regexp: ^gpgcheck
+        line: gpgcheck = 0
+      - regexp: ^enabled
+        line: enabled = 1
+
+    - name: enable rhnsd
+      service:
+        name: rhnsd
+        state: started
+        enabled: yes
+    when: is_centos_8
+
+  - name: configure centos 7
+    block:
+    - name: add spacewalk client repo for centos7
+      yum_repository:
+        name: spacewalk-client
+        description: Spacewalk Client EPEL
+        baseurl: https://copr-be.cloud.fedoraproject.org/results/%40spacewalkproject/spacewalk-2.9-client/epel-7-x86_64/repodata/repomd.xml
+        gpgcheck: no
+
+    - name: install dependencies
+      yum:
+        name:
+        - rhn-client-tools
+        - rhn-check
+        - rhn-setup
+        - rhnsd
+        - yum-rhn-plugin
+        - m2crypto
+        - osad
+        state: present
+
+    - name: register to centos channel
+      rhn_register:
+        state: present
+        activationkey: 1-centos7-base
+        server_url: https://{{ spacewalk_hostname }}/XMLRPC
+      when: not is_docker and not is_kubernetes and not run_bastion_setup
+      ignore_errors: yes
+
+    - name: register to docker channel
+      rhn_register:
+        state: present
+        activationkey: 1-centos7-docker
+        server_url: https://{{ spacewalk_hostname }}/XMLRPC
+      when: is_docker
+      ignore_errors: yes
+
+    - name: register to kubernetes channel
+      rhn_register:
+        state: present
+        activationkey: 1-centos7-kubernetes
+        server_url: https://{{ spacewalk_hostname }}/XMLRPC
+      when: is_kubernetes
+      ignore_errors: yes
+
+    - name: register to duo channel
+      rhn_register:
+        state: present
+        activationkey: 1-centos7-duo
+        server_url: https://{{ spacewalk_hostname }}/XMLRPC
+      when: run_bastion_setup
+      ignore_errors: yes
+
+    - name: configure yum rhn plugin
+      lineinfile:
+        dest: /etc/yum/pluginconf.d/rhnplugin.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+      - regexp: ^gpgcheck
+        line: gpgcheck = 0
+      - regexp: ^enabled
+        line: enabled = 1
+
+    - name: enable rhnsd timer
+      service:
+        name: rhnsd.timer
+        state: started
+        enabled: yes
+    when: is_centos_7
+
+  - name: disable sapcewalk client repo
+    yum_repository:
+      name: spacewalk-client
+      state: absent
+
+  - name: enable osad
+    service:
+      name: osad
+      state: started
+      enabled: yes
+  when: is_centos

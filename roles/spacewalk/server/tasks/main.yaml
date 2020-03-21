@@ -41,5 +41,3 @@
     - spacewalk-postgresql 
     - osa-dispatcher
     state: present
-
-# https://watson-wilson.ca/blog/2015/12/08/spacewalk/
