@@ -1,0 +1,29 @@
+---
+
+- name: enable firewalld service
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+  when: not is_kubernetes
+  listen: enable firewalld
+
+- name: firewalld reload
+  command: firewall-cmd --runtime-to-permanent
+  listen: enable firewalld
+
+- name: restart firewalld
+  service:
+    name: firewalld
+    state: restarted
+    enabled: yes
+  when: not is_kubernetes
+  listen: enable firewalld
+
+- name: stop firewalld
+  service:
+    name: firewalld
+    state: stopped
+    enabled: no
+  when: is_kubernetes
+  listen: enable firewalld

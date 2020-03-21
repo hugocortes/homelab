@@ -1,0 +1,18 @@
+---
+
+- name: install dependencies
+  yum:
+    name:
+    - duo_unix
+    state: present
+
+- name: configure duo settings
+  lineinfile:
+    dest: /etc/duo/login_duo.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+  - { regexp: ^ikey =, line: "ikey = {{ duo_ikey }}" }
+  - { regexp: ^skey =, line: "skey = {{ duo_skey }}" }
+  - { regexp: ^host =, line: "host = {{ duo_host }}" }

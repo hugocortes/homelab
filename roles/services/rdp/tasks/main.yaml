@@ -1,0 +1,17 @@
+---
+
+- name: configure rdp on centos8
+  block:
+  - name: rdp - install dependencies
+    yum:
+      name:
+      - tigervnc-server
+      - xrdp
+      state: present
+
+  - name: rdp - enable vnc server service
+    service:
+      name: xrdp
+      state: started
+      enabled: yes
+  when: is_centos_8 and run_rdp_setup

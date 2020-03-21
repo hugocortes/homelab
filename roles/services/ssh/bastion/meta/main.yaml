@@ -1,0 +1,5 @@
+---
+
+dependencies:
+- role: global
+- role: services/ssh

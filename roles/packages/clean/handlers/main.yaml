@@ -1,0 +1,29 @@
+---
+
+- name: dnf clean
+  command: dnf clean all
+  listen: clean repos
+  args:
+    warn: no
+  when: is_centos_8
+
+- name: dnf repolist
+  command: dnf repolist
+  listen: clean repos
+  args:
+    warn: no
+  when: is_centos_8
+
+- name: yum clean
+  command: yum clean all
+  listen: clean repos
+  args:
+    warn: no
+  when: is_centos_7
+
+- name: yum repolist
+  command: yum repolist
+  listen: clean repos
+  args:
+    warn: no
+  when: is_centos_7

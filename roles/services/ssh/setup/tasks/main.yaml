@@ -1,0 +1,46 @@
+---
+
+- name: only allow bastion user from bastion host
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    marker: "# {mark}-duo-bastion"
+    block: |
+      Match User *,!{{ bastion_user }} Address {{ bastion_host }}
+        ForceCommand /bin/false
+  notify: restart ssh
+
+- name: secure ssh access
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
+    - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+  notify: restart ssh
+
+- name: install fail2ban
+  yum:
+    name:
+    - fail2ban
+    - fail2ban-systemd
+    state: present
+  notify: enable fail2ban
+  when: is_centos
+
+- name: fail2ban sshban jail
+  blockinfile:
+    dest: /etc/fail2ban/jail.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK #"
+    block: |
+      [sshban]
+      enabled   = true
+      port      = ssh
+      logpath   = %(sshd_log)s
+      banaction = iptables-allports
+      maxretry  = 10
+      bantime   = 86400
+      filter    = sshd
+  notify: restart fail2ban
+  when: is_centos

@@ -1,0 +1,77 @@
+---
+
+- name: install collectd on centos
+  yum:
+    name:
+    - collectd
+    - collectd-rrdtool
+    state: present
+  when: is_centos
+
+- name: install collectd on debian
+  apt:
+    name:
+    - collectd
+    state: present
+  when: is_debian
+
+- name: configure settings
+  lineinfile:
+    dest: "{{ '/etc/collectd/collectd.conf' if is_debian else '/etc/collectd.conf' }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+  - regexp: Hostname\s
+    line: Hostname "{{ inventory_hostname }}"
+  - regexp: TypesDB\s
+    line: TypesDB "/usr/share/collectd/types.db"
+  - regexp: ^[#]?BaseDir\s
+    line: BaseDir "/var/lib/collectd"
+  - regexp: ^[#]?PluginDir\s
+    line: "{{ 'PluginDir \"/usr/lib/collectd/\"' if is_debian else 'PluginDir \"/usr/lib64/collectd\"' }}"
+  - regexp: ^[#]?Interval\s
+    line: Interval 60
+
+- name: load plugins
+  lineinfile:
+    dest: "{{ '/etc/collectd/collectd.conf' if is_debian else '/etc/collectd.conf' }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: ^TypesDB\s
+    state: present
+  with_items:
+  - regexp: ^LoadPlugin network$
+    line: LoadPlugin network
+  - regexp: ^LoadPlugin df$
+    line: LoadPlugin df
+  - regexp: ^LoadPlugin fhcount$
+    line: LoadPlugin fhcount
+
+- name: configure network plugin with influxdb
+  blockinfile:
+    dest: "{{ '/etc/collectd/collectd.conf' if is_debian else '/etc/collectd.conf' }}"
+    marker: "# {mark}-network ANSIBLE MANAGED BLOCK #"
+    block: |
+      <Plugin network>
+        Server "{{ influxdb_hostname }}" "{{ influxdb_port }}"
+      </Plugin>
+
+- name: configure df plugin
+  blockinfile:
+    dest: "{{ '/etc/collectd/collectd.conf' if is_debian else '/etc/collectd.conf' }}"
+    marker: "# {mark}-df ANSIBLE MANAGED BLOCK #"
+    block: |
+      <Plugin df>
+        ReportInodes true
+      </Plugin>
+
+- name: enable collectd
+  service:
+    name: collectd
+    enabled: yes
+
+- name: restart collectd
+  service:
+    name: collectd
+    state: restarted

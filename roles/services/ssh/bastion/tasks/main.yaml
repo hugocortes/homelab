@@ -1,0 +1,58 @@
+---
+
+- name: setup bastion
+  block:
+  - name: bastion - configure external matchers
+    blockinfile:
+      dest: /etc/ssh/sshd_config
+      marker: "# {mark}-duo-external"
+      block: |
+        Match Address 192.168.*.*,10.0.*.*
+          AllowTcpForwarding yes
+        Match User {{ bastion_user }} Address *,!192.168.*.*,!10.0.*.*
+          ForceCommand /usr/sbin/login_duo
+          AllowTcpForwarding yes
+        Match User *,!{{ bastion_user }} Address *,!192.168.*.*,!10.0.*.*
+          ForceCommand /bin/false
+    notify: restart ssh
+
+  - name: bastion - change ssh port
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: ^#?Port
+      line: "Port {{ bastion_port }}"
+      state: present
+    notify: restart ssh
+
+  - name: bastion - change selinux ssh port
+    seport:
+      ports: "{{ bastion_port }}"
+      proto: tcp
+      setype: ssh_port_t
+      state: present
+    when: is_centos
+    notify: restart ssh
+
+  - name: bastion - allow port through firewalld
+    firewalld:
+      zone: public
+      state: enabled
+      port: "{{ item.port }}"
+      permanent: "{{ item.permanent }}"
+    with_items:
+    - port: "{{ bastion_port }}/tcp"
+      permanent: no
+    - port: "{{ bastion_port }}/tcp"
+      permanent: yes
+
+  - name: bastion - additional ssh settings
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: present
+    with_items:
+    - { regexp: "^#?PermitTunnel", line: "PermitTunnel no" }
+    - { regexp: "^#?AllowTcpForwarding", line: "AllowTcpForwarding no" }
+    notify: restart ssh
+  when: run_bastion_setup

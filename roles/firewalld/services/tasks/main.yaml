@@ -1,0 +1,190 @@
+---
+
+- name: configure centos firewalld
+  block:
+  - name: allow freeipa server through firewalld
+    block:
+    - name: freeipa server - enable services
+      firewalld:
+        zone: public
+        state: enabled
+        service: "{{ item.service }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - service: http
+        permanent: no
+      - service: http
+        permanent: yes
+      - service: https
+        permanent: no
+      - service: https
+        permanent: yes
+      - service: ldap
+        permanent: no
+      - service: ldap
+        permanent: yes
+      - service: ldaps
+        permanent: no
+      - service: ldaps
+        permanent: yes
+      - service: kerberos
+        permanent: no
+      - service: kerberos
+        permanent: yes
+      - service: kpasswd
+        permanent: no
+      - service: kpasswd
+        permanent: yes
+      - service: ntp
+        permanent: no
+      - service: ntp
+        permanent: yes
+      notify: enable firewalld
+    when: "'ipaserver' in group_names"
+
+  - name: allow spacewalk server through firealld
+    block:
+    - name: spacewalk server - enable services
+      firewalld:
+        zone: public
+        state: enabled
+        service: "{{ item.service }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - service: http
+        permanent: no
+      - service: http
+        permanent: yes
+      - service: https
+        permanent: no
+      - service: https
+        permanent: yes
+      - service: tftp
+        permanent: no
+      - service: tftp
+        permanent: yes
+      notify: enable firewalld
+
+    - name: spacewalk server - enable ports
+      firewalld:
+        zone: public
+        state: enabled
+        port: "{{ item.port }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - port: 5222/tcp
+        permanent: no
+      - port: 5222/tcp
+        permanent: yes
+      - port: 4545/tcp
+        permanent: no
+      - port: 4545/tcp
+        permanent: yes
+      notify: enable firewalld
+    when: "'spacewalkserver' in group_names"
+
+  - name: allow spacewalk client through firewalld
+    block:
+    - name: spacewalk client - enable services
+      firewalld:
+        zone: public
+        state: enabled
+        service: "{{ item.service }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - service: ssh
+        permanent: no
+      - service: ssh
+        permanent: yes
+      notify: enable firewalld
+    - name: spacewalk client - enable ports
+      firewalld:
+        zone: public
+        state: enabled
+        port: "{{ item.port }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - port: 5222/tcp
+        permanent: no
+      - port: 5222/tcp
+        permanent: yes
+      notify: enable firewalld
+    when: "'spacewalkclients' in group_names"
+
+  - name: allow docker monitoring through firewalld
+    block:
+    - name: docker monitoring - enable ports
+      firewalld:
+        zone: public
+        state: enabled
+        port: "{{ item.port }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - port: 9100/tcp
+        permanent: no
+      - port: 9100/tcp
+        permanent: yes
+      - port: 8080/tcp
+        permanent: no
+      - port: 8080/tcp
+        permanent: yes
+      notify: enable firewalld
+    when: is_docker
+
+  - name: allow docker guacamole through firewalld
+    block:
+    - name: docker guacamole - enable services
+      firewalld:
+        zone: public
+        state: enabled
+        service: "{{ item.service }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - service: http
+        permanent: no
+      - service: http
+        permanent: yes
+    when: run_guacamole_install
+
+  - name: allow docker postgresql through firewalld
+    block:
+    - name: docker postgresql - enable services
+      firewalld:
+        zone: public
+        state: enabled
+        service: "{{ item.service }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - service: postgresql
+        permanent: no
+      - service: postgresql
+        permanent: yes
+
+    - name: docker postgresql - enable ports
+      firewalld:
+        zone: public
+        state: enabled
+        port: "{{ item.port }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - port: 9187/tcp
+        permanent: no
+      - port: 9187/tcp
+        permanent: yes
+    when: run_postgresql_install
+
+  - name: allow xrdp through firewalld
+    block:
+    - name: xrdp - enable ports
+      firewalld:
+        zone: public
+        state: enabled
+        port: "{{ item.port }}"
+        permanent: "{{ item.permanent }}"
+      with_items:
+      - port: 3389/tcp
+        permanent: no
+      - port: 3389/tcp
+        permanent: yes
+    when: run_rdp_setup
+  when: is_centos

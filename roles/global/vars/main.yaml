@@ -1,0 +1,13 @@
+---
+
+is_centos_8: "{{ (ansible_distribution_version | regex_search('^8')) != None }}"
+is_centos_7: "{{ (ansible_distribution_version | regex_search('^7')) != None }}"
+is_centos: "{{ is_centos_7 or is_centos_8 }}"
+is_debian: "{{ ansible_os_family == 'Debian' }}"
+is_docker: "{{ 'docker' in group_names }}"
+is_kubernetes: "{{ 'kubernetes' in group_names }}"
+run_bastion_setup: "{{ setup_bastion | default('false') | bool }}"
+run_rdp_setup: "{{ setup_rdp | default('false') | bool }}"
+run_postgresql_install: "{{ install_postgresql | default('false') | bool }}"
+run_guacamole_setup: "{{ setup_guacamole | default('false') | bool }}"
+run_guacamole_install: "{{ install_guacamole | default('false') | bool }}"

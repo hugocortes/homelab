@@ -1,7 +1,0 @@
----
-
-- name: install zsh
-  yum:
-    name: zsh
-    state: latest
-  when: ansible_os_family == "RedHat"
