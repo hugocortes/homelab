@@ -1,0 +1,10 @@
+---
+
+- name: reboot
+  reboot:
+    reboot_timeout: 60
+
+- name: wait for reboot
+  wait_for_connection:
+    delay: "{{ reboot.min_wait_time }}"
+    timeout: "{{ reboot.max_wait_time }}"

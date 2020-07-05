@@ -1,0 +1,11 @@
+---
+
+- name: set inventory facts
+  include_tasks: facts/inventory.yaml
+
+- name: verify ssh user
+  include_tasks: ipa.yaml
+
+- name: set system facts
+  include_tasks: facts/system.yaml
+  when: ansible_distribution_version is defined

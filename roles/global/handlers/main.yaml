@@ -1,13 +1,9 @@
 ---
 
-- name: reboot
-  shell: "sleep 1 && shutdown -r now +1"
-  async: 1
-  poll: 0
-  notify:
-    - wait for reboot
+- name: reset ansible_user
+  include_tasks: ipa.yaml
+  listen: reset ansible_user
 
-- name: wait for reboot
-  wait_for_connection:
-    delay: "{{ reboot_min_wait_time }}"
-    timeout: "{{ reboot_max_wait_time }}"
+- name: reboot
+  include_tasks: reboot.yaml
+  listen: reboot
