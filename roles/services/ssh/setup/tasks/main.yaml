@@ -1,15 +1,36 @@
 ---
 
-- name: only allow bastion user from bastion host
+- name: only allow bastion user from bastion host for internal machines
   blockinfile:
     dest: /etc/ssh/sshd_config
     marker: "# {mark}-duo-bastion"
     block: |
       Match User *,!{{ bastion_user }} Address {{ bastion_host }}
         ForceCommand /bin/false
+  when: is_internal
   notify: restart ssh
 
-- name: secure ssh access
+- name: block bastion host from non internal machines
+  blockinfile:
+    dest: /etc/ssh/sshd_config
+    marker: "# {mark}-block-bastion"
+    block: |
+      Match Address {{ bastion.host }}
+        ForceCommand /bin/false
+  when: not is_internal
+  notify: restart ssh
+
+- name: disable root login for all machines
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+  notify: restart ssh
+
+- name: secure ssh access for internal machines
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
@@ -17,30 +38,38 @@
     state: present
   with_items:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
-    - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+    - { regexp: "^ChallengeResponseAuthentication", line: "ChallengeResponseAuthentication no" }
+  when: is_internal
   notify: restart ssh
 
-- name: install fail2ban
-  yum:
-    name:
-    - fail2ban
-    - fail2ban-systemd
-    state: present
-  notify: enable fail2ban
-  when: is_centos
+- name: centos - fail2ban
+  block:
+  - name: centos - install epel-release
+    yum:
+      name:
+      - epel-release
+      state: latest
 
-- name: fail2ban sshban jail
-  blockinfile:
-    dest: /etc/fail2ban/jail.conf
-    marker: "# {mark} ANSIBLE MANAGED BLOCK #"
-    block: |
-      [sshban]
-      enabled   = true
-      port      = ssh
-      logpath   = %(sshd_log)s
-      banaction = iptables-allports
-      maxretry  = 10
-      bantime   = 86400
-      filter    = sshd
-  notify: restart fail2ban
+  - name: centos - install fail2ban
+    yum:
+      name:
+      - fail2ban
+      - fail2ban-systemd
+      state: latest
+    notify: enable fail2ban
+
+  - name: centos - configure fail2ban jail
+    blockinfile:
+      dest: /etc/fail2ban/jail.conf
+      marker: "# {mark} ANSIBLE MANAGED BLOCK #"
+      block: |
+        [sshban]
+        enabled   = true
+        port      = ssh
+        logpath   = %(sshd_log)s
+        banaction = iptables-allports
+        maxretry  = 10
+        bantime   = 86400
+        filter    = sshd
+    notify: restart fail2ban
   when: is_centos
