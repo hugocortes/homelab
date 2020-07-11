@@ -1,22 +1,9 @@
 ---
 
-- name: debian system update
-  block:
-  - name: debian - update
-    apt:
-      name: "*"
-      state: latest
-  - name: debian - upgrade
-    apt:
-      upgrade: yes
-      update_cache: yes
+- name: debian | update apt packages
+  include_tasks: apt.yaml
   when: is_debian
 
-- name: centos system update
-  block:
-  - name: centos - update
-    yum:
-      name: "*"
-      state: latest
-    ignore_errors: yes
+- name: centos | update yum packages
+  include_tasks: yum.yaml
   when: is_centos

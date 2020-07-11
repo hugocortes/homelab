@@ -1,0 +1,22 @@
+---
+
+- name: centos | install yum packages
+  become: yes
+  yum:
+    name:
+    - nfs-utils
+    - sshpass
+    - python3-pip
+    - python2-pip
+    state: latest
+  when: is_centos
+
+- name: debian | install apt packages
+  apt:
+    name:
+    - nfs-common
+    - sshpass
+    - python3-pip
+    - tree        # display directory tree
+    state: latest
+  when: is_debian

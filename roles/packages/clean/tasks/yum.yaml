@@ -1,0 +1,11 @@
+---
+
+- name: centos7 | yum clean
+  command: yum clean all
+  args:
+    warn: no
+
+- name: centos7 | yum repolist
+  command: yum repolist
+  args:
+    warn: no

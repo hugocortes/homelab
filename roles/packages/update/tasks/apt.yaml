@@ -1,0 +1,12 @@
+---
+
+- name: debian | update apt packages
+  apt:
+    name: "*"
+    state: latest
+  notify: reboot
+
+- name: debian | upgrade apt packages
+  apt:
+    upgrade: "yes"
+    update_cache: yes

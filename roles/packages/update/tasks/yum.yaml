@@ -1,0 +1,10 @@
+---
+
+- name: centos | update yum packages
+  yum:
+    name: "*"
+    state: latest
+  ignore_errors: is_spacewalk_client
+
+- name: update pip
+  command: pip install --upgrade pip

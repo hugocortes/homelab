@@ -1,0 +1,11 @@
+---
+
+- name: centos8 | dnf clean
+  command: dnf clean all
+  args:
+    warn: no
+
+- name: centos8 | dnf repolist
+  command: dnf repolist
+  args:
+    warn: no

@@ -1,37 +1,5 @@
 ---
 
-- name: find all yum repos
-  find:
-    paths:
-    - /etc/yum.repos.d/
-    patterns: "*.repo"
-  register: repos
-
-- name: disable all repos
-  lineinfile:
-    dest: "{{ item.path }}"
-    regexp: "^enabled=1"
-    line: "enabled=0"
-    state: present
-  with_items: "{{ repos.files }}"
-  notify: clean repos
-
-- name: disable additional repos
-  command: "yum-config-manager --disable {{ item }}"
-  with_items:
-  - CentOS-7 - Base
-  - CentOS-7 - Extras
-  - CentOS-7 - Updates
-  when: is_centos_7
-  notify: clean repos
-
-- name: disable additional repos
-  yum_repository:
-    name: "{{ item }}"
-    state: absent
-  with_items:
-  - CentOS-8 - AppStream
-  - CentOS-8 - Base
-  - CentOS-8 - Extras
-  when: is_centos_8
-  notify: clean repos
+- name: centos | disable yum
+  include_tasks: centos.yaml
+  when: is_centos
