@@ -1,20 +1,19 @@
 ---
 
-- name: restart ssh - force lookup ipa user id
-  command: "id {{ ipa_user }}"
+- name: restart ssh | force lookup ipa user id
+  command: "id {{ ipa.user }}"
   when: is_freeipa_client
   listen: restart ssh
 
-- name: restart ssh - reboot to sync freeipa login
+- name: restart ssh | reboot to sync freeipa login
   include_tasks: ../roles/global/tasks/reboot.yaml
-  when: is_freeipa_client
+  when: is_freeipa_client and (ansible_user != ipa.user)
   listen: restart ssh
 
-- name: swap ansible_user to ipa user
+- name: swap ansible_user to ipa.user
   include_tasks: ../roles/global/tasks/ipa.yaml
   when: is_freeipa_client
   listen:
-  - restart ssh
   - enable fail2ban
   - restart fail2ban
 

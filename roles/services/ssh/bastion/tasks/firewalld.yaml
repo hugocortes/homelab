@@ -1,0 +1,17 @@
+---
+
+- name: centos | open bastion services
+  include_tasks: ../roles/services/firewalld/tasks/service.yaml
+  loop:
+  - name: bastion http
+    service: http
+  - name: bastion https
+    service: https
+
+- name: centos | open bastion ports
+  include_tasks: ../roles/services/firewalld/tasks/port.yaml
+  loop:
+  - name: bastion sish server
+    port: 8022/tcp
+  - name: bastion retro
+    port: 2223/tcp

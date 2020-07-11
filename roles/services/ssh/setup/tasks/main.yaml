@@ -1,26 +1,6 @@
 ---
 
-- name: only allow bastion user from bastion host for internal machines
-  blockinfile:
-    dest: /etc/ssh/sshd_config
-    marker: "# {mark}-duo-bastion"
-    block: |
-      Match User *,!{{ bastion_user }} Address {{ bastion_host }}
-        ForceCommand /bin/false
-  when: is_internal
-  notify: restart ssh
-
-- name: block bastion host from non internal machines
-  blockinfile:
-    dest: /etc/ssh/sshd_config
-    marker: "# {mark}-block-bastion"
-    block: |
-      Match Address {{ bastion.host }}
-        ForceCommand /bin/false
-  when: not is_internal
-  notify: restart ssh
-
-- name: disable root login for all machines
+- name: disable root login
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
@@ -30,7 +10,7 @@
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
   notify: restart ssh
 
-- name: secure ssh access for internal machines
+- name: disable password authentication
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
@@ -38,38 +18,52 @@
     state: present
   with_items:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
-    - { regexp: "^ChallengeResponseAuthentication", line: "ChallengeResponseAuthentication no" }
+    - { regexp: "^ChallengeResponseAuthentication yes", line: "ChallengeResponseAuthentication no" }
   when: is_internal
   notify: restart ssh
 
-- name: centos - fail2ban
+- name: configure bastion host access
   block:
-  - name: centos - install epel-release
-    yum:
-      name:
-      - epel-release
-      state: latest
-
-  - name: centos - install fail2ban
-    yum:
-      name:
-      - fail2ban
-      - fail2ban-systemd
-      state: latest
-    notify: enable fail2ban
-
-  - name: centos - configure fail2ban jail
+  - name: block access to non bastion users from bastion host
     blockinfile:
-      dest: /etc/fail2ban/jail.conf
-      marker: "# {mark} ANSIBLE MANAGED BLOCK #"
+      dest: /etc/ssh/sshd_config
+      marker: "# {mark}-block-bastion"
       block: |
-        [sshban]
-        enabled   = true
-        port      = ssh
-        logpath   = %(sshd_log)s
-        banaction = iptables-allports
-        maxretry  = 10
-        bantime   = 86400
-        filter    = sshd
-    notify: restart fail2ban
+        Match User *,!{{ bastion.user }} Address {{ bastion.host }}
+          ForceCommand /bin/false
+    when: is_internal and (bastion.user and bastion.host)
+    notify: restart ssh
+
+  - name: block access from bastion host
+    blockinfile:
+      dest: /etc/ssh/sshd_config
+      marker: "# {mark}-block-bastion"
+      block: |
+        Match Address {{ bastion.host }}
+          ForceCommand /bin/false
+    when: not is_internal and (bastion.user and bastion.host)
+    notify: restart ssh
+  when: (bastion is defined) and (bastion.host != lookup('dig', ansible_host))
+
+- name: centos | install fail2ban
+  include_tasks: centos.yaml
   when: is_centos
+
+- name: debian | install fail2ban
+  include_tasks: debian.yaml
+  when: is_debian
+
+- name: configure fail2ban jail
+  blockinfile:
+    dest: /etc/fail2ban/jail.conf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK #"
+    block: |
+      [sshban]
+      enabled   = true
+      port      = ssh
+      logpath   = %(sshd_log)s
+      banaction = iptables-allports
+      maxretry  = 10
+      bantime   = 86400
+      filter    = sshd
+  notify: restart fail2ban

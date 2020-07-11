@@ -1,0 +1,16 @@
+---
+
+- name: centos | install epel-release
+  yum:
+    name:
+    - epel-release
+    state: latest
+  when: not is_spacewalk_client
+
+- name: centos | install fail2ban packages
+  yum:
+    name:
+    - fail2ban
+    - fail2ban-systemd
+    state: latest
+  notify: enable fail2ban
