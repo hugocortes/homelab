@@ -1,0 +1,14 @@
+---
+
+- name: "{{ item.name }} | enable firewalld port"
+  firewalld:
+    zone: public
+    state: enabled
+    port: "{{ item.port }}"
+    permanent: "{{ permanent }}"
+  loop:
+  - yes
+  - no
+  loop_control:
+    loop_var: permanent
+  notify: enable firewalld

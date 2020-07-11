@@ -1,5 +1,0 @@
----
-
-dependencies:
-- role: global
-- role: services/firewalld
