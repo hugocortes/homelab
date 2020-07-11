@@ -1,0 +1,43 @@
+---
+
+- name: postgresql | create guacamole database
+  include_tasks: docker/postgresql/initdb/tasks/main.yaml
+  vars:
+    postgresql_host: "{{ postgresql.host }}"
+    postgresql_port: "{{ postgresql.port }}"
+    postgresql_user: "{{ postgresql.user }}"
+    postgresql_pass: "{{ postgresql.pass }}"
+    database_name: "{{ guacamole.db.name }}"
+    database_user: "{{ guacamole.db.user }}"
+    database_pass: "{{ guacamole.db.pass }}"
+
+- name: check if guacamole initdb script exists
+  stat:
+    path: /tmp/initdb.sh
+  register: initdb
+
+- name: initialize guacamole database
+  block:
+  - name: get guacamole initdb script
+    docker_container:
+      name: guacamole-tmp
+      image: guacamole/guacamole
+      command: /opt/guacamole/bin/initdb.sh --postgres
+      detach: no
+      cleanup: yes
+      state: started
+    register: guacamole
+
+  - name: write guacamole initdb to file
+    copy:
+      content: "{{ guacamole.ansible_facts.docker_container.Output }}"
+      dest: /tmp/initdb.sh
+
+  - name: run guacamole initdb script
+    postgresql_query:
+      login_host: "{{ postgresql.host }}"
+      login_user: "{{ postgresql.user }}"
+      login_password: "{{ postgresql.pass }}"
+      db: "{{ guacamole.db.name }}"
+      path_to_script: /tmp/initdb.sh
+  when: initdb.stat.exists == false

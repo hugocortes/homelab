@@ -1,0 +1,7 @@
+---
+
+- name: centos | open guacamole services
+  include_tasks: ../roles/services/firewalld/tasks/service.yaml
+  loop:
+  - name: guacamole http
+    service: http

@@ -1,0 +1,10 @@
+---
+
+- name: centos | install ansible postgresql dependencies
+  yum:
+    name:
+    - postgresql-devel
+    - python3-psycopg2
+    state: present
+  vars:
+    ansible_python_interpreter: /usr/bin/python

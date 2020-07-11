@@ -1,0 +1,46 @@
+---
+
+- name: centos | install packages
+  include_tasks: centos.yaml
+  when: is_centos
+
+- name: create database
+  postgresql_db:
+    login_host: "{{ postgresql_host }}"
+    login_user: "{{ postgresql_user }}"
+    login_password: "{{ postgresql_pass }}"
+    name: "{{ database_name }}"
+
+- name: create database user
+  postgresql_user:
+    login_host: "{{ postgresql_host }}"
+    login_user: "{{ postgresql_user }}"
+    login_password: "{{ postgresql_pass }}"
+    db: "{{ database_name }}"
+    name: "{{ database_user }}"
+    password: "{{ database_pass }}"
+
+- name: grant all database privileges to user
+  postgresql_privs:
+    login_host: "{{ postgresql_host }}"
+    login_user: "{{ postgresql_user }}"
+    login_password: "{{ postgresql_pass }}"
+    db: "{{ database_name }}"
+    privs: ALL
+    type: database
+    obj: "{{ database_name }}"
+    role: "{{ database_user }}"
+
+- name: grant all ALL_IN_SCHEMA privileges to user
+  postgresql_privs:
+    login_host: "{{ postgresql_host }}"
+    login_user: "{{ postgresql_user }}"
+    login_password: "{{ postgresql_pass }}"
+    db: "{{ database_name }}"
+    privs: ALL
+    objs: ALL_IN_SCHEMA
+    role: "{{ database_user }}"
+    type: "{{ item }}"
+  with_items:
+  - table
+  - sequence

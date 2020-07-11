@@ -1,0 +1,23 @@
+---
+
+- name: centos | add docker repo
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+  when: not is_spacewalk_client
+
+- name: centos | install docker dependencies
+  yum:
+    name:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    state: latest
+
+- name: centos | install docker packages
+  yum:
+    name:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    state: latest

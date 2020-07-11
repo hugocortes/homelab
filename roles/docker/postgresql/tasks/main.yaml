@@ -1,0 +1,85 @@
+---
+
+- name: mount data dir
+  mount:
+    path: /tmp/mnt
+    src: "{{ nfs.host }}:{{ postgresql.nfs.path }}"
+    fstype: nfs4
+    opts: defaults,proto=tcp,port=2049,rw
+    state: mounted
+
+- name: check conf exists
+  stat:
+    path: /tmp/mnt/conf/postgresql.conf
+  register: conf
+
+- name: retrieve default conf
+  docker_container:
+    name: postgres-tmp
+    image: postgres:12
+    command: cat /usr/share/postgresql/postgresql.conf.sample
+    detach: no
+  register: default_conf
+  when: conf.stat.exists == false
+
+- name: create conf file
+  copy:
+    content: "{{ default_conf.ansible_facts.docker_container.Output }}"
+    dest: /tmp/mnt/conf/postgresql.conf
+  when: conf.stat.exists == false
+
+- name: remove temp container
+  docker_container:
+    name: postgres-tmp
+    state: absent
+  ignore_errors: yes
+
+- name: unmount conf dir
+  mount:
+    path: /tmp/mnt
+    state: unmounted
+
+- name: create volumes
+  docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+  with_items:
+  - name: data
+    mount: "{{ postgresql.nfs.path }}"
+
+- name: start container
+  docker_container:
+    name: postgres
+    image: hugocortes/postgres:9
+    restart_policy: unless-stopped
+    user: "{{ postgresql.nfs.user_id }}:0"
+    command:
+    - "-c 'config_file=/var/lib/postgresql/data/conf/postgresql.conf'"
+    ports:
+    - 5432:5432
+    env:
+      POSTGRES_USER: "{{ postgresql.user }}"
+      POSTGRES_PASSWORD: "{{ postgresql.pass }}"
+      PGDATA: /var/lib/postgresql/data/data
+      PGUSER: postgres
+    volumes:
+    - data:/var/lib/postgresql/data
+
+- name: start exporter container
+  docker_container:
+    name: postgresql-metrics
+    image: wrouesnel/postgres_exporter
+    restart_policy: unless-stopped
+    ports:
+    - 9187:9187
+    env:
+      DATA_SOURCE_URI: "{{ postgresql.host }}:{{ postgresql.port }}/?sslmode=disable"
+      DATA_SOURCE_USER: "{{ postgresql.user }}"
+      DATA_SOURCE_PASS: "{{ postgresql.pass }}"
+
+- name: centos | open firewalld ports
+  include_tasks: firewalld.yaml
+  when: is_centos

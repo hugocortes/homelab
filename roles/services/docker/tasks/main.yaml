@@ -1,76 +1,34 @@
 ---
 
-- name: install docker
-  block:
-  - name: install dependencies
-    yum:
-      name:
-      - yum-utils
-      - device-mapper-persistent-data
-      - lvm2
-      state: present
+- name: centos | install packages
+  import_tasks: centos.yaml
+  when: is_centos
 
-  - name: install service
-    yum:
-      name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      state: present
+- name: debian | install packages
+  import_tasks: debian.yaml
+  when: is_debian
 
-  - name: enable service
-    service:
-      name: docker
-      enabled: yes
+- name: enable service
+  service:
+    name: docker
+    enabled: yes
 
-  - name: start service
-    service:
-      name: docker
-      state: started
+- name: start service
+  service:
+    name: docker
+    state: started
 
-  - name: install pip
-    yum:
-      name:
-      - python3-pip
-      - python2-pip
-      state: present
+- name: install docker pip using python2
+  become: no
+  pip:
+    name: docker
+  vars:
+    ansible_python_interpreter: /usr/bin/python
+  when: not is_debian
 
-  - name: install docker pip using python2
-    pip:
-      name: docker
-    vars:
-      ansible_python_interpreter: /usr/bin/python
-
-  - name: install docker pip using python3
-    pip:
-      name: docker
-    vars:
-      ansible_python_interpreter: /usr/bin/python3
-
-  - name: start node-exporter
-    docker_container:
-      name: node-exporter
-      image: prom/node-exporter:latest
-      restart_policy: unless-stopped
-      command: --path.rootfs=/hostfs
-      hostname: "{{ inventory_hostname }}"
-      ports:
-      - 9100:9100
-      volumes:
-      - /:/hostfs
-
-  - name: start cadvisor
-    docker_container:
-      name: cadvisor
-      image: google/cadvisor:latest
-      restart_policy: unless-stopped
-      hostname: "{{ inventory_hostname }}"
-      ports:
-      - 8080:8080
-      volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk:ro
-  when: is_docker
+- name: install docker pip using python3
+  become: no
+  pip:
+    name: docker
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

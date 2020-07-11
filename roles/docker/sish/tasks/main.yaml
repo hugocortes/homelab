@@ -1,0 +1,27 @@
+---
+
+- name: launch sish container
+  docker_container:
+    name: sish
+    image: antoniomika/sish
+    restart_policy: unless-stopped
+    hostname: "{{ inventory_hostname }}"
+    network_mode: host
+    command: >
+      --ssh-address=:8022 \
+      --http-address=:80 \
+      --https-address=:443 \
+      --https=true \
+      --https-certificate-directory=/ssl \
+      --authentication=true \
+      --authentication-password="" \
+      --authentication-keys-directory=/pubkeys \
+      --private-key-location=/keys/ssh_key \
+      --bind-random-ports=false \
+      --bind-random-subdomains=false \
+      --domain=tunnel.corteshq.net \
+      --idle-connection-timeout 600s
+    volumes:
+    - ~/sish/ssl:/ssl
+    - ~/sish/keys:/keys
+    - ~/sish/pubkeys:/pubkeys

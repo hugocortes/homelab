@@ -1,0 +1,32 @@
+---
+
+- name: launch node-exporter container
+  docker_container:
+    name: node-exporter
+    image: prom/node-exporter:latest
+    restart_policy: unless-stopped
+    command: --path.rootfs=/hostfs
+    hostname: "{{ inventory_hostname }}"
+    ports:
+    - 9100:9100
+    volumes:
+    - /:/hostfs
+
+- name: launch cadvisor container
+  docker_container:
+    name: cadvisor
+    image: google/cadvisor:latest
+    restart_policy: unless-stopped
+    hostname: "{{ inventory_hostname }}"
+    ports:
+    - 8080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:ro
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro
+
+- name: centos | open firewalld ports
+  include_tasks: firewalld.yaml
+  when: is_centos
