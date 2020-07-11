@@ -4,3 +4,7 @@
   yum:
     name: ipa-server
     state: latest
+
+- name: centos | open firewalld ports
+  include_tasks: firewalld.yaml
+  when: is_centos

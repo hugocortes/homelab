@@ -1,0 +1,5 @@
+---
+
+- name: centos | disable firewalld
+  import_tasks: firewalld.yaml
+  when: is_centos

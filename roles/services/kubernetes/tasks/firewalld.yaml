@@ -1,0 +1,11 @@
+---
+
+- name: centos | disable firewalld
+  service:
+    name: firewalld
+    enabled: no
+
+- name: centos | stop firewalld
+  service:
+    name: firewalld
+    state: stopped

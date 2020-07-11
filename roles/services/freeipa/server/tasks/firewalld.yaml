@@ -1,0 +1,19 @@
+---
+
+- name: centos | open freeipa server services
+  include_tasks: ../roles/services/firewalld/tasks/service.yaml
+  loop:
+  - name: freeipa http
+    service: http
+  - name: freeipa https
+    service: https
+  - name: freeipa ldap
+    service: ldap
+  - name: freeipa ldaps
+    service: ldaps
+  - name: freeipa kerberos
+    service: kerberos
+  - name: freeipa kpasswd
+    service: kpasswd
+  - name: freeipa ntp
+    service: ntp
