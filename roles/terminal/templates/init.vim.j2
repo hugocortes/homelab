@@ -1,0 +1,22 @@
+set runtimepath^={{ ansible_home }}/.vim runtimepath+={{ ansible_home }}/.vim/after
+let &packpath=&runtimepath
+source {{ ansible_home }}/.vimrc
+
+call plug#begin('{{ ansible_home }}/.vim/plugged')
+
+{% if is_workstation %}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}	" intellisense type autocomplete
+{% endif %}
+Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-commentary'
+Plug 'fatih/vim-go'
+Plug 'python-mode/python-mode'
+Plug 'tpope/vim-sleuth'				" auto format indentation
+Plug 'dense-analysis/ale'			" relies on ~/.eslintrc
+Plug 'scrooloose/nerdtree'			" file directory sidebar
+Plug 'Xuyuanp/nerdtree-git-plugin'		" git status directory sidebar
+Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+" unable to load icons for some reason...
+Plug 'ryanoasis/vim-devicons'			" requires patched nerd font https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/FiraCode/Regular
+
+call plug#end()

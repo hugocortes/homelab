@@ -1,0 +1,32 @@
+" indention options
+filetype indent off				" disable native vim indent plugin
+
+" search options
+set hlsearch					" search highlighting
+
+" text rendering options
+set encoding=UTF-8				" support unicode encoding
+set list					" allow listchars
+set listchars=eol:⏎,tab:␉·,trail:␠,nbsp:⎵	" list chart formatting
+syntax on					" set syntax coloring
+
+" interface options
+set background=dark				" colors that suit a dark background
+set cursorcolumn				" cursor column
+set cursorline					" cursor line
+set laststatus=2				" see current filename
+set number					" show current line number
+set relativenumber				" show relative line numbers
+set ruler					" show cursor position
+
+" misc options
+" set autochdir					" CAREFUL! changes dir to file, may break plugins
+set backspace=indent,eol,start			" allow normal backspace
+set clipboard=unnamed				" allow pasting from clipboard
+set dir={{ ansible_home }}/.cache/vim.swap	" directory to store swap files, create dir
+" set formatoptions+=j				" delete comment char when joining comments
+" set mouse=v
+" set spell					" enable spellchecking
+set updatetime=100				" reduce default vim update
+set wildignore+=.pyc,.swp			" ignore these files on file search
+set mmp=2000					" increase memory usage as default is exceeded

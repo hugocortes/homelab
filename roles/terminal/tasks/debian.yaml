@@ -1,0 +1,16 @@
+---
+
+- name: install packages
+  apt:
+    name:
+    - neovim
+    - python3-neovim
+    - zsh
+    state: latest
+
+- name: pip install thefuck
+  become: no
+  pip:
+    name: thefuck
+    executable: pip3
+    state: latest

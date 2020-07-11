@@ -1,0 +1,31 @@
+---
+
+- name: install packages
+  yum:
+    name:
+    - neovim
+    # - python3-neovim
+    - zsh
+    - git
+    - curl
+    state: latest
+
+- name: install pip dependencies
+  yum:
+    name:
+    - gcc
+    - python2-devel
+    - python3-devel
+    state: latest
+
+- name: update pip setuptools
+  become: no
+  pip: 
+    name: setuptools
+    state: latest
+
+- name: pip install thefuck
+  become: no
+  pip:
+    name: thefuck
+    executable: pip3

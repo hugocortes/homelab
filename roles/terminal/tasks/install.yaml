@@ -1,0 +1,71 @@
+---
+
+- name: install vim-plug
+  command: |
+    sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+
+- name: create .vim cache dir
+  file:
+    path: "{{ ansible_home }}/.cache"
+    state: directory
+
+- name: create .vimrc config
+  template:
+    src: .vimrc.j2
+    dest: "{{ ansible_home }}/.vimrc"
+    force: yes
+
+- name: create init.vim config dir
+  file:
+    path: "{{ ansible_home }}/.config/nvim"
+    state: directory
+
+- name: create init.vim config
+  template:
+    src: init.vim.j2
+    dest: "{{ ansible_home }}/.config/nvim/init.vim"
+    force: yes
+
+- name: check if ohmyzsh dir exists
+  stat:
+    path: "{{ ansible_home }}/.oh-my-zsh"
+  register: ohmyzsh
+
+- name: install ohmyzsh
+  block:
+  - name: download ohmyzsh install script
+    get_url:
+      url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+      dest: "/tmp/ohmyzsh-install-{{ ansible_user }}.sh"
+      mode: +x
+
+  - name: install ohmyzsh
+    command: "/bin/sh /tmp/ohmyzsh-install-{{ ansible_user }}.sh"
+    ignore_errors: yes
+    async: 30
+    poll: 5
+  when: not ohmyzsh.stat.exists
+
+- name: create .zshrc config
+  template:
+    src: .zshrc.j2
+    dest: "{{ ansible_home }}/.zshrc"
+    force: yes
+
+- name: install plug plugins
+  command: nvim --headless +PlugInstall +qa
+
+- name: copy minimal plugin to custom
+  command: >
+    cp
+    {{ ansible_home }}/.oh-my-zsh/themes/minimal.zsh-theme
+    {{ ansible_home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme
+
+- name: add user@host to minimal theme
+  lineinfile:
+    dest: "{{ ansible_home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme"
+    regexp: "^PROMPT='"
+    line: PROMPT='$USER@%{% raw %}{%{% endraw %}}%m:%2~ $(vcs_status)»%b '
+    state: present
+  when: not is_physical_workstation

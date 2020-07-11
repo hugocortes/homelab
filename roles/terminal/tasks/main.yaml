@@ -1,0 +1,34 @@
+---
+
+- name: centos | install packages
+  become: yes
+  import_tasks: centos.yaml
+  when: is_centos
+
+- name: debian | install packages
+  become: yes
+  import_tasks: debian.yaml
+  when: is_debian
+
+- name: configure terminal for ansible_user
+  become: no
+  vars:
+    ansible_home: "{{ ansible_env['HOME'] }}"
+    ansible_user: "{{ ansible_user }}"
+  import_tasks: install.yaml
+
+- name: configure terminal for root
+  become: yes
+  vars:
+    ansible_home: /root
+    ansible_user: root
+  import_tasks: install.yaml
+
+- name: set zsh as default shell for ansible user
+  become: yes
+  command: "chsh -s /bin/zsh {{ ansible_user }}"
+  when: not is_freeipa_client
+
+- name: set zsh as default shell for root user
+  become: yes
+  command: "chsh -s /bin/zsh root"
