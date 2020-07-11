@@ -1,50 +1,9 @@
 ---
 
-- name: sync spacewalk clients
-  block:
-  - name: configure centos 8
-    block:
-    - name: unregister from centos channel
-      rhn_register:
-        state: absent
-        username: "{{ spacewalk_username }}"
-        password: "{{ spacewalk_password }}"
-      when: not is_docker and not is_kubernetes
-      ignore_errors: yes
-    when: is_centos_8
-
-  - name: configure centos 7
-    block:
-    - name: unregister from centos channel
-      rhn_register:
-        state: absent
-        username: "{{ spacewalk_username }}"
-        password: "{{ spacewalk_password }}"
-      when: not is_docker and not is_kubernetes and not run_bastion_setup
-      ignore_errors: yes
-
-    - name: unregister from docker channel
-      rhn_register:
-        state: absent
-        username: "{{ spacewalk_username }}"
-        password: "{{ spacewalk_password }}"
-      when: is_docker
-      ignore_errors: yes
-
-    - name: unregister from kubernetes channel
-      rhn_register:
-        state: absent
-        username: "{{ spacewalk_username }}"
-        password: "{{ spacewalk_password }}"
-      when: is_kubernetes
-      ignore_errors: yes
-
-    - name: unregister from duo channel
-      rhn_register:
-        state: absent
-        username: "{{ spacewalk_username }}"
-        password: "{{ spacewalk_password }}"
-      when: run_bastion_setup
-      ignore_errors: yes
-    when: is_centos_7
+- name: centos | unregister spacewalk clients
+  rhn_register:
+    state: absent
+    username: "{{ spacewalk.hostname }}"
+    password: "{{ spacewalk.password }}"
+  ignore_errors: yes
   when: sync and is_centos

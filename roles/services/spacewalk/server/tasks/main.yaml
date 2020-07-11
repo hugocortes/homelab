@@ -1,22 +1,22 @@
 ---
 
-- name: install dependencies
+- name: install spacewalk server dependencies
   yum:
     name:
     - yum-plugin-tmprepo
     state: present
 
-- name: service repo
+- name: add spacewalk repo
   command: yum install -y spacewalk-repo --tmprepo=https://copr-be.cloud.fedoraproject.org/results/%40spacewalkproject/spacewalk-2.9/epel-7-x86_64/repodata/repomd.xml --nogpg
 
-- name: epel dependency
+- name: install epel-release
   command: rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
   ignore_errors: yes
 
 - name: add answer file
   copy:
     content: |
-      admin-email={{ spacewalk_admin_email }}
+      admin-email={{ spacewalk.admin_email }}
       ssl-set-cnames=spacewalk
       ssl-set-org=spacewalk
       ssl-set-org-unit=
@@ -24,20 +24,31 @@
       ssl-set-state=CA
       ssl-set-country=US
       ssl-password=
-      ssl-set-email={{ spacewalk_admin_email }}
+      ssl-set-email={{ spacewalk.admin_email }}
       ssl-config-sslvhost=Y
       db-backend=postgresql
-      db-name={{ spacewalk_db_name }}
-      db-user={{ spacewalk_db_user }}
-      db-password={{ spacewalk_db_pass }}
-      db-host={{ spacewalk_db_host }}
-      db-port={{ spacewalk_db_port }}
+      db-name={{ spacewalk.db.name }}
+      db-user={{ spacewalk.db.user }}
+      db-password={{ spacewalk.db.pass }}
+      db-host={{ postgresql.host }}
+      db-port={{ postgresql.port }}
       enable-tftp=Y
     dest: /tmp/answer
 
-- name: install dependencies
+- name: install packages
   yum:
     name:
     - spacewalk-postgresql 
     - osa-dispatcher
     state: present
+
+- name: mount spacewalk nfs drives
+  include_tasks: ../roles/services/nfs/tasks/main.yaml
+  vars:
+    nfs_mount_paths:
+    - host: "{{ spacewalk.nfs.host_path }}"
+      client: "{{ spacewalk.nfs.client_path }}"
+
+- name: centos | open firewalld ports
+  include_tasks: firewalld.yaml
+  when: is_centos

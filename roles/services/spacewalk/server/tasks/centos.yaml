@@ -1,0 +1,19 @@
+---
+
+- name: centos | open spacewalk server services
+  include_tasks: ../roles/services/firewalld/tasks/service.yaml
+  loop:
+  - name: spacewalk http
+    service: http
+  - name: spacewalk https
+    service: https
+  - name: spacewalk tftp
+    service: tftp
+
+- name: centos | open spacewalk server ports
+  include_tasks: ../roles/services/firewalld/tasks/port.yaml
+  loop:
+  - name: spacewalk monitoring
+    port: 4545/tcp
+  - name: spacewalk push actions
+    port: 5222/tcp
