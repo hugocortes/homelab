@@ -1,9 +1,8 @@
 ---
 
-- name: install nfs common
-  yum:
-    name: nfs-utils
-    state: present
+- name: centos | install packages
+  import_tasks: centos.yaml
+  when: is_centos
 
 - name: create nfs mount path dir
   file:
@@ -15,8 +14,8 @@
 - name: auto mount nfs share
   lineinfile:
     dest: /etc/fstab
-    regexp: "{{ nfs_host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
-    line: "{{ nfs_host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
+    regexp: "{{ nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
+    line: "{{ nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
     state: present
     insertbefore: "exit 0"
   with_items:

@@ -1,0 +1,6 @@
+---
+
+- name: centos | install nfs packages
+  yum:
+    name: nfs-utils
+    state: latest
