@@ -6,16 +6,17 @@
   ignore_errors: true
   register: ping
 
-- name: freeipa client - swap ansible_user to ipa_user
+- name: clear host errors
+  meta: clear_host_errors
+  ignore_unreachable: true
+  ignore_errors: true
+
+- name: swap ansible_user to ipa.user
   block:
-  - name: clear host errors
-    meta: clear_host_errors
-
-  - name: set ansible_user if ping failed
+  - name: "set ansible_user ({{ ansible_user }}) to ipa.user ({{ ipa.user }})"
     set_fact:
-      ansible_user: "{{ ipa_user }}"
-    when: ping.failed | d(ping.unreachable) | d(false)
+      ansible_user: "{{ ipa.user }}"
 
-  - name: ping
+  - name: ping to verify current user
     action: ping
-  when: is_freeipa_client
+  when: (is_freeipa_client or is_freeipa_server) and (ping.failed | d(ping.unreachable) | d(false))

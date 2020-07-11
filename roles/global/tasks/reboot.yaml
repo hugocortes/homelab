@@ -2,9 +2,22 @@
 
 - name: reboot
   reboot:
-    reboot_timeout: 60
+    reboot_timeout: 30
+  ignore_unreachable: true
+  ignore_errors: true
+
+- name: swap ansible_user to ipa.user
+  include_tasks: "{{ item }}"
+  with_first_found:
+  - files:
+    - ipa.yaml
+    paths:
+    - ./
+    - ../roles/global/tasks/
 
 - name: wait for reboot
   wait_for_connection:
     delay: "{{ reboot.min_wait_time }}"
     timeout: "{{ reboot.max_wait_time }}"
+  ignore_unreachable: true
+  ignore_errors: true

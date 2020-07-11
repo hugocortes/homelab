@@ -1,12 +1,20 @@
 ---
 
-# facts resolved by gather_facts: yes
+- name: set is_pop fact
+  set_fact:
+    is_pop: "{{ ansible_distribution == 'Pop!_OS' }}"
+
+- name: rename Pop!_OS to Debian
+  set_fact:
+    ansible_distribution: Debian
+    ansible_os_family: Debian
+  when: is_pop
 
 - name: set system facts
   set_fact:
     is_centos_8: "{{ (ansible_distribution_version | regex_search('^8')) != None }}"
     is_centos_7: "{{ (ansible_distribution_version | regex_search('^7')) != None }}"
-    is_debian: "{{ ansible_os_family == 'Debian' }}"
+    is_debian: "{{ ansible_os_family == 'Debian' or is_pop }}"
     is_darwin: "{{ ansible_os_family == 'Darwin' }}"
 
 - name: set is_centos fact
