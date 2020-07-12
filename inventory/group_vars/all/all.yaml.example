@@ -1,0 +1,58 @@
+reboot:
+  min_wait_time: 15
+  max_wait_time: 30
+
+bastion:
+  user: ""
+  host: ""
+  duo:
+    ikey: ""
+    skey: ""
+    host: ""
+
+guacamole:
+  tag: "1.2.0"
+  db:
+    name: ""
+    user: ""
+    pass: ""
+  openid:
+    issuer: ""
+    jwks_endpoint: ""
+    auth_endpoint: ""
+    client_id: guacamole
+    scope: openid email profile
+    redirect_uri: ""
+    username_claim: preferred_username
+
+influxdb:
+  host: ""
+  port: "25826"
+
+ipa:
+  user: ""
+
+nfs:
+  host: ""
+
+postgresql:
+  host: ""
+  port: "5432"
+  user: ""
+  pass: ""
+  nfs:
+    user_id: ""
+    path: ""
+
+spacewalk:
+  user: ""
+  pass: ""
+  admin_email: ""
+  host: ""
+  db:
+    name: ""
+    user: ""
+    pass: ""
+  nfs:
+    host_path: ""
+    client_path: /var/satellite

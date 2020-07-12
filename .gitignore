@@ -2,4 +2,6 @@ vars.yaml
 inventory/*.ini
 !inventory/hosts.example.ini
 !inventory/unowned.example.ini
-*.env
+inventory/credentials/*
+inventory/group_vars/all/all.yaml
+inventory/group_vars/all/kubespray.yml

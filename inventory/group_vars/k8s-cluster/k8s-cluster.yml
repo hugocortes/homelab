@@ -1,0 +1,4 @@
+---
+
+kube_version: v1.17.5
+dashboard_enabled: false
