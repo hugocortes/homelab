@@ -3,3 +3,10 @@
 - name: centos | disable firewalld
   import_tasks: firewalld.yaml
   when: is_centos
+
+- name: create local mnt dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items: "{{ dirs }}"
+  when: create_mnt_dirs
