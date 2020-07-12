@@ -1,4 +1,5 @@
 vars.yaml
 inventory/*.ini
 !inventory/hosts.example.ini
+!inventory/unowned.example.ini
 *.env

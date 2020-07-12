@@ -1,0 +1,44 @@
+---
+
+# use inventory that will not be registered with freeipa and spacewalk
+
+- name: set facts and ssh user
+  strategy: free
+  hosts: all
+  become: no
+  gather_facts: no
+  ignore_errors: true
+  ignore_unreachable: true
+  roles:
+  - global
+  tags: always
+
+- name: configure unowned servers
+  become: yes
+  strategy: free
+  hosts: all
+  tags: configure
+  pre_tasks:
+  - fail:
+      msg: target host should not be an internal server or client
+    when: is_internal
+  roles:
+  - name: packages/update
+    tags: update
+  - name: packages/install
+  - name: services/ssh/setup
+  - name: services/kubernetes
+    vars:
+      create_mnt_dirs: yes
+      dirs:
+      - /mnt/k8s/elasticsearch
+      - /mnt/k8s/mongodb
+      - /mnt/k8s/mysql
+      - /mnt/k8s/postgresql
+      - /mnt/k8s/rabbitmq
+      - /mnt/k8s/redis
+
+# - name: configure cluster
+#   become: yes
+#   import_playbook: ../kubespray/cluster.yml
+#   tags: kubespray
