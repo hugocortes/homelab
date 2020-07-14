@@ -1,0 +1,129 @@
+---
+
+- name: set facts and ssh user
+  strategy: free
+  hosts: all
+  become: no
+  gather_facts: no
+  ignore_errors: true
+  ignore_unreachable: true
+  roles:
+  - global
+  tags: always
+
+# - name: install freeipa server
+#   hosts: ipaserver
+#   become: yes
+#   tags: freeipa-server
+#   roles:
+#   - services/freeipa/server
+
+# - name: install spacewalk server
+#   hosts: spacewalkserver
+#   become: yes
+#   tags: spacewalk-server
+#   roles:
+#   - services/spacewalk/server
+
+- name: register spacewalk clients
+  hosts: spacewalkclients
+  become: yes
+  vars:
+    sync: false # resets all configuration before re-applying
+  tags: spacewalk-client
+  roles:
+  - services/spacewalk/sync
+  - services/spacewalk/client
+  - packages/disable
+
+- name: install & update packages
+  strategy: free
+  hosts: all
+  become: yes
+  tags: install-update
+  roles:
+  - name: packages/install
+  - name: packages/update
+    tags: update
+
+- name: register freeipa clients
+  import_playbook: ../ansible-freeipa/playbooks/install-client.yml
+  tags: freeipa-client
+
+- name: configure servers group
+  strategy: free
+  hosts: servers
+  become: yes
+  vars:
+    sync: false # resets all configuration before re-applying
+  tags: configure
+  roles:
+  - services/ssh/setup
+  - services/collectd
+
+- name: configure terminal
+  strategy: free
+  hosts: all
+  become: no
+  tags: terminal
+  roles:
+  - terminal
+
+- name: configure docker group
+  strategy: free
+  hosts: docker
+  become: yes
+  tags: docker
+  roles:
+  - services/docker
+  - name: docker/metrics
+    when: not is_workstation
+
+- name: configure kubernetes group
+  strategy: free
+  hosts: kubernetes
+  become: yes
+  tags: kubernetes
+  roles:
+  - services/kubernetes
+
+- name: configure workstations group
+  strategy: free
+  hosts: workstations
+  tags: workstations
+  roles:
+  - workstations
+
+- name: configure bastion
+  strategy: free
+  hosts: bastion
+  become: yes
+  pre_tasks:
+  - fail:
+      msg: bastion host and duo settings required
+    when: bastion is undefined or not bastion.host or not bastion.duo or not bastion.duo.ikey or not bastion.duo.skey or not bastion.duo.host
+  tags: bastion
+  roles:
+  - services/duo
+  - services/ssh/bastion
+  - docker/sish
+
+- name: configure guacamole
+  strategy: free
+  hosts: guacamole
+  become: yes
+  tags: guacamole
+  vars:
+    initialize: false
+  roles:
+  - docker/guacamole
+
+- name: configure postgresql
+  strategy: free
+  hosts: postgres
+  become: yes
+  tags: postgresql
+  vars:
+    initialize: false
+  roles:
+  - docker/postgresql
