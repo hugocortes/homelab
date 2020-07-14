@@ -14,7 +14,6 @@
   become: no
   vars:
     ansible_home: "{{ ansible_env['HOME'] }}"
-    ansible_user: "{{ ansible_user }}"
   import_tasks: install.yaml
 
 - name: configure terminal for root

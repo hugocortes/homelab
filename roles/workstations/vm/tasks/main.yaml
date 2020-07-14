@@ -1,0 +1,15 @@
+---
+
+- name: centos | install packages
+  import_tasks: centos.yaml
+  when: is_centos
+
+- name: debian | install packages
+  import_tasks: debian.yaml
+  when: is_debian
+
+- name: enable rdp service
+  service:
+    name: xrdp
+    state: started
+    enabled: yes

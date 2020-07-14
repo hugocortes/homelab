@@ -10,6 +10,11 @@ bastion:
     skey: ""
     host: ""
 
+git:
+  name: ""
+  email: ""
+  signingkey: ""
+
 guacamole:
   tag: "1.2.0"
   db:
@@ -56,3 +61,19 @@ spacewalk:
   nfs:
     host_path: ""
     client_path: /var/satellite
+
+spin_cli:
+  gate:
+    endpoint: https://spinnaker-api.domain
+  auth:
+    cachedToken: {}
+    enabled: true
+    oauth2:
+      tokenUrl: https://auth.domain/auth
+      authUrl: https://auth.domain/token
+      clientId: ""
+      clientSecret: ""
+      scopes:
+      - openid
+      - email
+      - profile

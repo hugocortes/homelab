@@ -4,7 +4,6 @@
   apt:
     name: "*"
     state: latest
-  notify: reboot
 
 - name: debian | upgrade apt packages
   apt:

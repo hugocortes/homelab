@@ -22,8 +22,8 @@ export GOBIN=$GOPATH/bin
 # java
 {% if is_workstation and is_debian %}
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-{% endif %}
 export M2_HOME=/opt/maven
+{% endif %}
 
 # plugins
 eval $(thefuck --alias)

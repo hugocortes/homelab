@@ -1,0 +1,11 @@
+[commit]
+  gpgsign = true
+  template = {{ ansible_env['HOME'] }}/.gittemplate_global
+[core]
+  excludesfile = {{ ansible_env['HOME'] }}/.gitignore_global
+[gpg]
+  program = gpg2
+[user]
+  name = {{ git.name }}
+  email = {{ git.email }}
+  signingKey = {{ git.signingKey }}

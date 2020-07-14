@@ -1,0 +1,55 @@
+---
+
+- name: install apps in existing repo
+  apt:
+    name:
+    - anki
+    - slack-desktop
+    - thunderbird
+    state: latest
+
+- name: install duck
+  include_tasks: ../tasks/debian/generic.yaml
+  vars:
+    pkg_name: duck
+    pkg_gpg_id: FE7097963FEFBE72
+    pkg_gpg_keyserver: keyserver.ubuntu.com
+    pkg_repository: deb https://s3.amazonaws.com/repo.deb.cyberduck.io stable main
+    pkg_packages:
+    - duck
+
+# - name: install etcher
+#   include_tasks: ../tasks/debian/generic.yaml
+#   vars:
+#     pkg_name: etcher
+#     pkg_gpg_id: 379CE192D401AB61
+#     pkg_gpg_keyserver: keyserver.ubuntu.com
+#     pkg_repository: deb https://deb.etcher.io stable etcher
+#     pkg_packages:
+#     - balena-etcher-electron
+
+- name: install spotify
+  include_tasks: ../tasks/debian/generic.yaml
+  vars:
+    pkg_name: spotify
+    pkg_gpg_key: https://download.spotify.com/debian/pubkey.gpg
+    pkg_repository: deb http://repository.spotify.com stable non-free
+    pkg_packages:
+    - spotify-client
+
+- name: install weechat
+  include_tasks: ../tasks/debian/generic.yaml
+  vars:
+    pkg_name: weechat
+    pkg_gpg_id: 11E9DE8848F2B65222AA75B8D1820DB22A11534E
+    pkg_gpg_keyserver: keys.openpgp.org
+    pkg_dependencies:
+    - dirmngr
+    - gnupg-agent
+    - apt-transport-https
+    pkg_packages:
+    - screen
+    - weechat-curses
+    - weechat-plugins
+    - weechat-python
+    - weechat-perl

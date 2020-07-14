@@ -1,0 +1,34 @@
+---
+
+- name: debian | configure
+  import_tasks: debian/main.yaml
+  when: is_debian
+
+- name: centos | configure
+  import_tasks: centos.yaml
+  when: is_centos
+
+- name: configure bin tools
+  import_tasks: bin.yaml
+
+- name: configure physical workstation
+  import_tasks: ../physical/tasks/main.yaml
+  when: is_physical_workstation
+
+- name: configure vm workstation
+  import_tasks: ../vm/tasks/main.yaml
+  when: is_vm_workstation
+
+- name: git | create global files
+  copy:
+    src: "files/{{ item }}"
+    dest: "{{ ansible_env['HOME'] }}/{{ item }}"
+  with_items:
+  - .gitignore_global
+  - .gittemplate_global
+
+- name: git | create .gitconfig
+  template:
+    src: git.j2
+    dest: "{{ ansible_env['HOME'] }}/.gitconfig"
+    force: yes

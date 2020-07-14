@@ -1,0 +1,118 @@
+---
+
+- name: configure keyboard
+  block:
+  - name: remap capslock to escape
+    shell: gsettings set org.gnome.desktop.input-sources xkb-options "['caps:escape']"
+
+  - name: disable emoji picker
+    shell: gsettings set org.freedesktop.ibus.panel.emoji hotkey "@as []"
+
+- name: configure settings
+  block:
+  - name: gnome autosave session
+    dconf:
+      key: /org/gnome/gnome-session/auto-save-session
+      value: "'true'"
+
+- name: pip install dependencies
+  become: no
+  pip:
+    name: psutil
+    executable: pip3
+
+- name: set profile picture
+  become: yes
+  copy:
+    src: files/profile.jpeg
+    dest: "/var/lib/AccountsService/icons/{{ ansible_user }}"
+    force: yes
+  when: is_physical_workstation
+
+- name: set wallpaper
+  copy:
+    src: files/wallpaper.png
+    dest: "{{ ansible_env['HOME'] }}/.wallpaper.png"
+
+- name: set gnome wallpaper
+  dconf:
+    key: /org/gnome/desktop/background/picture-uri
+    value: "'file://{{ ansible_env['HOME'] }}/.wallpaper.png'"
+
+- name: create gnome extension dash-to-dock dir
+  file:
+    path: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com"
+    state: directory
+
+- name: download and untar dash-to-dock to gnome extension dir
+  unarchive:
+    remote_src: yes
+    src: https://extensions.gnome.org/extension-data/dash-to-dockmicxgx.gmail.com.v68.shell-extension.zip
+    dest: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com"
+
+- name: enable dash-to-dock extension
+  dconf:
+    key: /org/gnome/shell/enabled-extensions
+    value: "['dash-to-dock@micxgx.gmail.com']"
+  notify: restart shell
+
+- name: set gnome dock
+  dconf:
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+  with_items:
+  - key: /org/gnome/shell/extensions/dash-to-dock/isolate-monitors
+    value: "'true'"
+  - key: /org/gnome/shell/extensions/dash-to-dock/dock-fixed
+    value: "'true'"
+  - key: /org/gnome/shell/extensions/dash-to-dock/intellihide
+    value: "'false'"
+  - key: /org/gnome/shell/extensions/dash-to-dock/autohide
+    value: "'false'"
+
+- name: install and configure vlc
+  block:
+  - name: install vlc
+    become: yes
+    apt:
+      name:
+      - vlc    
+      state: latest
+
+  - name: set vlc as default video player
+    become: yes
+    replace:
+      path: /usr/share/applications/defaults.list
+      regexp: org\.gnome\.Totem\.desktop$
+      replace: vlc.desktop
+
+  - name: set vlc as only option in mime cache
+    become: yes
+    replace:
+      path: /usr/share/applications/mimeinfo.cache
+      regexp: org\.gnome\.Totem\.desktop;(vlc\.desktop;)?$
+      replace: vlc.desktop;
+
+- name: check if sound output extension exists
+  stat:
+    path: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/sound-output-device-chooser@kgshank.net"
+  register: sound_output
+
+- name: install sound output extension
+  block:
+  - name: download sound output extension
+    git:
+      repo: https://github.com/kgshank/gse-sound-output-device-chooser.git
+      dest: /tmp/gse-sound-output-device-chooser
+
+  - name: move extension to gnome shell
+    command: |
+      mv \
+      /tmp/gse-sound-output-device-chooser/sound-output-device-chooser@kgshank.net \
+      {{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/sound-output-device-chooser@kgshank.net
+  when: not sound_output.stat.exists
+
+- name: enable sound output extension
+  dconf:
+    key: /org/gnome/shell/enabled-extensions
+    value: "['dash-to-dock@micxgx.gmail.com','sound-output-device-chooser@kgshank.net']"

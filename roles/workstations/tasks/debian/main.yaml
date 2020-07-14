@@ -1,0 +1,119 @@
+---
+
+- name: debian | configure hw
+  import_tasks: hw.yaml
+
+- name: install apps in existing repo
+  become: yes
+  apt:
+    name:
+    - build-essential
+    - gnupg
+    - libmediainfo0v5
+    - libssl-dev
+    - nfs-common
+    - protobuf-compiler
+    - sshpass
+    - virtualbox
+    - wireshark
+    state: latest
+
+- name: remove apps
+  become: yes
+  apt:
+    name:
+    - geary
+    state: absent
+
+- name: install tor browser
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: tor
+    pkg_repository: ppa:micahflee/ppa
+    pkg_packages:
+    - torbrowser-launcher
+
+- name: install mongodb
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: mongodb
+    pkg_gpg_key: https://www.mongodb.org/static/pgp/server-4.2.asc
+    pkg_repository: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
+    pkg_packages:
+    - mongodb-org
+
+- name: install postgresql
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: postgresql
+    pkg_gpg_key: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    pkg_repository: "deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release | lower }}-pgdg main"
+    pkg_packages:
+    - postgresql
+
+- name: install dbeaver
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: dbeaver
+    pkg_gpg_key: https://dbeaver.io/debs/dbeaver.gpg.key
+    pkg_repository: deb https://dbeaver.io/debs/dbeaver-ce /
+    pkg_dependencies:
+    - openjdk-11-jdk
+    - openjdk-11-jre
+    pkg_packages:
+    - dbeaver-ce
+
+- name: install kubectl
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: kubectl
+    pkg_gpg_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    pkg_repository: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    pkg_packages:
+    - kubectl
+
+- name: install vscode
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: vscode
+    pkg_gpg_key: https://packages.microsoft.com/keys/microsoft.asc
+    pkg_repository: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
+    pkg_repository_name: packages_microsoft_com_repos_vscode
+    pkg_dependencies:
+    - ca-certificates
+    - apt-transport-https
+    - gconf2
+    - libasound2
+    - libgtk2.0-0
+    - libxss1
+    pkg_packages:
+    - code
+
+- name: install erlang & elixir
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: elixir & erlang
+    pkg_deb: https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb
+    pkg_dependencies:
+    - esl-erlang
+    pkg_packages:
+    - elixir
+
+- name: install java
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: java
+    pkg_packages:
+    - default-jdk
+    - default-jre
+    - openjdk-8-jdk
+    - openjdk-8-jre
+    - openjdk-11-jre
+    - openjdk-11-jdk
+
+- name: install gitkraken
+  include_tasks: generic.yaml
+  vars:
+    pkg_name: gitkraken
+    pkg_deb: https://release.gitkraken.com/linux/gitkraken-amd64.deb
+ 

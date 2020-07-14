@@ -1,0 +1,11 @@
+---
+
+- name: calibre | download install script
+  get_url:
+    url: https://download.calibre-ebook.com/linux-installer.sh
+    dest: /tmp/calibre-install.sh
+    mode: +x
+
+- name: calibre | run install script
+  become: yes
+  command: /bin/sh /tmp/calibre-install.sh
