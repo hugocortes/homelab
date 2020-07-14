@@ -25,3 +25,6 @@ fi
 if [ ! -f inventory/hosts.ini ]; then
   scp inventory/hosts.example.ini inventory/hosts.ini
 fi
+if [ ! -f inventory/localhost.ini ]; then
+  scp inventory/localhost.example.ini inventory/localhost.ini
+fi
