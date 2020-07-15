@@ -27,12 +27,14 @@
   - name: add {{ pkg_name }} repository
     apt_repository:
       repo: "{{ pkg_repository }}"
+      update_cache: yes
     when: pkg_repository is defined and pkg_repository_name is not defined
 
   - name: add {{ pkg_name }} repository with name
     apt_repository:
       repo: "{{ pkg_repository }}"
       filename: "{{ pkg_repository_name }}"
+      update_cache: yes
     when: pkg_repository_name is defined
 
   - name: install {{ pkg_name }} deb

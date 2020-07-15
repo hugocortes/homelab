@@ -1,0 +1,110 @@
+---
+
+- name: create sync home dir
+  become: no
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+  - "{{ ansible_env['HOME'] }}/.sync/config"
+  - "{{ ansible_env['HOME'] }}/.sync/Sync"
+
+- name: create global .stignore_global
+  copy:
+    src: files/.stignore_global
+    dest: "{{ ansible_env['HOME'] }}/.sync/Sync/.stignore_global"
+    force: yes
+
+- name: create .stignore root file
+  copy:
+    src: files/.stignore
+    dest: "{{ ansible_env['HOME'] }}/.sync/Sync/.stignore"
+    force: yes
+
+- name: check if syncthing config exists
+  stat:
+    path: "{{ ansible_env['HOME'] }}/.sync/config/config.xml"
+  register: syncthing_config
+
+- name: initialize syncthing config
+  block:
+  - name: get syncthing config
+    docker_container:
+      name: syncthing-tmp
+      image: syncthing/syncthing
+      state: started
+    register: syncthing
+
+  - name: copy syncthing config
+    command: "docker cp syncthing-tmp:/var/syncthing/config/config.xml {{ ansible_env['HOME'] }}/.sync/config/config.xml"
+
+  - name: remove tmp container
+    docker_container:
+      name: syncthing-tmp
+      state: absent
+  when: not syncthing_config.stat.exists
+
+- name: enable ldap auth
+  lineinfile:
+    path: "{{ ansible_env['HOME'] }}/.sync/config/config.xml"
+    insertafter: <theme>\w+<\/theme>$
+    line: <authMode>ldap</authMode>
+    regexp: \s+<authMode>\w+<\/authMode>
+    state: present
+
+- name: remove default ldap block
+  lineinfile:
+    path: "{{ ansible_env['HOME'] }}/.sync/config/config.xml"
+    regexp: <ldap></ldap>$
+    state: absent
+
+- name: create ldap block
+  lineinfile:
+    path: "{{ ansible_env['HOME'] }}/.sync/config/config.xml"
+    insertbefore: ^<\/configuration>$
+    line: "{{ item }}"
+    regexp: "{{ item }}"
+    state: present
+  with_items:
+  - <ldap>
+  - </ldap>
+
+- name: configure ldap auth
+  lineinfile:
+    path: "{{ ansible_env['HOME'] }}/.sync/config/config.xml"
+    insertbefore: <\/ldap>$
+    line: "{{ item.line }}"
+    regexp: "{{ item.regexp }}"
+    state: present
+  with_items:
+  - line: <address>{{ ipa.host }}:{{ ipa.port.ldaps }}</address>
+    regexp: <address>{{ ipa.host }}:{{ ipa.port.ldaps }}<\/address>
+  - line: <transport>tls</transport>
+    regexp: <transport>tls<\/transport>
+  - line: <insecureSkipVerify>true</insecureSkipVerify>
+    regexp: <insecureSkipVerify>true<\/insecureSkipVerify>
+  - line: <bindDN>uid=%s,{{ ipa.userDN }}</bindDN>
+    regexp: <bindDN>uid=%s,{{ ipa.userDN }}<\/bindDN>
+  - line: <searchBaseDN>{{ ipa.userDN }}</searchBaseDN>
+    regexp: <searchBaseDN>{{ ipa.userDN }}<\/searchBaseDN>
+  - line: <searchFilter>(&amp;(uid=%s)(memberof=cn={{ ipa.groups.syncthing }},{{ ipa.groupDN }}))</searchFilter>
+    regexp: <searchFilter>\(&amp;\(uid=%s\)\(memberof=cn={{ ipa.groups.syncthing }},{{ ipa.groupDN }}\)\)<\/searchFilter>
+
+- name: configure gui bind address
+  lineinfile:
+    path: "{{ ansible_env['HOME'] }}/.sync/config/config.xml"
+    line: <address>0.0.0.0:8384</address>
+    regexp: <address>127.0.0.1:8384<\/address>
+
+- name: launch syncthing container
+  become: no
+  docker_container:
+    name: syncthing
+    image: syncthing/syncthing
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+    - "{{ ansible_env['HOME'] }}/.sync/Sync:/var/syncthing/Sync"
+    - "{{ ansible_env['HOME'] }}/.sync/config:/var/syncthing/config"
+    - "{{ ansible_env['HOME'] }}/Desktop:/mnt/home/Desktop"
+    - "{{ ansible_env['HOME'] }}/code:/mnt/home/code"

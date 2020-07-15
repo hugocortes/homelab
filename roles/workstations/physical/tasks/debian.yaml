@@ -1,6 +1,7 @@
 ---
 
 - name: install apps in existing repo
+  become: yes
   apt:
     name:
     - anki
