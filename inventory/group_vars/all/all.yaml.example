@@ -10,11 +10,6 @@ bastion:
     skey: ""
     host: ""
 
-git:
-  name: ""
-  email: ""
-  signingkey: ""
-
 guacamole:
   tag: "1.2.0"
   db:
@@ -35,7 +30,15 @@ influxdb:
   port: "25826"
 
 ipa:
+  host: ""
+  port:
+    ldap: "389"
+    ldaps: "636"
+  userDN: ""
+  groupDN: ""
   user: ""
+  groups:
+    syncthing: ""
 
 nfs:
   host: ""
@@ -66,7 +69,6 @@ spin_cli:
   gate:
     endpoint: https://spinnaker-api.domain
   auth:
-    cachedToken: {}
     enabled: true
     oauth2:
       tokenUrl: https://auth.domain/auth

@@ -9,6 +9,7 @@
     name:
     - build-essential
     - gnupg
+    - gnupg2
     - libmediainfo0v5
     - libssl-dev
     - nfs-common
