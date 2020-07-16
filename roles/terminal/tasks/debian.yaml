@@ -9,7 +9,7 @@
     state: latest
 
 - name: pip install thefuck
-  become: no
+  become: yes
   pip:
     name: thefuck
     executable: pip3
