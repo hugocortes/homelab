@@ -1,4 +1,9 @@
+ansible_host: ""
+ansible_user: ""
+ansible_password: ""
+ansible_become_pass: ""
+
 git:
   name: Hugo Cortes
   email: contact@hugocortes.dev
-  signingKey: ""
+  signingKey: "ID!"
