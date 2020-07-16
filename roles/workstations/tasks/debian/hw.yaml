@@ -27,7 +27,6 @@
     src: files/profile.jpeg
     dest: "/var/lib/AccountsService/icons/{{ ansible_user }}"
     force: yes
-  when: is_physical_workstation
 
 - name: set wallpaper
   copy:
@@ -69,6 +68,10 @@
     value: "'false'"
   - key: /org/gnome/shell/extensions/dash-to-dock/autohide
     value: "'false'"
+  - key: /org/gnome/shell/extensions/dash-to-dock/dock-position
+    value: "'BOTTOM'"
+  - key: /org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size
+    value: "25"
 
 - name: install and configure vlc
   block:

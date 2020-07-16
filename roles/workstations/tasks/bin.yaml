@@ -208,6 +208,7 @@
     mode: +x
 
 - name: helm | run install script
+  become: yes
   command: /bin/bash /tmp/helm-install.sh
 
 - name: spin-cli | get latest version

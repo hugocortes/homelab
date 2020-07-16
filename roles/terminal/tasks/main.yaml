@@ -20,7 +20,6 @@
   become: yes
   vars:
     ansible_home: /root
-    ansible_user: root
   import_tasks: install.yaml
 
 - name: set zsh as default shell for ansible user

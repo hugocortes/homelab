@@ -40,6 +40,7 @@
   - name: install {{ pkg_name }} deb
     apt:
       deb: "{{ pkg_deb }}"
+      update_cache: yes
     when: pkg_deb is defined
 
   - name: install {{ pkg_name }} dependencies

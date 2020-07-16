@@ -22,6 +22,14 @@
   when: is_internal
   notify: restart ssh
 
+- name: add authorized keys to vm workstation
+  authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: https://github.com/hugocortes.keys
+  when: is_workstation
+  notify: restart ssh
+
 - name: configure bastion host access
   block:
   - name: block access to non bastion users from bastion host
