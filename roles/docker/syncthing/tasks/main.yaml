@@ -8,18 +8,29 @@
   with_items:
   - "{{ ansible_env['HOME'] }}/.sync/config"
   - "{{ ansible_env['HOME'] }}/.sync/Sync"
+  - "{{ ansible_env['HOME'] }}/code"
 
 - name: create global .stignore_global
   copy:
     src: files/.stignore_global
-    dest: "{{ ansible_env['HOME'] }}/.sync/Sync/.stignore_global"
+    dest: "{{ item }}/.stignore_global"
     force: yes
+  with_items:
+  - "{{ ansible_env['HOME'] }}/.sync/Sync"
+  - "{{ ansible_env['HOME'] }}/code"
+  - "{{ ansible_env['HOME'] }}/Documents"
+  - "{{ ansible_env['HOME'] }}/Desktop"
 
 - name: create .stignore root file
   copy:
     src: files/.stignore
-    dest: "{{ ansible_env['HOME'] }}/.sync/Sync/.stignore"
+    dest: "{{ item }}/.stignore"
     force: yes
+  with_items:
+  - "{{ ansible_env['HOME'] }}/.sync/Sync"
+  - "{{ ansible_env['HOME'] }}/code"
+  - "{{ ansible_env['HOME'] }}/Documents"
+  - "{{ ansible_env['HOME'] }}/Desktop"
 
 - name: check if syncthing config exists
   stat:
@@ -106,5 +117,6 @@
     volumes:
     - "{{ ansible_env['HOME'] }}/.sync/Sync:/var/syncthing/Sync"
     - "{{ ansible_env['HOME'] }}/.sync/config:/var/syncthing/config"
-    - "{{ ansible_env['HOME'] }}/Desktop:/mnt/home/Desktop"
     - "{{ ansible_env['HOME'] }}/code:/mnt/home/code"
+    - "{{ ansible_env['HOME'] }}/Desktop:/mnt/home/Desktop"
+    - "{{ ansible_env['HOME'] }}/Documents:/mnt/home/Documents"
