@@ -132,6 +132,9 @@
 - name: nvm | install
   command: /bin/bash /tmp/nvm-install.sh
 
+- name: nvm | install node v12
+  command: nvm install 12
+
 - name: robo3t | check if robo3t dir exists
   stat:
     path: /opt/robo3t
