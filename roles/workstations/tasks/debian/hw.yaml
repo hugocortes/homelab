@@ -71,7 +71,7 @@
   - key: /org/gnome/shell/extensions/dash-to-dock/dock-position
     value: "'BOTTOM'"
   - key: /org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size
-    value: "25"
+    value: "17"
 
 - name: install and configure vlc
   block:

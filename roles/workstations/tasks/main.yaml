@@ -32,3 +32,8 @@
     src: git.j2
     dest: "{{ ansible_env['HOME'] }}/.gitconfig"
     force: yes
+
+- name: gcloud-sdk | create .gcloud dir
+  file:
+    path: "{{ ansible_env['HOME'] }}/.gcloud"
+    state: directory
