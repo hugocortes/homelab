@@ -8,15 +8,19 @@
   apt:
     name:
     - build-essential
+    - discord
     - gnupg
     - gnupg2
+    - jq
     - libmediainfo0v5
     - libssl-dev
     - network-manager-openvpn-gnome
     - nfs-common
     - openvpn-systemd-resolved
     - protobuf-compiler
+    - redis-tools
     - sshpass
+    - traceroute
     - virtualbox
     - wireshark
     state: latest

@@ -8,6 +8,7 @@
     - sshpass
     - python3-pip
     - python2-pip
+    - vim
     state: latest
   when: is_centos
 
@@ -18,5 +19,6 @@
     - sshpass
     - python3-pip
     - tree        # display directory tree
+    - vim
     state: latest
   when: is_debian

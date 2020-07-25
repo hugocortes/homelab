@@ -132,9 +132,6 @@
 - name: nvm | install
   command: /bin/bash /tmp/nvm-install.sh
 
-- name: nvm | install node v12
-  command: nvm install 12
-
 - name: robo3t | check if robo3t dir exists
   stat:
     path: /opt/robo3t
@@ -219,13 +216,13 @@
     url: https://storage.googleapis.com/spinnaker-artifacts/spin/latest
     method: GET
     return_content: yes
-  register: spin_cli
+  register: spin_cli_version
 
 # BUG with 1.17.0
 # - name: spin-cli | download to opt
 #   become: yes
 #   get_url:
-#     url: "https://storage.googleapis.com/spinnaker-artifacts/spin/{{ spin_cli.content }}/linux/amd64/spin"
+#     url: "https://storage.googleapis.com/spinnaker-artifacts/spin/{{ spin_cli_version.content }}/linux/amd64/spin"
 #     dest: /opt/spin
 #     mode: +x
 
