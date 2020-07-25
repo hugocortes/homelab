@@ -1,7 +1,6 @@
 ---
 
 - name: set facts and ssh user
-  strategy: free
   hosts: all
   become: no
   gather_facts: no
@@ -37,7 +36,6 @@
   - packages/disable
 
 - name: install & update packages
-  strategy: free
   hosts: all
   become: yes
   tags: install-update
@@ -51,7 +49,6 @@
   tags: freeipa-client
 
 - name: configure servers group
-  strategy: free
   hosts: servers
   become: yes
   vars:
@@ -59,10 +56,10 @@
   tags: configure
   roles:
   - services/ssh/setup
-  - services/collectd
+  - name: services/collectd
+    tags: collectd
 
 - name: configure terminal
-  strategy: free
   hosts: all
   become: no
   tags: terminal
@@ -70,7 +67,6 @@
   - terminal
 
 - name: configure docker group
-  strategy: free
   hosts: docker
   become: yes
   tags: docker
@@ -80,7 +76,6 @@
     when: not is_workstation
 
 - name: configure kubernetes group
-  strategy: free
   hosts: kubernetes
   become: yes
   tags: kubernetes
@@ -88,7 +83,6 @@
   - services/kubernetes
 
 - name: configure workstations group
-  strategy: free
   hosts: workstations
   tags: workstations
   roles:
@@ -97,7 +91,6 @@
     tags: docker/syncthing
 
 - name: configure bastion
-  strategy: free
   hosts: bastion
   become: yes
   pre_tasks:
@@ -111,7 +104,6 @@
   - docker/sish
 
 - name: configure guacamole
-  strategy: free
   hosts: guacamole
   become: yes
   tags: guacamole
@@ -121,7 +113,6 @@
   - docker/guacamole
 
 - name: configure postgresql
-  strategy: free
   hosts: postgres
   become: yes
   tags: postgresql

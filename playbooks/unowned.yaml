@@ -3,7 +3,6 @@
 # use inventory that will not be registered with freeipa and spacewalk
 
 - name: set facts and ssh user
-  strategy: free
   hosts: all
   become: no
   gather_facts: no
@@ -15,7 +14,6 @@
 
 - name: configure unowned servers
   become: yes
-  strategy: free
   hosts: all
   tags: configure
   pre_tasks:
