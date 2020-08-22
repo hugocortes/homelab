@@ -49,6 +49,24 @@
     src: https://extensions.gnome.org/extension-data/dash-to-dockmicxgx.gmail.com.v68.shell-extension.zip
     dest: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com"
 
+- name: adjust dash-to-dock size
+  blockinfile:
+    dest: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/stylesheet.css"
+    marker: "/* {mark}-dock-size */"
+    block: |
+      #dashtodockContainer .overview-icon {
+        padding-top:2px;
+        padding-bottom:2px;
+        padding-right: 1px;
+        padding-left: 1px;
+      }
+      #dashtodockContainer.icon {
+        padding-top:2px;
+        padding-bottom:2px;
+        padding-right: 1px;
+        padding-left: 1px;
+      }
+
 - name: enable dash-to-dock extension
   dconf:
     key: /org/gnome/shell/enabled-extensions
