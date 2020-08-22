@@ -35,7 +35,7 @@
       repo: "{{ pkg_repository }}"
       filename: "{{ pkg_repository_name }}"
       update_cache: yes
-    when: pkg_repository_name is defined
+    when: pkg_repository is defined and pkg_repository_name is defined
 
   - name: install {{ pkg_name }} deb
     apt:

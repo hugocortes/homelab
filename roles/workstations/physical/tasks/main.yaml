@@ -3,3 +3,6 @@
 - name: debian | configure
   import_tasks: debian.yaml
   when: is_debian
+
+- name: configure bin tools
+  import_tasks: bin.yaml

@@ -21,17 +21,20 @@
   block:
   - name: go | download cloudlare ssl tools
     become: no
-    command: "go get -u github.com/cloudflare/cfssl/cmd/{{ item }}"
+    command: "go get -u {{ item }}"
     with_items:
-    - cfssl
-    - cfssljson
+    - github.com/cloudflare/cfssl/cmd/cfssl
+    - github.com/cloudflare/cfssl/cmd/cfssljson
+    - github.com/rogpeppe/godef
+    - golang.org/x/lint/golint
+    - golang.org/x/tools/cmd/godoc
 
+  # temporary, will remove evantually
   - name: go | create cloudflare symlink
     become: yes
     file:
-      src: "{{ ansible_env['HOME'] }}/go/bin/{{ item }}"
-      dest: "/usr/local/bin/{{ item }}"
-      state: link
+      path: "/usr/local/bin/{{ item }}"
+      state: absent
     with_items:
     - cfssl
     - cfssljson
@@ -103,12 +106,12 @@
   become: no
   unarchive:
     remote_src: yes
-    src: https://download.jetbrains.com/toolbox/jetbrains-toolbox-1.17.7018.tar.gz
+    src: https://download.jetbrains.com/toolbox/jetbrains-toolbox-1.17.7275.tar.gz
     dest: /tmp
 
 - name: intellij | move to opt
   become: yes
-  command: mv /tmp/jetbrains-toolbox-1.17.7018/jetbrains-toolbox /opt/jetbrains-toolbox
+  command: mv /tmp/jetbrains-toolbox-1.17.7275/jetbrains-toolbox /opt/jetbrains-toolbox
 
 - name: intellij | remove toolbox from autostart
   become: no
@@ -250,3 +253,22 @@
     dest: "{{ ansible_env['HOME'] }}/.spin/config"
     content: "{{ spin_cli | to_nice_yaml }}"
     force: no
+
+- name: istioctl | register current version
+  set_fact:
+    istioctl_version: "1.6.5"
+
+- name: istioctl | download
+  become: yes
+  unarchive:
+    remote_src: yes
+    src: "https://github.com/istio/istio/releases/download/{{ istioctl_version }}/istio-{{ istioctl_version }}-linux-amd64.tar.gz"
+    dest: /opt/
+    owner: "{{ ansible_user }}"
+
+- name: istioctl | create symlink
+  become: yes
+  file:
+    src: "/opt/istio-{{ istioctl_version }}/bin/istioctl"
+    dest: /usr/local/bin/istioctl
+    state: link

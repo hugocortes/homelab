@@ -21,9 +21,9 @@
       msg: target host should not be an internal server or client
     when: is_internal
   roles:
+  - name: packages/install
   - name: packages/update
     tags: update
-  - name: packages/install
   - name: services/ssh/setup
   - name: services/kubernetes
     vars:

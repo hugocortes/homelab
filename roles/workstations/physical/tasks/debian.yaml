@@ -19,15 +19,16 @@
     pkg_packages:
     - duck
 
-# - name: install etcher
-#   include_tasks: ../tasks/debian/generic.yaml
-#   vars:
-#     pkg_name: etcher
-#     pkg_gpg_id: 379CE192D401AB61
-#     pkg_gpg_keyserver: keyserver.ubuntu.com
-#     pkg_repository: deb https://deb.etcher.io stable etcher
-#     pkg_packages:
-#     - balena-etcher-electron
+- name: install etcher
+  include_tasks: ../tasks/debian/generic.yaml
+  vars:
+    pkg_name: etcher
+    pkg_gpg_id: 379CE192D401AB61
+    pkg_gpg_keyserver: hkps://keyserver.ubuntu.com:443
+    pkg_repository_name: etcher
+    pkg_repository: deb https://deb.etcher.io stable etcher
+    pkg_packages:
+    - balena-etcher-electron
 
 - name: install spotify
   include_tasks: ../tasks/debian/generic.yaml

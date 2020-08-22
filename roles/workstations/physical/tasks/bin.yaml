@@ -1,11 +1,25 @@
 ---
 
-- name: calibre | download install script
+- name: ledger | download install image
+  become: yes
   get_url:
-    url: https://download.calibre-ebook.com/linux-installer.sh
-    dest: /tmp/calibre-install.sh
+    url: https://download-live.ledger.com/releases/latest/download/linux
+    dest: /opt/ledger
     mode: +x
 
-- name: calibre | run install script
+- name: ledger | create shortcut
   become: yes
-  command: /bin/sh /tmp/calibre-install.sh
+  file:
+    src: /opt/ledger
+    dest: /usr/local/bin/ledger
+    state: link
+
+- name: ledger | create shortcut
+  copy:
+    dest: ~/.local/share/applications/ledger.desktop
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Terminal=false
+      Name=Ledger
+      Exec=ledger
