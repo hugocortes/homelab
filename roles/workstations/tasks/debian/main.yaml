@@ -45,7 +45,7 @@
   vars:
     pkg_name: mongodb
     pkg_gpg_key: https://www.mongodb.org/static/pgp/server-4.2.asc
-    pkg_repository: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
+    pkg_repository: deb [arch=amd64,arm64] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
     pkg_packages:
     - mongodb-org
 
@@ -84,8 +84,8 @@
   vars:
     pkg_name: vscode
     pkg_gpg_key: https://packages.microsoft.com/keys/microsoft.asc
-    pkg_repository: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
-    pkg_repository_name: packages_microsoft_com_repos_vscode
+    pkg_repository: deb [arch=amd64] http://packages.microsoft.com/repos/vscode stable main
+    pkg_repository_name: vscode
     pkg_dependencies:
     - ca-certificates
     - apt-transport-https
@@ -133,7 +133,7 @@
     pkg_packages:
     - google-cloud-sdk
 
-- name: install insomnia
+- name: insomnia | install
   include_tasks: generic.yaml
   vars:
     pkg_name: insomnia
@@ -141,6 +141,20 @@
     pkg_repository: deb https://dl.bintray.com/getinsomnia/Insomnia /
     pkg_packages:
     - insomnia
+
+- name: insomnia | install plugins
+  block:
+  - name: insomnia | install npm pkg
+    npm:
+      name: "{{ item }}"
+      path: /tmp
+    with_items:
+    - insomnia-plugin-accesstoken
+    
+  - name: insomnia | move pkg to plugin dir
+    command: "mv /tmp/node_modules/{{ item }} {{ ansible_env['HOME'] }}/.config/Insomnia/plugins/{{ item }}"
+    with_items:
+    - insomnia-plugin-accesstoken
 
 - name: github-cli | get latest version
   uri:
