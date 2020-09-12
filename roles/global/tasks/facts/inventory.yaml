@@ -17,9 +17,3 @@
 - name: set is_owned fact
   set_fact:
     is_internal: "{{ is_freeipa_server or is_freeipa_client or is_spacewalk_server or is_spacewalk_client }}"
-
-- name: set system runner facts
-  set_fact:
-    run_bastion_setup: "{{ setup_bastion | default('false') | bool }}"
-    run_rdp_setup: "{{ setup_rdp | default('false') | bool }}"
-    run_postgresql_install: "{{ install_postgresql | default('false') | bool }}"

@@ -88,7 +88,7 @@
         state: present
         activationkey: 1-centos7-base
         server_url: https://{{ spacewalk.host }}/XMLRPC
-      when: not is_docker and not is_kubernetes and not run_bastion_setup
+      when: not is_docker and not is_kubernetes
       ignore_errors: yes
 
     - name: centos7 | register to docker channel
