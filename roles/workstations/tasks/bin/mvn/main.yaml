@@ -38,3 +38,9 @@
     state: link
     force: yes
   with_items: "{{ find_maven.files }}"
+
+- name: nvm | install and use
+  become: no
+  shell: "source {{ ansible_env['HOME'] }}/.zshrc && nvm install {{ version.node }} && nvm use {{ version.node }}"
+  args:
+    executable: /bin/bash

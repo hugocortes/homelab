@@ -13,6 +13,7 @@ version:
   istioctl: "1.7.0"
   # https://maven.apache.org/download.cgi
   mvn: "3.6.3"
+  node: "14.10.1"
   # https://robomongo.org/download
   robo3t: 1.4.0-linux-x86_64-12e54cc
   # http://release.tinymediamanager.org/

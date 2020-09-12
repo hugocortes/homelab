@@ -1,5 +1,8 @@
 ---
 
+- name: bin | configure
+  import_tasks: bin/main.yaml
+
 - name: debian | configure
   import_tasks: debian/main.yaml
   when: is_debian
@@ -7,9 +10,6 @@
 - name: centos | configure
   import_tasks: centos/main.yaml
   when: is_centos
-
-- name: bin | configure
-  import_tasks: bin/main.yaml
 
 - name: configure physical workstation
   import_tasks: physical/main.yaml

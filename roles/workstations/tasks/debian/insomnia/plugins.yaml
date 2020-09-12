@@ -6,9 +6,9 @@
   register: plugin
 
 - name: insomnia | install npm pkg
-  npm:
-    name: "{{ item }}"
-    path: /tmp
+  shell: "source {{ ansible_env['HOME'] }}/.zshrc && npm install --prefix /tmp {{ item }}"
+  args:
+    executable: /bin/bash
   when: plugin.stat.exists == false
 
 - name: insomnia | move pkg to plugin dir
