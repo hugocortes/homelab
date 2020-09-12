@@ -1,0 +1,40 @@
+---
+
+- name: mvn | set facts
+  set_fact:
+    install_path: "/opt/mvn-{{ version.mvn }}"
+
+- name: mvn | create install dir
+  become: yes
+  file:
+    path: "{{ install_path }}"
+    state: directory
+
+- name: mvn | download and untar
+  become: yes
+  unarchive:
+    remote_src: yes
+    src: "http://apache.spinellicreations.com/maven/maven-3/{{ version.mvn }}/binaries/apache-maven-{{ version.mvn }}-bin.tar.gz"
+    dest: "{{ install_path }}"
+    extra_opts:
+    - --strip-components=1
+
+- name: mvn | register bin files
+  become: yes
+  find:
+    paths:
+    - "{{ install_path }}/bin"
+    file_type: file
+    use_regex: yes
+    patterns:
+    - ^[^\.]+$
+  register: find_maven
+
+- name: mvn | create symlinks
+  become: yes
+  file:
+    src: "{{ item.path }}"
+    dest: "/usr/local/bin/{{ item.path | basename }}"
+    state: link
+    force: yes
+  with_items: "{{ find_maven.files }}"

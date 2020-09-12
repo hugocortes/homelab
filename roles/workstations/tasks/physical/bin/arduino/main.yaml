@@ -1,0 +1,12 @@
+---
+
+- name: arduino | download and untar
+  become: yes
+  unarchive:
+    remote_src: yes
+    src: "https://downloads.arduino.cc/arduino-{{ version.arduino }}-linux64.tar.xz"
+    dest: /opt
+
+- name: arduino | install
+  become: yes
+  command: "/bin/sh /opt/arduino-{{ version.arduino }}/install.sh"

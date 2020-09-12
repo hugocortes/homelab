@@ -1,0 +1,32 @@
+---
+
+- name: tmm | set facts
+  set_fact:
+    install_path: "/opt/tinymediamanager-{{ version.tmm }}"
+
+- name: tmm | create install dir
+  become: yes
+  file:
+    path: "{{ install_path }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+
+- name: tmm | download and untar
+  become: yes
+  unarchive:
+    remote_src: yes
+    src: "https://release.tinymediamanager.org/v3/dist/tmm_{{ version.tmm }}_linux.tar.gz"
+    dest: "{{ install_path }}"
+
+- name: tmm | create shortcut
+  copy:
+    force: yes
+    dest: ~/.local/share/applications/tinyMediaManager.desktop
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Terminal=false
+      Name=tinyMediaManager
+      Icon={{ install_path }}/tmm.png
+      Exec={{ install_path }}/tinyMediaManager.sh

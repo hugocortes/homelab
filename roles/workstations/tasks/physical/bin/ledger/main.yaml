@@ -23,16 +23,3 @@
       Terminal=false
       Name=Ledger
       Exec=ledger
-
-- name: arduino | install
-  become: yes
-  block:
-  - name: arduino | download and untar
-    unarchive:
-      remote_src: yes
-      src: https://downloads.arduino.cc/arduino-1.8.13-linux64.tar.xz
-      dest: /opt
-
-  - name: arduino | install
-    become: yes
-    command: /bin/sh /opt/arduino-1.8.13/install.sh

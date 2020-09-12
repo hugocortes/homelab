@@ -2,6 +2,22 @@ reboot:
   min_wait_time: 15
   max_wait_time: 30
 
+version:
+  # https://www.arduino.cc/en/Main/Software
+  arduino: "1.8.13"
+  # https://golang.org/doc/install
+  go: "1.15.1"
+  # https://www.jetbrains.com/toolbox-app/download/download-thanks.html
+  jetbrains: "1.18.7455"
+  # https://github.com/istio/istio/tags
+  istioctl: "1.7.0"
+  # https://maven.apache.org/download.cgi
+  mvn: "3.6.3"
+  # https://robomongo.org/download
+  robo3t: 1.4.0-linux-x86_64-12e54cc
+  # http://release.tinymediamanager.org/
+  tmm: "3.1.8"
+
 bastion:
   user: ""
   host: ""

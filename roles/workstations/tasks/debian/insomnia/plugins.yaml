@@ -1,0 +1,16 @@
+---
+
+- name: insomnia | check if plugin exists
+  stat:
+    path: "{{ plugin_path }}/{{ item }}"
+  register: plugin
+
+- name: insomnia | install npm pkg
+  npm:
+    name: "{{ item }}"
+    path: /tmp
+  when: plugin.stat.exists == false
+
+- name: insomnia | move pkg to plugin dir
+  command: "mv /tmp/node_modules/{{ item }} {{ plugin_path }}/{{ item }}"
+  when: plugin.stat.exists == false

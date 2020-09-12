@@ -1,5 +1,12 @@
 ---
 
+- name: centos | install rdp packages
+  yum:
+    name:
+    - tigervnc-server
+    - xrdp
+    state: latest
+
 - name: centos | open rdp ports
   include_tasks: ../roles/services/firewalld/tasks/port.yaml
   loop:

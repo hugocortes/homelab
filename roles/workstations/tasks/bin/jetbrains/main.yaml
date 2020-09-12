@@ -1,0 +1,26 @@
+---
+
+- name: jetbrains | set facts
+  set_fact:
+    install_path: "/opt/jetbrains-toolbox-{{ version.jetbrains }}"
+
+- name: jetbrains | create install dir
+  become: yes
+  file:
+    path: "{{ install_path }}"
+    state: directory
+
+- name: jetbrains | download and untar
+  become: yes
+  unarchive:
+    remote_src: yes
+    src: "https://download.jetbrains.com/toolbox/jetbrains-toolbox-{{ version.jetbrains }}.tar.gz"
+    dest: "{{ install_path }}"
+    extra_opts:
+    - --strip-components=1
+
+- name: jetbrains | remove toolbox from autostart
+  become: no
+  file:
+    path: "{{ ansible_env['HOME'] }}/.config/autostart/jetbrains-toolbox.desktop"
+    state: absent

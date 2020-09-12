@@ -1,0 +1,37 @@
+---
+
+- name: faas-cli | configure
+  import_tasks: faas-cli/main.yaml
+
+- name: go | configure
+  import_tasks: go/main.yaml
+
+- name: helm | configure
+  import_tasks: helm/main.yaml
+
+- name: istioctl | configure
+  import_tasks: istioctl/main.yaml
+
+- name: jetbrains | configure
+  import_tasks: jetbrains/main.yaml
+
+- name: minikube | configure
+  import_tasks: minikube/main.yaml
+
+- name: mvn | configure
+  import_tasks: mvn/main.yaml
+
+- name: nvm | configure
+  import_tasks: nvm/main.yaml
+
+- name: robo3t | configure
+  import_tasks: robo3t/main.yaml
+
+- name: rust | configure
+  import_tasks: rust/main.yaml
+  
+- name: spin-cli | configure
+  import_tasks: spin-cli/main.yaml
+
+- name: tmm | configure
+  import_tasks: tmm/main.yaml

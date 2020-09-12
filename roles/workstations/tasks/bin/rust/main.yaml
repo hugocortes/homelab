@@ -1,0 +1,10 @@
+---
+
+- name: rust | download install script
+  get_url:
+    url: https://sh.rustup.rs
+    dest: /tmp/rust-install.sh
+    mode: +x
+
+- name: rust | install
+  command: /bin/sh /tmp/rust-install.sh -y

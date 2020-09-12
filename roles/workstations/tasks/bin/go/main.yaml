@@ -1,0 +1,43 @@
+---
+
+- name: go | set facts
+  set_fact:
+    install_path: "/opt/go-{{ version.go }}"
+
+- name: go | create install dir
+  become: yes
+  file:
+    path: "{{ install_path }}"
+    state: directory
+
+- name: go | download and untar
+  become: yes
+  unarchive:
+    remote_src: yes
+    src: "https://dl.google.com/go/go{{ version.go }}.linux-amd64.tar.gz"
+    dest: "{{ install_path }}"
+    extra_opts:
+    - --strip-components=1
+
+- name: go | create symlinks
+  become: yes
+  file:
+    src: "{{ install_path }}/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: yes
+  with_items:
+  - go
+  - gofmt
+
+- name: go | get aditional bin tools
+  block:
+  - name: go | download cloudlare ssl tools
+    become: no
+    command: "go get -u {{ item }}"
+    with_items:
+    - github.com/cloudflare/cfssl/cmd/cfssl
+    - github.com/cloudflare/cfssl/cmd/cfssljson
+    - github.com/rogpeppe/godef
+    - golang.org/x/lint/golint
+    - golang.org/x/tools/cmd/godoc

@@ -1,0 +1,17 @@
+---
+
+- name: nvm | get latest version
+  uri:
+    url: https://api.github.com/repos/nvm-sh/nvm/releases/latest
+    method: GET
+    return_content: yes
+  register: nvm
+
+- name: nvm | download install script
+  get_url:
+    url: "https://raw.githubusercontent.com/nvm-sh/nvm/{{ nvm.json.tag_name }}/install.sh"
+    dest: /tmp/nvm-install.sh
+    mode: +x
+
+- name: nvm | install
+  command: /bin/bash /tmp/nvm-install.sh

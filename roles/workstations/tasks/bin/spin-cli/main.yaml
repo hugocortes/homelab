@@ -1,0 +1,33 @@
+---
+
+- name: spin-cli | get latest version
+  uri:
+    url: https://storage.googleapis.com/spinnaker-artifacts/spin/latest
+    method: GET
+    return_content: yes
+  register: spin_cli_version
+
+- name: spin-cli | download
+  become: yes
+  get_url:
+    url: "https://storage.googleapis.com/spinnaker-artifacts/spin/{{ spin_cli_version.content }}/linux/amd64/spin"
+    dest: /opt/spin
+    mode: +x
+
+- name: spin-cli | create symlink
+  become: yes
+  file:
+    src: /opt/spin
+    dest: /usr/local/bin/spin
+    state: link
+
+- name: spin-cli | create dir
+  file:
+    path: "{{ ansible_env['HOME'] }}/.spin"
+    state: directory
+
+- name: spin-cli | create config
+  copy:
+    dest: "{{ ansible_env['HOME'] }}/.spin/config"
+    content: "{{ spin_cli | to_nice_yaml }}"
+    force: no

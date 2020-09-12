@@ -1,0 +1,7 @@
+---
+
+- name: install ledger
+  import_tasks: ledger/main.yaml
+
+- name: bin | configure arduino
+  import_tasks: arduino/main.yaml

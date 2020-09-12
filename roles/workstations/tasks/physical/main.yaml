@@ -5,4 +5,4 @@
   when: is_debian
 
 - name: configure bin tools
-  import_tasks: bin.yaml
+  import_tasks: bin/main.yaml

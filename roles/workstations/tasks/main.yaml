@@ -5,18 +5,18 @@
   when: is_debian
 
 - name: centos | configure
-  import_tasks: centos.yaml
+  import_tasks: centos/main.yaml
   when: is_centos
 
-- name: configure bin tools
-  import_tasks: bin.yaml
+- name: bin | configure
+  import_tasks: bin/main.yaml
 
 - name: configure physical workstation
-  import_tasks: ../physical/tasks/main.yaml
+  import_tasks: physical/main.yaml
   when: is_physical_workstation
 
 - name: configure vm workstation
-  import_tasks: ../vm/tasks/main.yaml
+  import_tasks: vm/main.yaml
   when: is_vm_workstation
 
 - name: git | create global files
@@ -37,3 +37,27 @@
   file:
     path: "{{ ansible_env['HOME'] }}/.gcloud"
     state: directory
+
+# files to remove
+# temporary, will remove evantually
+- name: go | create cloudflare symlink
+  become: yes
+  file:
+    path: "/usr/local/bin/{{ item }}"
+    state: absent
+  with_items:
+  - cfssl
+  - cfssljson
+- name: remove old maven
+  become: yes
+  file:
+    path: "/opt/{{ item }}"
+    state: absent
+  with_items:
+  - maven
+  - go
+  - containerd
+  - fly
+  - net.downloadhelper.coapp
+  - tinymediamanager
+  - jetbrains-toolbox

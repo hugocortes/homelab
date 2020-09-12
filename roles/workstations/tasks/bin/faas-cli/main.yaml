@@ -1,0 +1,11 @@
+---
+
+- name: faas-cli | download install script
+  get_url:
+    url: https://cli.openfaas.com
+    dest: /tmp/faas-cli-install.sh
+    mode: +x
+
+- name: faas-cli | run install script
+  become: yes
+  command: /bin/sh /tmp/faas-cli-install.sh

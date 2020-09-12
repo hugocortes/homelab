@@ -1,0 +1,24 @@
+---
+
+- name: insomnia | set facts
+  set_fact:
+    plugin_path: "{{ ansible_env['HOME'] }}/.config/Insomnia/plugins"
+
+- name: insomnia | install
+  include_tasks: ../generic.yaml
+  vars:
+    pkg_name: insomnia
+    pkg_gpg_key: https://insomnia.rest/keys/debian-public.key.asc
+    pkg_repository: deb https://dl.bintray.com/getinsomnia/Insomnia /
+    pkg_packages:
+    - insomnia
+
+- name: insomnia | create plugin dir
+  file:
+    path: "{{ plugin_path }}"
+    state: directory
+
+- name: insomnia | install plugins
+  include_tasks: plugins.yaml
+  with_items:
+  - insomnia-plugin-accesstoken

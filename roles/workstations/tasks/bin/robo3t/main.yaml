@@ -1,0 +1,28 @@
+---
+
+- name: robo3t | set facts
+  set_fact:
+    install_path: "/opt/robo3t-{{ version.robo3t }}"
+
+- name: robo3t | create install dir
+  become: yes
+  file:
+    path: "{{ install_path }}"
+    state: directory
+
+- name: robo3t | download and untar
+  become: yes
+  unarchive:
+    remote_src: yes
+    src: "https://download.studio3t.com/robomongo/linux/robo3t-{{ version.robo3t }}.tar.gz"
+    dest: "{{ install_path }}"
+    extra_opts:
+    - --strip-components=1
+
+- name: robo3t | create symlink
+  become: yes
+  file:
+    src: "{{ install_path }}/bin/robo3t"
+    dest: /usr/local/bin/robo3t
+    state: link
+    force: yes

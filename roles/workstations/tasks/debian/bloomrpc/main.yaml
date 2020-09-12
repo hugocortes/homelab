@@ -1,0 +1,14 @@
+---
+
+- name: bloomrpc | get latest version
+  uri:
+    url: https://api.github.com/repos/uw-labs/bloomrpc/releases/latest
+    method: GET
+    return_content: yes
+  register: bloomrpc
+
+- name: bloomrpc | install
+  include_tasks: ../generic.yaml
+  vars:
+    pkg_name: bloomrpc
+    pkg_deb: "https://github.com/uw-labs/bloomrpc/releases/download/{{ bloomrpc.json.tag_name }}/bloomrpc_{{ bloomrpc.json.tag_name }}_amd64.deb"
