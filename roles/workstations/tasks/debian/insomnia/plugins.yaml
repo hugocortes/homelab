@@ -12,5 +12,5 @@
   when: plugin.stat.exists == false
 
 - name: insomnia | move pkg to plugin dir
-  command: "mv /tmp/node_modules/{{ item }} {{ plugin_path }}/{{ item }}"
+  command: "mv /tmp/node_modules/{{ item }} {{ plugin_path }}/"
   when: plugin.stat.exists == false
