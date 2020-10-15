@@ -16,6 +16,7 @@
   become: yes
   apt:
     name:
+    - apache2-utils
     - build-essential
     - discord
     - gnupg
