@@ -9,6 +9,9 @@
   - "{{ ansible_env['HOME'] }}/.sync/config"
   - "{{ ansible_env['HOME'] }}/.sync/Sync"
   - "{{ ansible_env['HOME'] }}/code"
+  - "{{ ansible_env['HOME'] }}/.local/share/DBeaverData"
+  - "{{ ansible_env['HOME'] }}/.3T/robo-3t"
+  - "{{ ansible_env['HOME'] }}/.config/Insomnia"
 
 - name: create global .stignore_global
   copy:
@@ -20,6 +23,9 @@
   - "{{ ansible_env['HOME'] }}/code"
   - "{{ ansible_env['HOME'] }}/Documents"
   - "{{ ansible_env['HOME'] }}/Desktop"
+  - "{{ ansible_env['HOME'] }}/.local/share/DBeaverData"
+  - "{{ ansible_env['HOME'] }}/.3T/robo-3t"
+  - "{{ ansible_env['HOME'] }}/.config/Insomnia"
 
 - name: create .stignore root file
   copy:
@@ -31,6 +37,9 @@
   - "{{ ansible_env['HOME'] }}/code"
   - "{{ ansible_env['HOME'] }}/Documents"
   - "{{ ansible_env['HOME'] }}/Desktop"
+  - "{{ ansible_env['HOME'] }}/.local/share/DBeaverData"
+  - "{{ ansible_env['HOME'] }}/.3T/robo-3t"
+  - "{{ ansible_env['HOME'] }}/.config/Insomnia"
 
 - name: check if syncthing config exists
   stat:
@@ -120,3 +129,6 @@
     - "{{ ansible_env['HOME'] }}/code:/mnt/home/code"
     - "{{ ansible_env['HOME'] }}/Desktop:/mnt/home/Desktop"
     - "{{ ansible_env['HOME'] }}/Documents:/mnt/home/Documents"
+    - "{{ ansible_env['HOME'] }}/.local/share/DBeaverData:/mnt/home/.local/share/DBeaverData"
+    - "{{ ansible_env['HOME'] }}/.3T/robo-3t:/mnt/home/.3T/robo-3t"
+    - "{{ ansible_env['HOME'] }}/.config/Insomnia:/mnt/home/.config/Insomnia"
