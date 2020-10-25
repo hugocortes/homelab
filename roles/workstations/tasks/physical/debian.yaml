@@ -55,3 +55,13 @@
     - weechat-plugins
     - weechat-python
     - weechat-perl
+
+- name: install yq
+  include_tasks: ../debian/generic.yaml
+  vars:
+    pkg_name: yq
+    pkg_gpg_id: CC86BB64
+    pkg_gpg_keyserver: keyserver.ubuntu.com
+    pkg_repository: ppa:rmescandon/yq
+    pkg_packages:
+    - yq
