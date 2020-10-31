@@ -1,9 +1,35 @@
 ---
 
+- name: install neovim
+  block:
+  - name: download neovim install script
+    become: no
+    get_url:
+      url: https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+      dest: /tmp/nvim.appimage
+      mode: +x
+
+  - name: run neovim install script
+    become: no
+    shell: cd /tmp && /tmp/nvim.appimage --appimage-extract
+    args:
+      executable: /bin/bash
+
+  - name: move neovim to /opt
+    shell: rm -rf /opt/squashfs-root && mv /tmp/squashfs-root /opt
+    args:
+      executable: /bin/bash
+
+  - name: create neovim link
+    file:
+      src: /opt/squashfs-root/AppRun
+      dest: /usr/bin/nvim
+      state: link
+      force: yes
+
 - name: install packages
   yum:
     name:
-    - neovim
     # - python3-neovim
     - zsh
     - git
@@ -16,6 +42,9 @@
     - gcc
     - python2-devel
     - python3-devel
+    - python3-libs
+    - python3-pip
+    - python3-setuptools
     state: latest
 
 - name: update pip setuptools
@@ -24,7 +53,7 @@
     name: setuptools
     state: latest
 
-- name: pip install thefuck
+- name: pip install thefuck for user
   become: no
   pip:
     name: thefuck

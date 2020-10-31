@@ -7,3 +7,10 @@
 - name: centos | update yum packages
   include_tasks: yum.yaml
   when: is_centos
+
+- name: update oh my zsh
+  ignore_errors: yes
+  become: no
+  shell:
+    cmd: "git pull"
+    chdir: "{{ ansible_env['HOME'] }}/.oh-my-zsh"
