@@ -3,25 +3,26 @@
 - name: launch sish container
   docker_container:
     name: sish
-    image: antoniomika/sish
+    image: "antoniomika/sish:{{ sish.tag }}"
     restart_policy: unless-stopped
     hostname: "{{ inventory_hostname }}"
     network_mode: host
-    command: >
-      --ssh-address=:8022 \
-      --http-address=:80 \
-      --https-address=:443 \
-      --https=true \
-      --https-certificate-directory=/ssl \
-      --authentication=true \
-      --authentication-password="" \
-      --authentication-keys-directory=/pubkeys \
-      --private-key-location=/keys/ssh_key \
-      --bind-random-ports=false \
-      --bind-random-subdomains=false \
-      --domain=tunnel.corteshq.net \
+    command: >-
+      --ssh-address=:{{ sish.sshAddress }}
+      --http-address=:{{ sish.httpAddress }}
+      --https-address=:{{ sish.httpsAddress }}
+      --https=true
+      --https-certificate-directory=/ssl
+      --authentication=true
+      --authentication-password=""
+      --authentication-keys-directory=/pubkeys
+      --private-key-location=/keys/ssh_key
+      --private-key-passphrase={{ sish.privateKeyPassphrase }}
+      --bind-random-ports=false
+      --bind-random-subdomains=false
+      --domain={{ sish.domain }}
       --idle-connection-timeout 600s
     volumes:
-    - ~/sish/ssl:/ssl
-    - ~/sish/keys:/keys
-    - ~/sish/pubkeys:/pubkeys
+    - "{{ ansible_env['HOME'] }}/sish/ssl:/ssl"
+    - "{{ ansible_env['HOME'] }}/sish/keys:/keys"
+    - "{{ ansible_env['HOME'] }}/sish/pubkeys:/pubkeys"

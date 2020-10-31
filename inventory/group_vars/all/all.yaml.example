@@ -69,6 +69,14 @@ postgresql:
     user_id: ""
     path: ""
 
+sish:
+  tag: ""
+  sshAddress: "8022"
+  httpAddress: "80"
+  httpsAddress: "443"
+  domain: ""
+  privateKeyPassphrase: ""
+
 spacewalk:
   user: ""
   pass: ""
