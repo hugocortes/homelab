@@ -37,27 +37,3 @@
   file:
     path: "{{ ansible_env['HOME'] }}/.gcloud"
     state: directory
-
-# files to remove
-# temporary, will remove evantually
-- name: go | create cloudflare symlink
-  become: yes
-  file:
-    path: "/usr/local/bin/{{ item }}"
-    state: absent
-  with_items:
-  - cfssl
-  - cfssljson
-- name: remove old maven
-  become: yes
-  file:
-    path: "/opt/{{ item }}"
-    state: absent
-  with_items:
-  - maven
-  - go
-  - containerd
-  - fly
-  - net.downloadhelper.coapp
-  - tinymediamanager
-  - jetbrains-toolbox

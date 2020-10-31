@@ -5,7 +5,7 @@
     name:
     - epel-release
     state: latest
-  when: not is_spacewalk_client
+  when: not is_spacewalk_client and is_centos
 
 - name: centos | install yum packages
   become: yes

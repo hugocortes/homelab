@@ -34,7 +34,7 @@
   include_tasks: ../debian/generic.yaml
   vars:
     pkg_name: spotify
-    pkg_gpg_key: https://download.spotify.com/debian/pubkey.gpg
+    pkg_gpg_key: https://download.spotify.com/debian/pubkey_0D811D58.gpg
     pkg_repository: deb http://repository.spotify.com stable non-free
     pkg_packages:
     - spotify-client
