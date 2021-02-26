@@ -2,7 +2,7 @@
 
 - name: jetbrains | set facts
   set_fact:
-    install_path: "/opt/jetbrains-toolbox-{{ version.jetbrains }}"
+    install_path: "/opt/jetbrains-toolbox-{{ global.version.jetbrains }}"
 
 - name: jetbrains | create install dir
   become: yes
@@ -14,7 +14,7 @@
   become: yes
   unarchive:
     remote_src: yes
-    src: "https://download.jetbrains.com/toolbox/jetbrains-toolbox-{{ version.jetbrains }}.tar.gz"
+    src: "https://download.jetbrains.com/toolbox/jetbrains-toolbox-{{ global.version.jetbrains }}.tar.gz"
     dest: "{{ install_path }}"
     extra_opts:
     - --strip-components=1

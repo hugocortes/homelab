@@ -17,7 +17,7 @@
 
 - name: wait for reboot
   wait_for_connection:
-    delay: "{{ reboot.min_wait_time }}"
-    timeout: "{{ reboot.max_wait_time }}"
+    delay: "{{ global.reboot.min_wait_time }}"
+    timeout: "{{ global.reboot.max_wait_time }}"
   ignore_unreachable: true
   ignore_errors: true

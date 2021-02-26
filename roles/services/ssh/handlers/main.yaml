@@ -1,7 +1,7 @@
 ---
 
 - name: restart ssh | force lookup ipa user id
-  command: "id {{ ipa.user }}"
+  command: "id {{ global.ipa.user }}"
   when: is_freeipa_client
   listen: restart ssh
 

@@ -26,7 +26,7 @@
     dest: /etc/ssh/sshd_config
     marker: "# {mark}-bastion-gateway-auth"
     block: |
-      Match User {{ bastion.user }} Address 192.168.*.1
+      Match User {{ global.bastion.user }} Address 192.168.*.1
         ForceCommand /usr/sbin/login_duo
         AllowTcpForwarding yes
   notify: restart ssh
@@ -36,7 +36,7 @@
     dest: /etc/ssh/sshd_config
     marker: "# {mark}-bastion-gateway-block"
     block: |
-      Match User *,!{{ bastion.user }} Address 192.168.*.1
+      Match User *,!{{ global.bastion.user }} Address 192.168.*.1
         ForceCommand /bin/false
   notify: restart ssh
 

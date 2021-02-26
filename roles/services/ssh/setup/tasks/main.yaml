@@ -38,7 +38,7 @@
       dest: /etc/ssh/sshd_config
       marker: "# {mark}-block-bastion"
       block: |
-        Match User *,!{{ bastion.user }} Address {{ bastion.host }}
+        Match User *,!{{ global.bastion.user }} Address {{ global.bastion.host }}
           ForceCommand /bin/false
     when: is_internal and (bastion.user and bastion.host)
     notify: restart ssh
@@ -48,7 +48,7 @@
       dest: /etc/ssh/sshd_config
       marker: "# {mark}-block-bastion"
       block: |
-        Match Address {{ bastion.host }}
+        Match Address {{ global.bastion.host }}
           ForceCommand /bin/false
     when: not is_internal and (bastion.user and bastion.host)
     notify: restart ssh

@@ -2,7 +2,7 @@
 
 - name: robo3t | set facts
   set_fact:
-    install_path: "/opt/robo3t-{{ version.robo3t }}"
+    install_path: "/opt/robo3t-{{ global.version.robo3t }}"
 
 - name: robo3t | create install dir
   become: yes
@@ -14,7 +14,7 @@
   become: yes
   unarchive:
     remote_src: yes
-    src: "https://download.studio3t.com/robomongo/linux/robo3t-{{ version.robo3t }}.tar.gz"
+    src: "https://download.studio3t.com/robomongo/linux/robo3t-{{ global.version.robo3t }}.tar.gz"
     dest: "{{ install_path }}"
     extra_opts:
     - --strip-components=1

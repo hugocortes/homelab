@@ -58,7 +58,7 @@
     marker: "# {mark}-network ANSIBLE MANAGED BLOCK #"
     block: |
       <Plugin network>
-        Server "{{ influxdb.host }}" "{{ influxdb.port }}"
+        Server "{{ global.influxdb.host }}" "{{ global.influxdb.port }}"
       </Plugin>
 
 - name: configure df plugin

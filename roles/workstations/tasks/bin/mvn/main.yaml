@@ -2,7 +2,7 @@
 
 - name: mvn | set facts
   set_fact:
-    install_path: "/opt/mvn-{{ version.mvn }}"
+    install_path: "/opt/mvn-{{ global.version.mvn }}"
 
 - name: mvn | create install dir
   become: yes
@@ -14,7 +14,7 @@
   become: yes
   unarchive:
     remote_src: yes
-    src: "http://apache.spinellicreations.com/maven/maven-3/{{ version.mvn }}/binaries/apache-maven-{{ version.mvn }}-bin.tar.gz"
+    src: "https://mirror.jframeworks.com/apache/maven/maven-3/{{ global.version.mvn }}/binaries/apache-maven-{{ global.version.mvn }}-bin.tar.gz"
     dest: "{{ install_path }}"
     extra_opts:
     - --strip-components=1
@@ -41,6 +41,6 @@
 
 - name: nvm | install and use
   become: no
-  shell: "source {{ ansible_env['HOME'] }}/.zshrc && nvm install {{ version.node }} && nvm use {{ version.node }}"
+  shell: "source {{ ansible_env['HOME'] }}/.zshrc && nvm install {{ global.version.node }} && nvm use {{ global.version.node }}"
   args:
     executable: /bin/bash

@@ -6,25 +6,25 @@
 
 - name: create database
   postgresql_db:
-    login_host: "{{ postgresql_host }}"
-    login_user: "{{ postgresql_user }}"
-    login_password: "{{ postgresql_pass }}"
+    login_host: "{{ global.postgresql_host }}"
+    login_user: "{{ global.postgresql_user }}"
+    login_password: "{{ global.postgresql_pass }}"
     name: "{{ database_name }}"
 
 - name: create database user
   postgresql_user:
-    login_host: "{{ postgresql_host }}"
-    login_user: "{{ postgresql_user }}"
-    login_password: "{{ postgresql_pass }}"
+    login_host: "{{ global.postgresql_host }}"
+    login_user: "{{ global.postgresql_user }}"
+    login_password: "{{ global.postgresql_pass }}"
     db: "{{ database_name }}"
     name: "{{ database_user }}"
     password: "{{ database_pass }}"
 
 - name: grant all database privileges to user
   postgresql_privs:
-    login_host: "{{ postgresql_host }}"
-    login_user: "{{ postgresql_user }}"
-    login_password: "{{ postgresql_pass }}"
+    login_host: "{{ global.postgresql_host }}"
+    login_user: "{{ global.postgresql_user }}"
+    login_password: "{{ global.postgresql_pass }}"
     db: "{{ database_name }}"
     privs: ALL
     type: database
@@ -33,9 +33,9 @@
 
 - name: grant all ALL_IN_SCHEMA privileges to user
   postgresql_privs:
-    login_host: "{{ postgresql_host }}"
-    login_user: "{{ postgresql_user }}"
-    login_password: "{{ postgresql_pass }}"
+    login_host: "{{ global.postgresql_host }}"
+    login_user: "{{ global.postgresql_user }}"
+    login_password: "{{ global.postgresql_pass }}"
     db: "{{ database_name }}"
     privs: ALL
     objs: ALL_IN_SCHEMA

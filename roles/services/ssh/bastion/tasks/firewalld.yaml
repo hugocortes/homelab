@@ -7,10 +7,10 @@
     name: bastion
     ports:
     - name: bastion sish ssh server
-      port: "{{ sish.sshAddress }}/tcp"
+      port: "{{ global.sish.sshAddress }}/tcp"
     - name: bastion sish http
-      port: "{{ sish.httpAddress }}/tcp"
+      port: "{{ global.sish.httpAddress }}/tcp"
     - name: bastion sish https
-      port: "{{ sish.httpsAddress }}/tcp"
+      port: "{{ global.sish.httpsAddress }}/tcp"
     - name: bastion sish ssh client
       port: "9222/tcp"

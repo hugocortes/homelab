@@ -4,7 +4,7 @@
   block:
   - name: centos | uninstall spacewalk server ca
     yum:
-      name: "http://{{ spacewalk.host }}/pub/rhn-org-trusted-ssl-cert-1.0-5.noarch.rpm"
+      name: "http://{{ global.spacewalk.host }}/pub/rhn-org-trusted-ssl-cert-1.0-5.noarch.rpm"
       state: absent
 
   - name: centos8 | uninstall spacewalk

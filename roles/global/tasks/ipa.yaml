@@ -13,9 +13,9 @@
 
 - name: swap ansible_user to ipa.user
   block:
-  - name: "set ansible_user ({{ ansible_user }}) to ipa.user ({{ ipa.user }})"
+  - name: "set ansible_user ({{ ansible_user }}) to ipa.user ({{ global.ipa.user }})"
     set_fact:
-      ansible_user: "{{ ipa.user }}"
+      ansible_user: "{{ global.ipa.user }}"
 
   - name: ping to verify current user
     action: ping

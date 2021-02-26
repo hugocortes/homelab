@@ -4,7 +4,7 @@
   block:
   - name: centos | install spacewalk server ca
     yum:
-      name: "http://{{ spacewalk.host }}/pub/rhn-org-trusted-ssl-cert-1.0-5.noarch.rpm"
+      name: "http://{{ global.spacewalk.host }}/pub/rhn-org-trusted-ssl-cert-1.0-5.noarch.rpm"
       state: present
       disable_gpg_check: yes
       validate_certs: no
@@ -33,7 +33,7 @@
       rhn_register:
         state: present
         activationkey: 1-centos8-base
-        server_url: https://{{ spacewalk.host }}/XMLRPC
+        server_url: https://{{ global.spacewalk.host }}/XMLRPC
       when: not is_docker and not is_kubernetes
       ignore_errors: yes
 
@@ -87,7 +87,7 @@
       rhn_register:
         state: present
         activationkey: 1-centos7-base
-        server_url: https://{{ spacewalk.host }}/XMLRPC
+        server_url: https://{{ global.spacewalk.host }}/XMLRPC
       when: not is_docker and not is_kubernetes
       ignore_errors: yes
 
@@ -95,7 +95,7 @@
       rhn_register:
         state: present
         activationkey: 1-centos7-docker
-        server_url: https://{{ spacewalk.host }}/XMLRPC
+        server_url: https://{{ global.spacewalk.host }}/XMLRPC
       when: is_docker
       ignore_errors: yes
 
@@ -103,7 +103,7 @@
       rhn_register:
         state: present
         activationkey: 1-centos7-kubernetes
-        server_url: https://{{ spacewalk.host }}/XMLRPC
+        server_url: https://{{ global.spacewalk.host }}/XMLRPC
       when: is_kubernetes
       ignore_errors: yes
 
@@ -111,7 +111,7 @@
       rhn_register:
         state: present
         activationkey: 1-centos7-duo
-        server_url: https://{{ spacewalk.host }}/XMLRPC
+        server_url: https://{{ global.spacewalk.host }}/XMLRPC
       when: run_bastion_setup
       ignore_errors: yes
 

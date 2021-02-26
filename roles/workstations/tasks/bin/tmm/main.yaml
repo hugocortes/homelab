@@ -2,7 +2,7 @@
 
 - name: tmm | set facts
   set_fact:
-    install_path: "/opt/tinymediamanager-{{ version.tmm }}"
+    install_path: "/opt/tinymediamanager-{{ global.version.tmm }}"
 
 - name: tmm | create install dir
   become: yes
@@ -16,7 +16,7 @@
   become: yes
   unarchive:
     remote_src: yes
-    src: "https://release.tinymediamanager.org/v3/dist/tmm_{{ version.tmm }}_linux.tar.gz"
+    src: "https://release.tinymediamanager.org/v3/dist/tmm_{{ global.version.tmm }}_linux.tar.gz"
     dest: "{{ install_path }}"
 
 - name: tmm | create shortcut

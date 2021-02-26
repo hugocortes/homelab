@@ -13,22 +13,22 @@
 - name: launch guacamole container
   docker_container:
     name: guacamole
-    image: "guacamole/guacamole:{{ guacamole.tag }}"
+    image: "guacamole/guacamole:{{ global.guacamole.tag }}"
     restart_policy: unless-stopped
     links:
     - guacd:guacd
     env:
-      POSTGRES_HOSTNAME: "{{ postgresql.host }}"
-      POSTGRES_DATABASE: "{{ guacamole.db.name }}"
-      POSTGRES_USER: "{{ guacamole.db.user }}"
-      POSTGRES_PASSWORD: "{{ guacamole.db.pass }}"
-      OPENID_ISSUER: "{{ guacamole.openid.issuer }}"
-      OPENID_JWKS_ENDPOINT: "{{ guacamole.openid.jwks_endpoint }}"
-      OPENID_AUTHORIZATION_ENDPOINT: "{{ guacamole.openid.auth_endpoint }}"
-      OPENID_CLIENT_ID: "{{ guacamole.openid.client_id }}"
-      OPENID_SCOPE: "{{ guacamole.openid.scope }}"
-      OPENID_REDIRECT_URI: "{{ guacamole.openid.redirect_uri }}"
-      OPENID_USERNAME_CLAIM_TYPE: "{{ guacamole.openid.username_claim }}"
+      POSTGRES_HOSTNAME: "{{ global.postgresql.host }}"
+      POSTGRES_DATABASE: "{{ global.guacamole.db.name }}"
+      POSTGRES_USER: "{{ global.guacamole.db.user }}"
+      POSTGRES_PASSWORD: "{{ global.guacamole.db.pass }}"
+      OPENID_ISSUER: "{{ global.guacamole.openid.issuer }}"
+      OPENID_JWKS_ENDPOINT: "{{ global.guacamole.openid.jwks_endpoint }}"
+      OPENID_AUTHORIZATION_ENDPOINT: "{{ global.guacamole.openid.auth_endpoint }}"
+      OPENID_CLIENT_ID: "{{ global.guacamole.openid.client_id }}"
+      OPENID_SCOPE: "{{ global.guacamole.openid.scope }}"
+      OPENID_REDIRECT_URI: "{{ global.guacamole.openid.redirect_uri }}"
+      OPENID_USERNAME_CLAIM_TYPE: "{{ global.guacamole.openid.username_claim }}"
     ports:
     - 80:8080
 

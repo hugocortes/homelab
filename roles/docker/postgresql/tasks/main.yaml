@@ -3,7 +3,7 @@
 - name: mount data dir
   mount:
     path: /tmp/mnt
-    src: "{{ nfs.host }}:{{ postgresql.nfs.path }}"
+    src: "{{ global.nfs.host }}:{{ global.postgresql.nfs.path }}"
     fstype: nfs4
     opts: defaults,proto=tcp,port=2049,rw
     state: mounted
@@ -45,24 +45,24 @@
     driver_options:
       type: nfs
       device: ":/{{ item.mount }}"
-      o: "addr={{ nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+      o: "addr={{ global.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
   with_items:
   - name: data
-    mount: "{{ postgresql.nfs.path }}"
+    mount: "{{ global.postgresql.nfs.path }}"
 
 - name: start container
   docker_container:
     name: postgres
     image: hugocortes/postgres:9
     restart_policy: unless-stopped
-    user: "{{ postgresql.nfs.user_id }}:0"
+    user: "{{ global.postgresql.nfs.user_id }}:0"
     command:
     - "-c 'config_file=/var/lib/postgresql/data/conf/postgresql.conf'"
     ports:
     - 5432:5432
     env:
-      POSTGRES_USER: "{{ postgresql.user }}"
-      POSTGRES_PASSWORD: "{{ postgresql.pass }}"
+      POSTGRES_USER: "{{ global.postgresql.user }}"
+      POSTGRES_PASSWORD: "{{ global.postgresql.pass }}"
       PGDATA: /var/lib/postgresql/data/data
       PGUSER: postgres
     volumes:
@@ -76,9 +76,9 @@
     ports:
     - 9187:9187
     env:
-      DATA_SOURCE_URI: "{{ postgresql.host }}:{{ postgresql.port }}/?sslmode=disable"
-      DATA_SOURCE_USER: "{{ postgresql.user }}"
-      DATA_SOURCE_PASS: "{{ postgresql.pass }}"
+      DATA_SOURCE_URI: "{{ global.postgresql.host }}:{{ global.postgresql.port }}/?sslmode=disable"
+      DATA_SOURCE_USER: "{{ global.postgresql.user }}"
+      DATA_SOURCE_PASS: "{{ global.postgresql.pass }}"
 
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml

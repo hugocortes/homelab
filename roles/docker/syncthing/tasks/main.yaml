@@ -97,18 +97,18 @@
     regexp: "{{ item.regexp }}"
     state: present
   with_items:
-  - line: <address>{{ ipa.host }}:{{ ipa.port.ldaps }}</address>
-    regexp: <address>{{ ipa.host }}:{{ ipa.port.ldaps }}<\/address>
+  - line: <address>{{ global.ipa.host }}:{{ global.ipa.port.ldaps }}</address>
+    regexp: <address>{{ global.ipa.host }}:{{ global.ipa.port.ldaps }}<\/address>
   - line: <transport>tls</transport>
     regexp: <transport>tls<\/transport>
   - line: <insecureSkipVerify>true</insecureSkipVerify>
     regexp: <insecureSkipVerify>true<\/insecureSkipVerify>
-  - line: <bindDN>uid=%s,{{ ipa.userDN }}</bindDN>
-    regexp: <bindDN>uid=%s,{{ ipa.userDN }}<\/bindDN>
-  - line: <searchBaseDN>{{ ipa.userDN }}</searchBaseDN>
-    regexp: <searchBaseDN>{{ ipa.userDN }}<\/searchBaseDN>
-  - line: <searchFilter>(&amp;(uid=%s)(memberof=cn={{ ipa.groups.syncthing }},{{ ipa.groupDN }}))</searchFilter>
-    regexp: <searchFilter>\(&amp;\(uid=%s\)\(memberof=cn={{ ipa.groups.syncthing }},{{ ipa.groupDN }}\)\)<\/searchFilter>
+  - line: <bindDN>uid=%s,{{ global.ipa.userDN }}</bindDN>
+    regexp: <bindDN>uid=%s,{{ global.ipa.userDN }}<\/bindDN>
+  - line: <searchBaseDN>{{ global.ipa.userDN }}</searchBaseDN>
+    regexp: <searchBaseDN>{{ global.ipa.userDN }}<\/searchBaseDN>
+  - line: <searchFilter>(&amp;(uid=%s)(memberof=cn={{ global.ipa.groups.syncthing }},{{ global.ipa.groupDN }}))</searchFilter>
+    regexp: <searchFilter>\(&amp;\(uid=%s\)\(memberof=cn={{ global.ipa.groups.syncthing }},{{ global.ipa.groupDN }}\)\)<\/searchFilter>
 
 - name: configure gui bind address
   lineinfile:

@@ -16,7 +16,7 @@
 - name: add answer file
   copy:
     content: |
-      admin-email={{ spacewalk.admin_email }}
+      admin-email={{ global.spacewalk.admin_email }}
       ssl-set-cnames=spacewalk
       ssl-set-org=spacewalk
       ssl-set-org-unit=
@@ -24,14 +24,14 @@
       ssl-set-state=CA
       ssl-set-country=US
       ssl-password=
-      ssl-set-email={{ spacewalk.admin_email }}
+      ssl-set-email={{ global.spacewalk.admin_email }}
       ssl-config-sslvhost=Y
       db-backend=postgresql
-      db-name={{ spacewalk.db.name }}
-      db-user={{ spacewalk.db.user }}
-      db-password={{ spacewalk.db.pass }}
-      db-host={{ postgresql.host }}
-      db-port={{ postgresql.port }}
+      db-name={{ global.spacewalk.db.name }}
+      db-user={{ global.spacewalk.db.user }}
+      db-password={{ global.spacewalk.db.pass }}
+      db-host={{ global.postgresql.host }}
+      db-port={{ global.postgresql.port }}
       enable-tftp=Y
     dest: /tmp/answer
 
@@ -46,8 +46,8 @@
   import_tasks: ../roles/services/nfs/tasks/main.yaml
   vars:
     nfs_mount_paths:
-    - host: "{{ spacewalk.nfs.host_path }}"
-      client: "{{ spacewalk.nfs.client_path }}"
+    - host: "{{ global.spacewalk.nfs.host_path }}"
+      client: "{{ global.spacewalk.nfs.client_path }}"
 
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml

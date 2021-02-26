@@ -2,7 +2,7 @@
 
 - name: go | set facts
   set_fact:
-    install_path: "/opt/go-{{ version.go }}"
+    install_path: "/opt/go-{{ global.version.go }}"
 
 - name: go | create install dir
   become: yes
@@ -14,7 +14,7 @@
   become: yes
   unarchive:
     remote_src: yes
-    src: "https://dl.google.com/go/go{{ version.go }}.linux-amd64.tar.gz"
+    src: "https://dl.google.com/go/go{{ global.version.go }}.linux-amd64.tar.gz"
     dest: "{{ install_path }}"
     extra_opts:
     - --strip-components=1

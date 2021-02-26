@@ -10,7 +10,7 @@
 - name: spin-cli | download
   become: yes
   get_url:
-    url: "https://storage.googleapis.com/spinnaker-artifacts/spin/{{ spin_cli_version.content }}/linux/amd64/spin"
+    url: "https://storage.googleapis.com/spinnaker-artifacts/spin/{{ global.spin_cli_version.content }}/linux/amd64/spin"
     dest: /opt/spin
     mode: +x
 
@@ -29,5 +29,5 @@
 - name: spin-cli | create config
   copy:
     dest: "{{ ansible_env['HOME'] }}/.spin/config"
-    content: "{{ spin_cli | to_nice_yaml }}"
+    content: "{{ global.spin_cli | to_nice_yaml }}"
     force: no

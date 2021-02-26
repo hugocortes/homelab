@@ -4,13 +4,13 @@
   include_role:
     name: docker/postgresql/initdb
   vars:
-    postgresql_host: "{{ postgresql.host }}"
-    postgresql_port: "{{ postgresql.port }}"
-    postgresql_user: "{{ postgresql.user }}"
-    postgresql_pass: "{{ postgresql.pass }}"
-    database_name: "{{ guacamole.db.name }}"
-    database_user: "{{ guacamole.db.user }}"
-    database_pass: "{{ guacamole.db.pass }}"
+    postgresql_host: "{{ global.postgresql.host }}"
+    postgresql_port: "{{ global.postgresql.port }}"
+    postgresql_user: "{{ global.postgresql.user }}"
+    postgresql_pass: "{{ global.postgresql.pass }}"
+    database_name: "{{ global.guacamole.db.name }}"
+    database_user: "{{ global.guacamole.db.user }}"
+    database_pass: "{{ global.guacamole.db.pass }}"
 
 - name: check if guacamole initdb script exists
   stat:
@@ -31,14 +31,14 @@
 
   - name: write guacamole initdb to file
     copy:
-      content: "{{ guacamole.ansible_facts.docker_container.Output }}"
+      content: "{{ global.guacamole.ansible_facts.docker_container.Output }}"
       dest: /tmp/initdb.sh
 
   - name: run guacamole initdb script
     postgresql_query:
-      login_host: "{{ postgresql.host }}"
-      login_user: "{{ postgresql.user }}"
-      login_password: "{{ postgresql.pass }}"
-      db: "{{ guacamole.db.name }}"
+      login_host: "{{ global.postgresql.host }}"
+      login_user: "{{ global.postgresql.user }}"
+      login_password: "{{ global.postgresql.pass }}"
+      db: "{{ global.guacamole.db.name }}"
       path_to_script: /tmp/initdb.sh
   when: initdb.stat.exists == false

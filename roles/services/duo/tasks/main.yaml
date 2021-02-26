@@ -13,6 +13,6 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-  - { regexp: ^ikey =, line: "ikey = {{ bastion.duo.ikey }}" }
-  - { regexp: ^skey =, line: "skey = {{ bastion.duo.skey }}" }
-  - { regexp: ^host =, line: "host = {{ bastion.duo.host }}" }
+  - { regexp: ^ikey =, line: "ikey = {{ global.bastion.duo.ikey }}" }
+  - { regexp: ^skey =, line: "skey = {{ global.bastion.duo.skey }}" }
+  - { regexp: ^host =, line: "host = {{ global.bastion.duo.host }}" }
