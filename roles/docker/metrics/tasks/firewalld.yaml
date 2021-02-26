@@ -1,9 +1,12 @@
 ---
 
 - name: centos | open docker metrics ports
-  include_tasks: ../roles/services/firewalld/tasks/port.yaml
-  loop:
-  - name: docker node-exporter
-    port: 9100/tcp
-  - name: docker cadvisor
-    port: 8080/tcp
+  include_role:
+    name: services/firewalld/tasks
+  vars:
+    name: docker
+    ports:
+    - name: docker node-exporter
+      port: 9100/tcp
+    - name: docker cadvisor
+      port: 9080/tcp

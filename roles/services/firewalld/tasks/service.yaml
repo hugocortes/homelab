@@ -1,14 +1,19 @@
 ---
 
-- name: "{{ item.name }} | enable firewalld service"
+- name: "{{ name }} | enable firewalld service (permanant)"
   firewalld:
     zone: public
-    state: enabled
+    state: "{{ item.state | default('enabled') }}"
     service: "{{ item.service }}"
-    permanent: "{{ permanent }}"
-  loop:
-  - yes
-  - no
-  loop_control:
-    loop_var: permanent
+    permanent: yes
+  with_items: "{{ services }}"
+  notify: enable firewalld
+
+- name: "{{ name }} | enable firewalld service (not permanant)"
+  firewalld:
+    zone: public
+    state: "{{ item.state | default('enabled') }}"
+    service: "{{ item.service }}"
+    permanent: no
+  with_items: "{{ services }}"
   notify: enable firewalld

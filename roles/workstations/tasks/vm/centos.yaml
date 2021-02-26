@@ -8,7 +8,10 @@
     state: latest
 
 - name: centos | open rdp ports
-  include_tasks: ../roles/services/firewalld/tasks/port.yaml
-  loop:
-  - name: xrdp
-    port: 3389/tcp
+  include_role:
+    name: services/firewalld/tasks
+  vars:
+    name: rdp
+    ports:
+    - name: xrdp
+      port: 3389/tcp

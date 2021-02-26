@@ -1,14 +1,17 @@
 ---
 
-- name: "{{ item.name }} | enable firewalld port"
+- name: "{{ name }} | enable firewalld port (permanant)"
   firewalld:
     zone: public
     state: "{{ item.state | default('enabled') }}"
     port: "{{ item.port }}"
-    permanent: "{{ permanent }}"
-  loop:
-  - yes
-  - no
-  loop_control:
-    loop_var: permanent
+    permanent: yes
+
+- name: "{{ name }} | enable firewalld port (not permanant)"
+  firewalld:
+    zone: public
+    state: "{{ item.state | default('enabled') }}"
+    port: "{{ item.port }}"
+    permanent: no
+  with_items: "{{ ports }}"
   notify: enable firewalld

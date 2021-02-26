@@ -2,13 +2,13 @@
 
 
 - name: centos | open postgresql services
-  include_tasks: ../roles/services/firewalld/tasks/service.yaml
-  loop:
-  - name: postgresql
-    service: postgresql
-
-- name: centos | open postgresql ports
-  include_tasks: ../roles/services/firewalld/tasks/port.yaml
-  loop:
-  - name: postgresql monitoring
-    port: 9187/tcp
+  include_role:
+    name: services/firewalld/tasks
+  vars:
+    name: postgresql
+    services:
+    - name: postgresql
+      service: postgresql
+    ports:
+    - name: postgresql monitoring
+      port: 9187/tcp

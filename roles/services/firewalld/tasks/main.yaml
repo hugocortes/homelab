@@ -1,0 +1,9 @@
+---
+
+- name: "{{ name }} - enabling firewalld ports"
+  import_tasks: port.yaml
+  when: ports is defined
+
+- name: "{{ name }} - enabling firewalld services"
+  import_tasks: service.yaml
+  when: services is defined

@@ -1,13 +1,13 @@
 ---
 
 - name: centos | open spacewalk client services
-  include_tasks: ../../roles/services/firewalld/tasks/service.yaml
-  loop:
-  - name: spacewalk client
-    service: ssh
-
-- name: centos | open spacewalk client ports
-  include_tasks: ../../roles/services/firewalld/tasks/port.yaml
-  loop:
-  - name: spacewalk client
-    port: 5222/tcp
+  include_role:
+    name: services/firewalld/tasks
+  vars:
+    name: spacewalk client
+    services:
+    - name: spacewalk client
+      service: ssh
+    ports:
+    - name: spacewalk client
+      port: 5222/tcp
