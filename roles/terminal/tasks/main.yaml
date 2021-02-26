@@ -25,7 +25,7 @@
 - name: set zsh as default shell for ansible user
   become: yes
   command: "chsh -s /bin/zsh {{ ansible_user }}"
-  when: not is_freeipa_client
+  when: not is_freeipa_client and not is_freeipa_server
 
 - name: set zsh as default shell for root user
   become: yes
