@@ -32,7 +32,7 @@
   tags: spacewalk-client
   roles:
   - services/spacewalk/sync
-  - services/spacewalk/client
+  - services/spacewalk/client/install
   - packages/disable
 
 - name: install & update packages
@@ -80,7 +80,10 @@
   become: yes
   tags: kubernetes
   roles:
-  - services/kubernetes
+  - name: services/kubernetes
+    vars:
+      create_mnt_dirs: no
+      dirs: []
 
 - name: configure workstations group
   hosts: workstations
@@ -96,12 +99,13 @@
   pre_tasks:
   - fail:
       msg: bastion host and duo settings required
-    when: bastion is undefined or not bastion.host or not bastion.duo or not bastion.duo.ikey or not bastion.duo.skey or not bastion.duo.host
+    when: global.bastion is undefined or not global.bastion.host or not global.bastion.duo or not global.bastion.duo.ikey or not global.bastion.duo.skey or not global.bastion.duo.host
   tags: bastion
   roles:
   - services/duo
   - services/ssh/bastion
-  - docker/sish
+  - name: docker/sish
+    tags: docker/sish
 
 - name: configure guacamole
   hosts: guacamole
