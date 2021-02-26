@@ -42,6 +42,14 @@
     - geary
     state: absent
 
+- name: install ansible
+  import_tasks: generic.yaml
+  vars:
+    pkg_name: ansible
+    pkg_repository: ppa:ansible/ansible
+    pkg_packages:
+    - ansible
+
 - name: install tor browser
   import_tasks: generic.yaml
   vars:
