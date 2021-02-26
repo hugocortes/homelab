@@ -10,7 +10,7 @@
     state: latest
 
 - name: install duck
-  include_tasks: ../debian/generic.yaml
+  import_tasks: ../debian/generic.yaml
   vars:
     pkg_name: duck
     pkg_gpg_id: FE7097963FEFBE72
@@ -20,7 +20,7 @@
     - duck
 
 - name: install etcher
-  include_tasks: ../debian/generic.yaml
+  import_tasks: ../debian/generic.yaml
   vars:
     pkg_name: etcher
     pkg_gpg_id: 379CE192D401AB61
@@ -31,7 +31,7 @@
     - balena-etcher-electron
 
 - name: install spotify
-  include_tasks: ../debian/generic.yaml
+  import_tasks: ../debian/generic.yaml
   vars:
     pkg_name: spotify
     pkg_gpg_key: https://download.spotify.com/debian/pubkey_0D811D58.gpg
@@ -40,7 +40,7 @@
     - spotify-client
 
 - name: install weechat
-  include_tasks: ../debian/generic.yaml
+  import_tasks: ../debian/generic.yaml
   vars:
     pkg_name: weechat
     pkg_gpg_id: 11E9DE8848F2B65222AA75B8D1820DB22A11534E
@@ -57,11 +57,11 @@
     - weechat-perl
 
 - name: install yq
-  include_tasks: ../debian/generic.yaml
+  import_tasks: ../debian/generic.yaml
   vars:
     pkg_name: yq
     pkg_gpg_id: CC86BB64
     pkg_gpg_keyserver: keyserver.ubuntu.com
-    pkg_repository: ppa:rmescandon/yq
+    pkg_repository: ppa:rmescandon/yq=focal
     pkg_packages:
     - yq

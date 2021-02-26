@@ -10,6 +10,15 @@
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
   notify: restart ssh
 
+# TODO this should still disable password auth
+- name: add authorized keys to vm workstation
+  authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: https://github.com/hugocortes.keys
+  when: is_workstation
+  notify: restart ssh
+
 - name: disable password authentication
   lineinfile:
     dest: /etc/ssh/sshd_config
@@ -20,14 +29,6 @@
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
     - { regexp: "^ChallengeResponseAuthentication yes", line: "ChallengeResponseAuthentication no" }
   when: is_internal
-  notify: restart ssh
-
-- name: add authorized keys to vm workstation
-  authorized_key:
-    user: "{{ ansible_user }}"
-    state: present
-    key: https://github.com/hugocortes.keys
-  when: is_workstation
   notify: restart ssh
 
 - name: configure bastion host access
@@ -54,11 +55,11 @@
   when: (bastion is defined) and (bastion.host != lookup('dig', ansible_host))
 
 - name: centos | install fail2ban
-  include_tasks: centos.yaml
+  import_tasks: centos.yaml
   when: is_centos
 
 - name: debian | install fail2ban
-  include_tasks: debian.yaml
+  import_tasks: debian.yaml
   when: is_debian
 
 - name: configure fail2ban jail

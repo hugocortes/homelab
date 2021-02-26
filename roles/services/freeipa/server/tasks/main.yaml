@@ -6,5 +6,5 @@
     state: latest
 
 - name: centos | open firewalld ports
-  include_tasks: firewalld.yaml
+  import_tasks: firewalld.yaml
   when: is_centos

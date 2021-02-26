@@ -1,7 +1,7 @@
 ---
 
 - name: initialize guacamole db
-  include_tasks: initialize.yaml
+  import_tasks: initialize.yaml
   when: initialize
 
 - name: launch guacd container
@@ -51,5 +51,5 @@
     - guacamole
 
 - name: centos | open firewalld ports
-  include_tasks: firewalld.yaml
+  import_tasks: firewalld.yaml
   when: is_centos

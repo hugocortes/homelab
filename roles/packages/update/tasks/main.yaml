@@ -1,11 +1,11 @@
 ---
 
 - name: debian | update apt packages
-  include_tasks: apt.yaml
+  import_tasks: apt.yaml
   when: is_debian
 
 - name: centos | update yum packages
-  include_tasks: yum.yaml
+  import_tasks: yum.yaml
   when: is_centos
 
 - name: update oh my zsh

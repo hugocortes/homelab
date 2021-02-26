@@ -1,9 +1,9 @@
 ---
 
 - name: clean centos8 dnf
-  include_tasks: dnf.yaml
+  import_tasks: dnf.yaml
   when: is_centos_8
 
 - name: clean centos7 yum
-  include_tasks: yum.yaml
+  import_tasks: yum.yaml
   when: is_centos_7

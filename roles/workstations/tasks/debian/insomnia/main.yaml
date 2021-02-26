@@ -5,7 +5,7 @@
     plugin_path: "{{ ansible_env['HOME'] }}/.config/Insomnia/plugins"
 
 - name: insomnia | install
-  include_tasks: ../generic.yaml
+  import_tasks: ../generic.yaml
   vars:
     pkg_name: insomnia
     pkg_gpg_key: https://insomnia.rest/keys/debian-public.key.asc
@@ -19,6 +19,8 @@
     state: directory
 
 - name: insomnia | install plugins
-  include_tasks: plugins.yaml
-  with_items:
-  - insomnia-plugin-accesstoken
+  import_tasks: plugins.yaml
+  vars:
+    plugin_path: "{{ plugin_path }}"
+    plugins:
+    - insomnia-plugin-accesstoken

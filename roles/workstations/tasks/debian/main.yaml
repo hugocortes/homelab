@@ -43,7 +43,7 @@
     state: absent
 
 - name: install tor browser
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: tor
     pkg_repository: ppa:micahflee/ppa
@@ -51,7 +51,7 @@
     - torbrowser-launcher
 
 - name: install mongodb
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: mongodb
     pkg_gpg_key: https://www.mongodb.org/static/pgp/server-4.2.asc
@@ -60,7 +60,7 @@
     - mongodb-org
 
 - name: install postgresql
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: postgresql
     pkg_gpg_key: https://www.postgresql.org/media/keys/ACCC4CF8.asc
@@ -69,7 +69,7 @@
     - postgresql
 
 - name: install dbeaver
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: dbeaver
     pkg_gpg_key: https://dbeaver.io/debs/dbeaver.gpg.key
@@ -81,7 +81,7 @@
     - dbeaver-ce
 
 - name: install kubectl
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: kubectl
     pkg_gpg_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
@@ -90,7 +90,7 @@
     - kubectl
 
 - name: install vscode
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: vscode
     pkg_gpg_key: https://packages.microsoft.com/keys/microsoft.asc
@@ -107,7 +107,7 @@
     - code
 
 - name: install erlang & elixir
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: elixir & erlang
     pkg_deb: https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb
@@ -117,7 +117,7 @@
     - elixir
 
 - name: install java
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: java
     pkg_packages:
@@ -129,13 +129,13 @@
     - openjdk-11-jdk
 
 - name: install gitkraken
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: gitkraken
     pkg_deb: https://release.gitkraken.com/linux/gitkraken-amd64.deb
  
 - name: install gcloud sdk
-  include_tasks: generic.yaml
+  import_tasks: generic.yaml
   vars:
     pkg_name: gcloud-sdk
     pkg_gpg_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg

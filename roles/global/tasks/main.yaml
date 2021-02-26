@@ -1,16 +1,16 @@
 ---
 
 - name: set inventory facts
-  include_tasks: facts/inventory.yaml
+  import_tasks: facts/inventory.yaml
 
 - name: "verify ansible_user ({{ ansible_user }}) user"
-  include_tasks: ipa.yaml
+  import_tasks: ipa.yaml
 
 - name: gather facts from all hosts in play
   setup:
 
 - name: set system facts
-  include_tasks: facts/system.yaml
+  import_tasks: facts/system.yaml
 
 - name: update hostname
   command: "hostnamectl set-hostname {{ ansible_host }}"

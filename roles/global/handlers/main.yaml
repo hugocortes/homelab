@@ -1,9 +1,9 @@
 ---
 
 - name: reset ansible_user
-  include_tasks: ipa.yaml
+  import_tasks: ipa.yaml
   listen: reset ansible_user
 
 - name: reboot
-  include_tasks: reboot.yaml
+  import_tasks: reboot.yaml
   listen: reboot

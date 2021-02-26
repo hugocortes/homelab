@@ -146,6 +146,6 @@
       enabled: yes
 
   - name: centos | open firewalld ports
-    include_tasks: firewalld.yaml
+    import_tasks: firewalld.yaml
     when: not is_kubernetes # kubernetes clients disable firewall
   when: is_centos

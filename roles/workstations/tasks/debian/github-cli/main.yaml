@@ -8,7 +8,7 @@
   register: github_cli
 
 - name: github-cli | install
-  include_tasks: ../generic.yaml
+  import_tasks: ../generic.yaml
   vars:
     pkg_name: github-cli
     pkg_deb: "https://github.com/cli/cli/releases/download/{{ github_cli.json.tag_name }}/gh_{{ github_cli.json.tag_name | replace('v', '') }}_linux_amd64.deb"

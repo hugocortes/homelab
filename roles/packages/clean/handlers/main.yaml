@@ -1,5 +1,5 @@
 ---
 
 - name: clean repos
-  include_tasks: main.yaml
+  include_tasks: main.yaml # requires include as its including itself
   listen: clean repos

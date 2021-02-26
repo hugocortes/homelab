@@ -1,7 +1,7 @@
 ---
 
 - name: centos | install packages
-  include_tasks: centos.yaml
+  import_tasks: centos.yaml
   when: is_centos
 
 - name: create database

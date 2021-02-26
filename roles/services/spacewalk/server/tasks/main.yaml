@@ -43,12 +43,12 @@
     state: present
 
 - name: mount spacewalk nfs drives
-  include_tasks: ../roles/services/nfs/tasks/main.yaml
+  import_tasks: ../roles/services/nfs/tasks/main.yaml
   vars:
     nfs_mount_paths:
     - host: "{{ spacewalk.nfs.host_path }}"
       client: "{{ spacewalk.nfs.client_path }}"
 
 - name: centos | open firewalld ports
-  include_tasks: firewalld.yaml
+  import_tasks: firewalld.yaml
   when: is_centos
