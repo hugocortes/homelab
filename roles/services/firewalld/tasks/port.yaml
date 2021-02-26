@@ -3,7 +3,7 @@
 - name: "{{ item.name }} | enable firewalld port"
   firewalld:
     zone: public
-    state: enabled
+    state: "{{ item.state | default('enabled') }}"
     port: "{{ item.port }}"
     permanent: "{{ permanent }}"
   loop:

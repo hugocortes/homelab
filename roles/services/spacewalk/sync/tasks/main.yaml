@@ -3,7 +3,7 @@
 - name: centos | unregister spacewalk clients
   rhn_register:
     state: absent
-    username: "{{ spacewalk.hostname }}"
-    password: "{{ spacewalk.password }}"
+    username: "{{ spacewalk.host }}"
+    password: "{{ spacewalk.pass }}"
   ignore_errors: yes
   when: sync and is_centos

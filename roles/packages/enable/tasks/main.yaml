@@ -1,0 +1,5 @@
+---
+
+- name: centos | enable yum
+  include_tasks: centos.yaml
+  when: is_centos

@@ -1,0 +1,21 @@
+---
+
+- name: centos7 | enable additional repos
+  command: "yum-config-manager --enable {{ item }}"
+  with_items:
+  - CentOS-7 - Base
+  - CentOS-7 - Extras
+  - CentOS-7 - Updates
+  when: is_centos_7
+  notify: clean repos
+
+- name: centos8 | enable additional repos
+  yum_repository:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - CentOS-8 - AppStream
+  - CentOS-8 - Base
+  - CentOS-8 - Extras
+  when: is_centos_8
+  notify: clean repos

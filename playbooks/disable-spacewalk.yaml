@@ -1,0 +1,22 @@
+---
+
+- name: set facts and ssh user
+  hosts: all
+  become: no
+  gather_facts: no
+  ignore_errors: true
+  ignore_unreachable: true
+  roles:
+  - global
+  tags: always
+
+- name: remove spacewalk from clients
+  hosts: spacewalkclients
+  become: yes
+  vars:
+    sync: true
+  tags: spacewalk-client
+  roles:
+  - services/spacewalk/sync
+  - services/spacewalk/client/uninstall
+  - packages/enable

@@ -1,0 +1,15 @@
+---
+
+- name: centos | close spacewalk client services
+  include_tasks: ../../roles/services/firewalld/tasks/service.yaml
+  loop:
+  - name: spacewalk client
+    service: ssh
+    state: enabled
+
+- name: centos | close spacewalk client ports
+  include_tasks: ../../roles/services/firewalld/tasks/port.yaml
+  loop:
+  - name: spacewalk client
+    port: 5222/tcp
+    state: disabled

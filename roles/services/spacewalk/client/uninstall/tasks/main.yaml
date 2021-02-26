@@ -1,0 +1,47 @@
+---
+
+- name: centos | uninstall spacewalk
+  block:
+  - name: centos | uninstall spacewalk server ca
+    yum:
+      name: "http://{{ spacewalk.host }}/pub/rhn-org-trusted-ssl-cert-1.0-5.noarch.rpm"
+      state: absent
+
+  - name: centos8 | uninstall spacewalk
+    block:
+    - name: centos8 | uninstall spacewalk packages
+      dnf:
+        name:
+        - rhn-client-tools
+        - rhn-check
+        - rhn-setup
+        - rhnsd
+        - yum-rhn-plugin
+        - osad
+        state: absent
+    when: is_centos_8
+
+  - name: centos7 | uninstall spacewalk
+    block:
+    - name: centos7 | uninstall spacewalk packages
+      yum:
+        name:
+        - rhn-client-tools
+        - rhn-check
+        - rhn-setup
+        - rhnsd
+        - yum-rhn-plugin
+        - m2crypto
+        - osad
+        state: absent
+    when: is_centos_7
+
+  - name: centos | remove spacewalk client repo
+    yum_repository:
+      name: spacewalk-client
+      state: absent
+
+  - name: centos | close firewalld ports
+    include_tasks: firewalld.yaml
+    when: not is_kubernetes # kubernetes clients disable firewall
+  when: is_centos
