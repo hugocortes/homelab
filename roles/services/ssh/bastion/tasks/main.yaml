@@ -39,7 +39,3 @@
       Match User *,!{{ global.bastion.user }} Address 192.168.*.1
         ForceCommand /bin/false
   notify: restart ssh
-
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
-  when: is_centos

@@ -2,4 +2,3 @@
 
 dependencies:
 - role: services/ssh
-- role: services/firewalld

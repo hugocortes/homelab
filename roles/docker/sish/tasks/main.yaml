@@ -27,3 +27,7 @@
     - "~/sish/ssl:/ssl"
     - "~/sish/keys:/keys"
     - "~/sish/pubkeys:/pubkeys"
+
+- name: centos | open firewalld ports
+  import_tasks: firewalld.yaml
+  when: is_centos
