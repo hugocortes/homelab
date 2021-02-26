@@ -15,6 +15,8 @@
     - sshpass
     - python3-pip
     - python2-pip
+    - tmux
+    - tree
     - vim
     state: latest
   when: is_centos
@@ -34,6 +36,7 @@
     - nfs-common
     - sshpass
     - python3-pip
+    - tmux
     - tree        # display directory tree
     - vim
     state: latest
