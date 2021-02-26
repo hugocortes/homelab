@@ -1,5 +1,14 @@
 ---
 
+# TODO this should still disable password auth
+- name: add authorized keys to vm workstation
+  authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: https://github.com/hugocortes.keys
+  when: is_workstation
+  notify: restart ssh
+
 - name: disable root login
   lineinfile:
     dest: /etc/ssh/sshd_config
@@ -10,15 +19,6 @@
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
   notify: restart ssh
 
-# TODO this should still disable password auth
-- name: add authorized keys to vm workstation
-  authorized_key:
-    user: "{{ ansible_user }}"
-    state: present
-    key: https://github.com/hugocortes.keys
-  when: is_workstation
-  notify: restart ssh
-
 - name: disable password authentication
   lineinfile:
     dest: /etc/ssh/sshd_config
@@ -27,8 +27,18 @@
     state: present
   with_items:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
-    - { regexp: "^ChallengeResponseAuthentication yes", line: "ChallengeResponseAuthentication no" }
   when: is_internal
+  notify: restart ssh
+
+- name: disable challenege response authentication
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "^ChallengeResponseAuthentication yes", line: "ChallengeResponseAuthentication no" }
+  when: is_internal and not is_bastion
   notify: restart ssh
 
 - name: configure bastion host access
@@ -40,7 +50,7 @@
       block: |
         Match User *,!{{ global.bastion.user }} Address {{ global.bastion.host }}
           ForceCommand /bin/false
-    when: is_internal and (bastion.user and bastion.host)
+    when: is_internal and (global.bastion.user and global.bastion.host)
     notify: restart ssh
 
   - name: block access from bastion host
@@ -50,9 +60,9 @@
       block: |
         Match Address {{ global.bastion.host }}
           ForceCommand /bin/false
-    when: not is_internal and (bastion.user and bastion.host)
+    when: not is_internal and (global.bastion.user and global.bastion.host)
     notify: restart ssh
-  when: (bastion is defined) and (bastion.host != lookup('dig', ansible_host))
+  when: (global.bastion is defined) and (global.bastion.host != lookup('dig', ansible_host))
 
 - name: centos | install fail2ban
   import_tasks: centos.yaml
