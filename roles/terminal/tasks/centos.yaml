@@ -16,11 +16,13 @@
       executable: /bin/bash
 
   - name: move neovim to /opt
+    become: yes
     shell: rm -rf /opt/squashfs-root && mv /tmp/squashfs-root /opt
     args:
       executable: /bin/bash
 
   - name: create neovim link
+    become: yes
     file:
       src: /opt/squashfs-root/AppRun
       dest: /usr/bin/nvim
