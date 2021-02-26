@@ -6,22 +6,22 @@
   listen: restart ssh
 
 - name: restart ssh | reboot to sync freeipa login
-  import_tasks: ../roles/global/tasks/reboot.yaml
-  when: is_freeipa_client and (ansible_user != ipa.user)
+  include_tasks: ../roles/global/tasks/reboot.yaml # include required to read vars
+  when: is_freeipa_client and (ansible_user != global.ipa.user)
   listen: restart ssh
-
-- name: swap ansible_user to ipa.user
-  import_tasks: ../roles/global/tasks/ipa.yaml
-  when: is_freeipa_client
-  listen:
-  - enable fail2ban
-  - restart fail2ban
 
 - name: restart ssh
   service:
     name: sshd
     state: restarted
   listen: restart ssh
+
+- name: swap ansible_user to ipa.user
+  include_tasks: ../roles/global/tasks/ipa.yaml # include required to read vars
+  when: is_freeipa_client
+  listen:
+  - enable fail2ban
+  - restart fail2ban
 
 - name: enable fail2ban
   service:
