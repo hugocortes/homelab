@@ -1,7 +1,8 @@
 ---
 
 - name: postgresql | create guacamole database
-  include_tasks: docker/postgresql/initdb/tasks/main.yaml
+  include_role:
+    name: docker/postgresql/initdb
   vars:
     postgresql_host: "{{ postgresql.host }}"
     postgresql_port: "{{ postgresql.port }}"
