@@ -1,16 +1,25 @@
 ---
 
+- name: set sish docker ports
+  set_fact:
+    ports: "['{{ global.sish.sshPort }}:{{ global.sish.sshPort }}', '{{ global.sish.forwardingPorts.http }}:{{ global.sish.forwardingPorts.http }}', '{{ global.sish.forwardingPorts.https }}:{{ global.sish.forwardingPorts.https }}']"
+
+- name: append tcp ports
+  set_fact:
+    ports: "{{ ports }} + ['{{ item }}:{{ item }}']"
+  with_items: "{{ global.sish.forwardingPorts.tcp }}"
+
 - name: launch sish container
   docker_container:
     name: sish
     image: "antoniomika/sish:{{ global.sish.tag }}"
     restart_policy: unless-stopped
     hostname: "{{ inventory_hostname }}"
-    network_mode: host
+    ports: "{{ ports }}"
     command: >-
-      --ssh-address=:{{ global.sish.sshAddress }}
-      --http-address=:{{ global.sish.httpAddress }}
-      --https-address=:{{ global.sish.httpsAddress }}
+      --ssh-address=:{{ global.sish.sshPort }}
+      --http-address=:{{ global.sish.forwardingPorts.http }}
+      --https-address=:{{ global.sish.forwardingPorts.https }}
       --https=true
       --https-certificate-directory=/ssl
       --https-ondemand-certificate=true

@@ -72,9 +72,11 @@ global:
 
   sish:
     tag: ""
-    sshAddress: "8022"
-    httpAddress: "80"
-    httpsAddress: "443"
+    sshPort: "8022"
+    forwardingPorts:
+      http: "80"
+      https: "443"
+      tcp: []
     domain: ""
     privateKeyPassphrase: ""
 

@@ -7,10 +7,24 @@
     name: bastion
     ports:
     - name: bastion sish ssh server
-      port: "{{ global.sish.sshAddress }}/tcp"
+      port: "{{ global.sish.sshPort }}/tcp"
     - name: bastion sish http
-      port: "{{ global.sish.httpAddress }}/tcp"
+      port: "{{ global.sish.forwardingPorts.http }}/tcp"
     - name: bastion sish https
-      port: "{{ global.sish.httpsAddress }}/tcp"
-    - name: bastion sish ssh client
-      port: "9222/tcp"
+      port: "{{ global.sish.forwardingPorts.https }}/tcp"
+
+- name: create tcp port var
+  set_fact:
+    tcpPorts: "{{ tcpPorts | default([]) +
+      [{
+        'name': 'tcp forwarding port',
+        'port': '{{ item }}/tcp'
+      }] }}"
+  with_items: "{{ global.sish.forwardingPorts.tcp }}"
+
+- name: centos | open bastion ports
+  include_role:
+    name: services/firewalld/tasks
+  vars:
+    name: bastion
+    ports: "{{ tcpPorts }}"
