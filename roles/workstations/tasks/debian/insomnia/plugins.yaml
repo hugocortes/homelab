@@ -4,16 +4,13 @@
   stat:
     path: "{{ plugin_path }}/{{ item }}"
   register: plugin
-  with_items: "{{ plugins }}"
 
 - name: insomnia | install npm pkg
   shell: "source {{ ansible_env['HOME'] }}/.zshrc && npm install --prefix /tmp {{ item }}"
   args:
     executable: /bin/bash
   when: plugin.stat.exists == false
-  with_items: "{{ plugins }}"
 
 - name: insomnia | move pkg to plugin dir
   command: "mv /tmp/node_modules/{{ item }} {{ plugin_path }}/"
   when: plugin.stat.exists == false
-  with_items: "{{ plugins }}"

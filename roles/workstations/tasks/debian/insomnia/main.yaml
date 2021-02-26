@@ -19,8 +19,6 @@
     state: directory
 
 - name: insomnia | install plugins
-  import_tasks: plugins.yaml
-  vars:
-    plugin_path: "{{ plugin_path }}"
-    plugins:
-    - insomnia-plugin-accesstoken
+  include_tasks: plugins.yaml
+  with_items:
+  - insomnia-plugin-accesstoken
