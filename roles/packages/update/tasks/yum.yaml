@@ -5,5 +5,8 @@
     name: "*"
     state: latest
 
-- name: update pip
-  command: pip install --upgrade pip
+- name: update pip3
+  command: pip3 install --upgrade pip
+
+- name: update pip2
+  command: pip2 install --upgrade pip

@@ -11,15 +11,13 @@ plugins=(
   npm
   nvm
 )
-export DISABLE_UPDATE_PROMPT=true
+export DISABLE_AUTO_UPDATE=true
 export EDITOR=nvim
-export ZSH={{ ansible_home }}/.oh-my-zsh
+export ZSH={{ item.home }}/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
-# go
-export GOPATH={{ ansible_home }}/go
-export GOBIN=$GOPATH/bin
-export PATH=$PATH:$GOBIN
+# plugins
+eval $(thefuck --alias)
 
 # java
 {% if is_workstation and is_debian %}
@@ -27,9 +25,13 @@ export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 export M2_HOME=/opt/maven
 {% endif %}
 
-# plugins
-eval $(thefuck --alias)
+{% if is_workstation %}
+# go
+export GOPATH={{ item.home }}/go
+export GOBIN=$GOPATH/bin
+export PATH=$PATH:$GOBIN
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+{% endif %}

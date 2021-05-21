@@ -1,5 +1,7 @@
 " indention options
 filetype indent off				" disable native vim indent plugin
+set tabstop=4
+set shiftwidth=4
 
 " search options
 set hlsearch					" search highlighting
@@ -23,7 +25,7 @@ set ruler					" show cursor position
 " set autochdir					" CAREFUL! changes dir to file, may break plugins
 set backspace=indent,eol,start			" allow normal backspace
 set clipboard=unnamed				" allow pasting from clipboard
-set dir={{ ansible_home }}/.cache/vim.swap	" directory to store swap files, create dir
+set dir={{ item.home }}/.cache/vim.swap	" directory to store swap files, create dir
 " set formatoptions+=j				" delete comment char when joining comments
 " set mouse=v
 " set spell					" enable spellchecking

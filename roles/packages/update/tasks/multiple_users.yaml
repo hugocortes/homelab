@@ -1,0 +1,10 @@
+---
+
+- name: installing packages for user {{ item.user }}
+  debug:
+
+- name: update oh my zsh for user
+  become: "{{ item.become }}"
+  shell: cd "{{ item.home }}/.oh-my-zsh" && git pull
+  args:
+    executable: /bin/bash

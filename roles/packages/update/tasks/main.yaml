@@ -8,16 +8,6 @@
   import_tasks: yum.yaml
   when: is_centos
 
-- name: update oh my zsh for user
-  ignore_errors: yes
-  become: no
-  shell: cd ~/.oh-my-zsh && git pull
-  args:
-    executable: /bin/bash
-
-- name: update oh my zsh for root
-  ignore_errors: yes
-  become: yes
-  shell: cd ~/.oh-my-zsh && git pull
-  args:
-    executable: /bin/bash
+- name: update packages for multiple users
+  include_tasks: multiple_users.yaml
+  with_items: "{{ ansible_users }}"

@@ -20,3 +20,39 @@
 - name: set is_centos fact
   set_fact:
     is_centos: "{{ is_centos_7 or is_centos_8 }}"
+
+- name: set ansible_become_home
+  block:
+  - name: get directory
+    shell: "getent passwd {{ ansible_become_user }}  | awk -F: '{ print $6 }'"
+    register: home
+
+  - name: set fact
+    set_fact:
+      ansible_become_home: "{{ home.stdout }}"
+
+- name: set ansible_user_home
+  block:
+  - name: get directory
+    shell: "getent passwd {{ ansible_user }}  | awk -F: '{ print $6 }'"
+    register: home
+
+  - name: set fact
+    set_fact:
+      ansible_user_home: "{{ home.stdout }}"
+
+- name: set ansible_users for installing packages to multiple users
+  set_fact:
+    ansible_users:
+    - home: "{{ ansible_user_home }}"
+      user: "{{ ansible_user }}"
+      become: no
+
+- name: append become user to ansible_users
+  set_fact:
+    ansible_users:
+    - "{{ ansible_users }}"
+    - home: "{{ ansible_become_home }}"
+      user: "{{ ansible_become_user }}"
+      become: yes
+  when: ansible_user != ansible_become_user

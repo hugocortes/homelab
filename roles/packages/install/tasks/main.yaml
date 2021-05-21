@@ -1,43 +1,67 @@
 ---
 
-- name: centos | install epel-release
-  yum:
-    name:
-    - epel-release
-    state: latest
+- name: centos | install packages
+  import_tasks: centos.yaml
   when: is_centos
 
-- name: centos | install yum packages
-  become: yes
-  yum:
-    name:
-    - nfs-utils
-    - sshpass
-    - python3-pip
-    - python2-pip
-    - tmux
-    - tree
-    - vim
-    state: latest
-  when: is_centos
+- name: debian | install packages
+  import_tasks: debian.yaml
+  when: is_debian
 
-- name: centos | create pip3 symlink
+- name: pip | update setuptools
+  pip:
+    name: setuptools
+    state: latest
+
+- name: pip | install
+  pip:
+    name:
+    - thefuck
+    - neovim
+    executable: pip3
+
+- name: create thefuck symlink
   become: yes
   file:
-    src: "/usr/bin/pip-3"
-    dest: "/usr/bin/pip3"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     state: link
     force: yes
-  when: is_centos
+  with_items:
+  - src: /usr/local/bin/thefuck
+    dest: /usr/bin/thefuck
+  - src: /usr/local/bin/fuck
+    dest: /usr/bin/fuck
 
-- name: debian | install apt packages
-  apt:
-    name:
-    - nfs-common
-    - sshpass
-    - python3-pip
-    - tmux
-    - tree        # display directory tree
-    - vim
-    state: latest
-  when: is_debian
+- name: install neovim
+  block:
+  - name: download neovim install script
+    become: no
+    get_url:
+      url: https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+      dest: /tmp/nvim.appimage
+      mode: +x
+
+  - name: run neovim install script
+    become: no
+    shell: cd /tmp && /tmp/nvim.appimage --appimage-extract
+    args:
+      executable: /bin/bash
+
+  - name: move neovim to /opt
+    become: yes
+    shell: rm -rf /opt/squashfs-root && mv /tmp/squashfs-root /opt
+    args:
+      executable: /bin/bash
+
+  - name: create neovim link
+    become: yes
+    file:
+      src: /opt/squashfs-root/AppRun
+      dest: /usr/bin/nvim
+      state: link
+      force: yes
+
+- name: install packages for multiple users
+  include_tasks: multiple_users.yaml
+  with_items: "{{ ansible_users }}"

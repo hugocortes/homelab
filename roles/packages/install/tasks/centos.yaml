@@ -1,0 +1,83 @@
+---
+
+- name: centos | install epel-release
+  yum:
+    name:
+    - epel-release
+    state: latest
+
+- name: centos | install yum packages
+  become: yes
+  yum:
+    name:
+    - curl
+    - git
+    - nfs-utils
+    - python2
+    - python3
+    - sshpass
+    - tar
+    - tmux
+    - tree
+    - vim
+    - zsh
+    state: latest
+
+- name: centos8 | install yum packages
+  become: yes
+  yum:
+    name:
+    - util-linux-user
+    state: latest
+  when: is_centos_8
+
+- name: centos | install pip packages
+  block:
+  - name: centos | create python2 symlink
+    become: yes
+    file:
+      src: "/usr/bin/python2"
+      dest: "/usr/bin/python"
+      state: link
+      force: yes
+    when: is_centos_7
+
+  - name: centos | create python3 symlink
+    become: yes
+    file:
+      src: "/usr/bin/python3"
+      dest: "/usr/bin/python"
+      state: link
+      force: yes
+    when: is_centos_8
+
+  - name: centos | install pip
+    become: yes
+    yum:
+      name:
+      - python3-pip
+      - python2-pip
+      state: latest
+
+  - name: centos | install pip dependencies
+    become: yes
+    yum:
+      name:
+      - gcc
+      - python2-devel
+      - python3-devel
+      - python3-libs
+      - python3-pip
+      - python3-setuptools
+      state: latest
+
+  - name: centos | create pip3 symlink
+    become: yes
+    file:
+      src: "/usr/bin/pip-3"
+      dest: "{{ item }}"
+      state: link
+      force: yes
+    with_items:
+    - /usr/bin/pip3
+    - /usr/bin/pip

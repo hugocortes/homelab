@@ -26,6 +26,13 @@
   - name: packages/update
     tags: update
 
+- name: configure terminal
+  hosts: all
+  become: no
+  tags: terminal
+  roles:
+  - terminal
+
 - name: register freeipa clients
   import_playbook: ../ansible-freeipa/playbooks/install-client.yml
   tags: freeipa-client
@@ -40,13 +47,6 @@
   - services/ssh/setup
   - name: services/collectd
     tags: collectd
-
-- name: configure terminal
-  hosts: all
-  become: no
-  tags: terminal
-  roles:
-  - terminal
 
 - name: configure docker group
   hosts: docker

@@ -1,0 +1,16 @@
+---
+
+- name: debian | install apt packages
+  apt:
+    name:
+    - curl
+    - git
+    - nfs-common
+    - sshpass
+    - python
+    - python3-pip
+    - tmux
+    - tree        # display directory tree
+    - vim
+    - zsh
+    state: latest

@@ -1,8 +1,8 @@
-set runtimepath^={{ ansible_home }}/.vim runtimepath+={{ ansible_home }}/.vim/after
+set runtimepath^={{ item.home }}/.vim runtimepath+={{ item.home }}/.vim/after
 let &packpath=&runtimepath
-source {{ ansible_home }}/.vimrc
+source {{ item.home }}/.vimrc
 
-call plug#begin('{{ ansible_home }}/.vim/plugged')
+call plug#begin('{{ item.home }}/.vim/plugged')
 
 {% if is_workstation %}
 Plug 'neoclide/coc.nvim', {'branch': 'release'}	" intellisense type autocomplete

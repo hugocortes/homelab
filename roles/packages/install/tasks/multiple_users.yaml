@@ -1,0 +1,24 @@
+---
+
+- name: installing packages for user {{ item.user }}
+  debug:
+
+- name: check if ohmyzsh dir exists
+  stat:
+    path: "{{ item.home }}/.oh-my-zsh"
+  register: ohmyzsh
+
+- name: install ohmyzsh
+  become: "{{ item.become }}"
+  block:
+  - name: download ohmyzsh install script
+    get_url:
+      url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+      dest: "/tmp/ohmyzsh-install-{{ item.user }}.sh"
+      mode: +x
+
+  - name: install ohmyzsh
+    command: "/bin/sh /tmp/ohmyzsh-install-{{ item.user }}.sh"
+    async: 30
+    poll: 5
+  when: not ohmyzsh.stat.exists
