@@ -19,4 +19,4 @@
 
   - name: ping to verify current user
     action: ping
-  when: (is_freeipa_client or is_freeipa_server) and (ping.failed | d(ping.unreachable) | d(false))
+  when: (is_freeipa) and (ping.failed | d(ping.unreachable) | d(false))

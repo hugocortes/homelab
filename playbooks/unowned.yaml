@@ -18,8 +18,8 @@
   tags: configure
   pre_tasks:
   - fail:
-      msg: target host should not be an internal server or client
-    when: is_internal
+      msg: target host should not be registered to freeipa
+    when: is_freeipa
   roles:
   - name: packages/install
   - name: packages/update

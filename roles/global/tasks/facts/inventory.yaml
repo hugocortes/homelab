@@ -5,15 +5,14 @@
     is_bastion: "{{ inventory_hostname == 'bastion' }}"
     is_docker: "{{ 'docker' in group_names }}"
     is_freeipa_server: "{{ 'ipaserver' in group_names }}"
+    is_freeipa_replica: "{{ 'ipareplicas' in group_names }}"
     is_freeipa_client: "{{ 'ipaclients' in group_names }}"
     is_kubernetes: "{{ 'kubernetes' in group_names }}"
     is_server: "{{ 'servers' in group_names }}"
-    is_spacewalk_client: "{{ 'spacewalkclients' in group_names }}"
-    is_spacewalk_server: "{{ 'spacewalkserver' in group_names }}"
     is_vm_workstation: "{{ 'vmworkstations' in group_names }}"
     is_physical_workstation: "{{ 'physicalworkstations' in group_names }}"
     is_workstation: "{{ 'workstations' in group_names }}"
 
-- name: set is_owned fact
+- name: set is_freeipa fact
   set_fact:
-    is_internal: "{{ is_freeipa_server or is_freeipa_client or is_spacewalk_server or is_spacewalk_client }}"
+    is_freeipa: "{{ is_freeipa_server or is_freeipa_replica or is_freeipa_client }}"

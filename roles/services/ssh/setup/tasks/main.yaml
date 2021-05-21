@@ -27,7 +27,7 @@
     state: present
   with_items:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
-  when: is_internal
+  when: is_freeipa
   notify: restart ssh
 
 - name: disable challenege response authentication
@@ -38,29 +38,29 @@
     state: present
   with_items:
     - { regexp: "^ChallengeResponseAuthentication yes", line: "ChallengeResponseAuthentication no" }
-  when: is_internal and not is_bastion
+  when: is_freeipa and not is_bastion
   notify: restart ssh
 
 - name: configure bastion host access
   block:
-  - name: block access to non bastion users from bastion host
+  - name: block access to non bastion user from bastion host
     blockinfile:
       dest: /etc/ssh/sshd_config
       marker: "# {mark}-block-bastion"
       block: |
         Match User *,!{{ global.bastion.user }} Address {{ global.bastion.host }}
           ForceCommand /bin/false
-    when: is_internal and (global.bastion.user and global.bastion.host)
+    when: is_freeipa and (global.bastion.user and global.bastion.host)
     notify: restart ssh
 
-  - name: block access from bastion host
+  - name: block access from bastion host if not registered on freeipa
     blockinfile:
       dest: /etc/ssh/sshd_config
       marker: "# {mark}-block-bastion"
       block: |
         Match Address {{ global.bastion.host }}
           ForceCommand /bin/false
-    when: not is_internal and (global.bastion.user and global.bastion.host)
+    when: not is_freeipa and global.bastion.host
     notify: restart ssh
   when: (global.bastion is defined) and (global.bastion.host != lookup('dig', ansible_host))
 
