@@ -1,9 +1,0 @@
----
-
-- name: centos | unregister spacewalk clients
-  rhn_register:
-    state: absent
-    username: "{{ global.spacewalk.host }}"
-    password: "{{ global.spacewalk.pass }}"
-  ignore_errors: yes
-  when: sync and is_centos

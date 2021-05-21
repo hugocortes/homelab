@@ -17,24 +17,6 @@
 #   roles:
 #   - services/freeipa/server
 
-# - name: install spacewalk server
-#   hosts: spacewalkserver
-#   become: yes
-#   tags: spacewalk-server
-#   roles:
-#   - services/spacewalk/server
-
-- name: register spacewalk clients
-  hosts: spacewalkclients
-  become: yes
-  vars:
-    sync: false # resets all configuration before re-applying
-  tags: spacewalk-client
-  roles:
-  - services/spacewalk/sync
-  - services/spacewalk/client/install
-  - packages/disable
-
 - name: install & update packages
   hosts: all
   become: yes

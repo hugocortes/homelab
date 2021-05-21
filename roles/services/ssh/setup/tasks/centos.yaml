@@ -5,7 +5,6 @@
     name:
     - epel-release
     state: latest
-  when: not is_spacewalk_client
 
 - name: centos | install fail2ban packages
   yum:

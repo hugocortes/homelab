@@ -4,7 +4,6 @@
   get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docer-ce.repo
-  when: not is_spacewalk_client
 
 - name: centos | install docker dependencies
   yum:
