@@ -4,7 +4,7 @@
   set_fact:
     is_bastion: "{{ inventory_hostname == 'bastion' }}"
     is_docker: "{{ 'docker' in group_names }}"
-    is_freeipa_server: "{{ 'ipaserver' in group_names }}"
+    is_freeipa_server: "{{ 'ipaservers' in group_names }}"
     is_freeipa_replica: "{{ 'ipareplicas' in group_names }}"
     is_freeipa_client: "{{ 'ipaclients' in group_names }}"
     is_kubernetes: "{{ 'kubernetes' in group_names }}"
