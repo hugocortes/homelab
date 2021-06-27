@@ -20,6 +20,7 @@
   pip:
     name: psutil
     executable: pip3
+    extra_args: --user
 
 - name: set profile picture
   become: yes

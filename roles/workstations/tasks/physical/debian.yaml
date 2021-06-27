@@ -19,14 +19,15 @@
     pkg_packages:
     - duck
 
+# example deb url
+# https://dl.cloudsmith.io/public/balena/etcher/config.deb.txt?distro=ubuntu&codename=xenial&version=20.10&arch=amd64
 - name: install etcher
   import_tasks: ../debian/generic.yaml
   vars:
     pkg_name: etcher
-    pkg_gpg_id: 379CE192D401AB61
-    pkg_gpg_keyserver: hkps://keyserver.ubuntu.com:443
+    pkg_gpg_key: https://dl.cloudsmith.io/public/balena/etcher/gpg.70528471AFF9A051.key
     pkg_repository_name: etcher
-    pkg_repository: deb https://deb.etcher.io stable etcher
+    pkg_repository: deb https://dl.cloudsmith.io/public/balena/etcher/deb/ubuntu xenial main
     pkg_packages:
     - balena-etcher-electron
 
@@ -62,6 +63,6 @@
     pkg_name: yq
     pkg_gpg_id: CC86BB64
     pkg_gpg_keyserver: keyserver.ubuntu.com
-    pkg_repository: ppa:rmescandon/yq=focal
+    pkg_repository: deb http://ppa.launchpad.net/rmescandon/yq/ubuntu focal main
     pkg_packages:
     - yq

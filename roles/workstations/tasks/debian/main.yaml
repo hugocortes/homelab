@@ -19,16 +19,20 @@
     - apache2-utils
     - build-essential
     - discord
+    - gnome-tweaks # may have to manually enable `extensions` in `tweaks` ui
+    - gnome-shell-extensions
     - gnupg
     - gnupg2
     - jq
     - libmediainfo0v5
     - libssl-dev
+    - mysql-client
     - network-manager-openvpn-gnome
     - nfs-common
     - openvpn-systemd-resolved
     - protobuf-compiler
     - redis-tools
+    - software-properties-common
     - sshpass
     - traceroute
     - virtualbox
@@ -42,13 +46,17 @@
     - geary
     state: absent
 
-- name: install ansible
-  import_tasks: generic.yaml
-  vars:
-    pkg_name: ansible
-    pkg_repository: ppa:ansible/ansible
-    pkg_packages:
-    - ansible
+# todo do pip install ansible-base>=2.9,<2.10
+# - name: install ansible
+#   import_tasks: generic.yaml
+#   vars:
+#     pkg_name: ansible
+#     # pkg_gpg_id: 93C4A3FD7BB9C367
+#     # pkg_gpg_keyserver: keyserver.ubuntu.com
+#     # pkg_repository: deb http://ppa.launchpad.net/ansible/ansible/ubuntu focal main
+#     pkg_repository: ppa:ansible/ansible focal
+#     pkg_packages:
+#     - ansible
 
 - name: install tor browser
   import_tasks: generic.yaml
@@ -80,13 +88,13 @@
   import_tasks: generic.yaml
   vars:
     pkg_name: dbeaver
-    pkg_gpg_key: https://dbeaver.io/debs/dbeaver.gpg.key
-    pkg_repository: deb https://dbeaver.io/debs/dbeaver-ce /
+    pkg_repository: ppa:serge-rider/dbeaver-ce
+
+    # pkg_deb: https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
+    # pkg_repository: ppa:micahflee/ppa
     pkg_dependencies:
     - openjdk-11-jdk
     - openjdk-11-jre
-    pkg_packages:
-    - dbeaver-ce
 
 - name: install kubectl
   import_tasks: generic.yaml

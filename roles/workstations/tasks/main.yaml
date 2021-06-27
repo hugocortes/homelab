@@ -1,5 +1,17 @@
 ---
 
+- name: install pip dependencies
+  become: no
+  pip:
+    name:
+    - netaddr
+    extra_args: --user
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+- name: launch local docker containers
+  import_tasks: docker/main.yaml
+
 - name: bin | configure
   import_tasks: bin/main.yaml
 

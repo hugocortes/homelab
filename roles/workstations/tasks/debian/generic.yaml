@@ -4,6 +4,7 @@
 # pkg_gpg_key
 # pkg_gpg_id
 # pkg_gpg_keyserver
+# pkg_repository_name
 # pkg_repository 
 # pkg_deb
 # pkg_dependencies

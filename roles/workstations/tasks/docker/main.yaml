@@ -1,0 +1,62 @@
+---
+
+- name: launch database containers
+  block:
+  - name: launch mysql container
+    docker_container:
+      name: mysql-5.7
+      image: mysql:5.7
+      state: stopped
+      restart_policy: "no"
+      ports:
+      - 3306:3306
+      env:
+        MYSQL_ROOT_PASSWORD: password # local instance
+
+  - name: launch postgres container
+    docker_container:
+      name: postgres
+      image: postgres
+      state: stopped
+      restart_policy: "no"
+      ports:
+      - 5432:5432
+      env:
+        POSTGRES_PASSWORD: password
+
+  - name: launch redis container
+    docker_container:
+      name: redis
+      image: redis
+      state: stopped
+      restart_policy: "no"
+      ports:
+      - 6379:6379
+
+  - name: create database network
+    docker_network:
+      name: database
+      appends: yes
+      connected:
+      - mysql-5.7
+      - postgres
+      - redis
+
+- name: launch messaging containers
+  block:
+  - name: launch rabbitmq container
+    docker_container:
+      name: rabbitmq
+      image: rabbitmq
+      state: stopped
+      restart_policy: "no"
+      ports:
+      - 5671:5671
+      - 5672:5672
+
+  - name: create messaging network
+    docker_network:
+      name: messaging
+      appends: yes
+      connected:
+      - rabbitmq

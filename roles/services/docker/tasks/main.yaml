@@ -18,17 +18,19 @@
     name: docker
     state: started
 
-- name: install docker pip using python2
-  become: no
-  pip:
-    name: docker
-  vars:
-    ansible_python_interpreter: /usr/bin/python
-  when: not is_debian
-
 - name: install docker pip using python3
-  become: no
+  become: yes
   pip:
-    name: docker
+    name:
+    - docker
+    extra_args: --user
   vars:
     ansible_python_interpreter: /usr/bin/python3
+
+- name: log into docker
+  docker_login:
+    username: "{{ global.docker.username }}"
+    password: "{{ global.docker.password }}"
+    email: "{{ global.docker.email }}"
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf

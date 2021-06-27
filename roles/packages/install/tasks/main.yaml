@@ -8,17 +8,44 @@
   import_tasks: debian.yaml
   when: is_debian
 
-- name: pip | update setuptools
-  pip:
-    name: setuptools
-    state: latest
+- name: pip | update pip3
+  command: pip3 install --upgrade pip
 
-- name: pip | install
+# maybe only needed for centos7
+- name: pip | update pip2
+  command: pip2 install --upgrade pip
+  ignore_errors: true
+
+# fails for some?
+- name: pip | install setuptools
   pip:
     name:
-    - thefuck
+    - setuptools
+    - setuptools_rust
+    - wheel
+    state: latest
+    extra_args: --user
+  ignore_errors: yes
+
+- name: pip | install
+  become: no
+  pip:
+    name:
+    - argparse-manpage
+    - dnspython
     - neovim
-    executable: pip3
+    - pyOpenSSL
+    - pytest
+    - thefuck
+    extra_args: --user
+
+- name: pip | install pip3 deps
+  become: no
+  pip:
+    name:
+    - libs
+    extra_args: --user
+    executable: /usr/bin/pip3
 
 - name: create thefuck symlink
   become: yes
@@ -48,6 +75,7 @@
     args:
       executable: /bin/bash
 
+  # todo may need to move to /usr/local/bin instead or 744 permissions
   - name: move neovim to /opt
     become: yes
     shell: rm -rf /opt/squashfs-root && mv /tmp/squashfs-root /opt
