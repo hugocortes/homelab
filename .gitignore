@@ -10,3 +10,4 @@ inventory/group_vars/all/kubespray.yml
 
 inventory/host_vars/**/*yaml*
 !inventory/host_vars/host/*.example
+users.json

@@ -1,0 +1,228 @@
+---
+
+- name: ensure default config is set
+  ipaconfig:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    maxusername: 32
+    defaultshell: /bin/zsh
+    emaildomain: "{{ ipa_default_emaildomain }}"
+
+- name: remove default `allow_all` host access
+  ipahbacrule:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: allow_all
+    state: absent
+
+- name: add /usr/bin/su sudo cmd
+  ipasudocmd:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: /usr/bin/su
+    state: present
+
+- name: add /usr/bin/sudo sudo cmd
+  ipasudocmd:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: /usr/bin/sudo
+    state: present
+
+- name: add `super user` sudo command group
+  ipasudocmdgroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: super user
+
+- name: assign sudocmds to `super user` sudo command group
+  ipasudocmdgroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: super user
+    sudocmd:
+    - /usr/bin/su
+    - /usr/bin/sudo
+    action: member
+
+- name: add `admins` sudo rule
+  ipasudorule:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: admins
+    options:
+    - "!authenticate"
+    group:
+    - admins
+    hostcategory: "all"
+    cmdcategory: "all"
+    runasusercategory: "all"
+    runasgroupcategory: "all"
+    state: present
+
+- name: add `allow_admins` hbac rule
+  ipahbacrule:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: admins
+    description: allow admins to access any host from any host
+    group:
+    - admins
+    hostcategory: "all"
+    servicecategory: "all"
+
+- name: set default pw policy
+  ipapwpolicy:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    maxlife: 180
+
+- name: include users.json
+  include_vars:
+    file: files/users.json
+
+- name: add users
+  ipauser:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    users: "{{ users }}"
+
+- name: add admin users to `admins`
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: admins
+    action: member
+    user: "{{ ipaadminusers }}"
+
+- name: create posix authorization groups
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item.name }}"
+    description: "{{ item.name }} authorized users"
+    gidnumber: "{{ item.gid }}"
+  with_items:
+  - name: ssh
+    gid: 10003
+
+- name: create nonposix authorization groups
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item }}"
+    description: "{{ item }} authorized users"
+    nonposix: yes
+  with_items:
+  # pfsense config: https://gist.github.com/lucasgrelaud/092f296600a5b41ee36c314cb0205c0a
+  - pfsense
+  - vpn
+  - radius
+  - keycloak
+
+- name: create `adminusers` group
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: adminusers
+    description: admin users authorized for sensitive services
+    nonposix: yes
+
+- name: create `users` group
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: users
+    description: users authorized for non-sensitive services
+    nonposix: yes
+
+- name: add `users` as group member to valid groups
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item }}"
+    group:
+    - users
+  with_items:
+  - keycloak
+  - radius
+
+- name: add `adminusers` as group member to valid groups
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: "{{ item }}"
+    group:
+    - adminusers
+  with_items:
+  - ssh
+  - pfsense
+  - vpn
+  - users
+
+- name: add users to `users` group
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: users
+    action: member
+    user: "{{ ipausersmembers }}"
+
+- name: add adminusers to `adminusers` group
+  ipagroup:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    name: adminusers
+    action: member
+    user: "{{ ipaadminusers }}"
+
+- name: add keycloak tree group mappings
+  block:
+  - name: create tree node groups
+    ipagroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: "{{ item.name }}"
+      description: "{{ item.description }}"
+      nonposix: yes
+    with_items:
+    - name: ipa
+      description: /ipa
+    - name: eng
+      description: /ipa/eng
+    - name: dre
+      description: /ipa/eng/dre
+    - name: sre
+      description: /ipa/eng/sre
+    - name: swe
+      description: /ipa/eng/swe
+    - name: media
+      description: /ipa/media
+    - name: ebooks
+      description: /ipa/media/ebooks
+    - name: games
+      description: /ipa/media/games
+    - name: movies
+      description: /ipa/media/movies
+    - name: music
+      description: /ipa/media/music
+    - name: random
+      description: /ipa/media/random
+    - name: tvshows
+      description: /ipa/media/tvshows
+
+  - name: assign child nodes to /ipa
+    ipagroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: ipa
+      group:
+      - eng
+      - media
+
+  - name: assign child nodes to /ipa/eng
+    ipagroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: eng
+      group:
+      - dre
+      - sre
+      - swe
+
+  - name: assign child nodes to /ipa/media
+    ipagroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: media
+      group:
+      - ebooks
+      - games
+      - movies
+      - music
+      - random
+      - tvshows
+
+  - name: add ipamembers to `ipa` group
+    ipagroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: ipa
+      action: member
+      user: "{{ ipaipamembers }}"
