@@ -1,0 +1,10 @@
+---
+
+- name: centos | open plex services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: plex
+    ports:
+    - name: plex
+      port: 32400/tcp
