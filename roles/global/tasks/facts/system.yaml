@@ -26,6 +26,7 @@
   - name: get directory
     shell: "getent passwd {{ ansible_become_user }}  | awk -F: '{ print $6 }'"
     register: home
+    ignore_errors: yes
 
   - name: set fact
     set_fact:
