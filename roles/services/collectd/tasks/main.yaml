@@ -1,11 +1,12 @@
 ---
 
 - name: centos | install collectd
-  yum:
+  dnf:
     name:
     - collectd
-    - collectd-rrdtool
     state: present
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
   when: is_centos
 
 - name: debian | install collectd
@@ -26,6 +27,8 @@
     line: "{{ item.line }}"
     state: present
   with_items:
+  - regexp: FQDNLookup\s
+    line: FQDNLookup true
   - regexp: Hostname\s
     line: Hostname "{{ inventory_hostname }}"
   - regexp: TypesDB\s
@@ -58,7 +61,7 @@
     marker: "# {mark}-network ANSIBLE MANAGED BLOCK #"
     block: |
       <Plugin network>
-        Server "{{ global.influxdb.host }}" "{{ global.influxdb.port }}"
+        Server "{{ global.collectd.host }}" "{{ global.collectd.port }}"
       </Plugin>
 
 - name: configure df plugin

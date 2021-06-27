@@ -6,17 +6,21 @@
     dest: /etc/yum.repos.d/docer-ce.repo
 
 - name: centos | install docker dependencies
-  yum:
+  dnf:
     name:
     - yum-utils
     - device-mapper-persistent-data
     - lvm2
     state: latest
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
 
 - name: centos | install docker packages
-  yum:
+  dnf:
     name:
     - docker-ce
     - docker-ce-cli
     - containerd.io
     state: latest
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf

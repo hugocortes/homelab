@@ -1,12 +1,8 @@
 ---
 
 - name: centos | update yum packages
-  yum:
+  dnf:
     name: "*"
     state: latest
-
-- name: update pip3
-  command: pip3 install --upgrade pip
-
-- name: update pip2
-  command: pip2 install --upgrade pip
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf

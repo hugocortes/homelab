@@ -1,15 +1,19 @@
 ---
 
 - name: centos | install epel-release
-  yum:
+  dnf:
     name:
     - epel-release
     state: latest
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
 
 - name: centos | install fail2ban packages
-  yum:
+  dnf:
     name:
     - fail2ban
     - fail2ban-systemd
     state: latest
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
   notify: enable fail2ban

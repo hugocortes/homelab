@@ -1,10 +1,10 @@
 ---
 
 - name: centos | install ansible postgresql dependencies
-  yum:
+  dnf:
     name:
     - postgresql-devel
     - python3-psycopg2
     state: present
   vars:
-    ansible_python_interpreter: /usr/bin/python
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf

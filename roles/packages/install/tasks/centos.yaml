@@ -1,47 +1,7 @@
 ---
 
-- name: centos | install epel-release
-  yum:
-    name:
-    - epel-release
-    state: latest
-
-- name: centos | install yum packages
-  become: yes
-  yum:
-    name:
-    - curl
-    - git
-    - nfs-utils
-    - python2
-    - python3
-    - sshpass
-    - tar
-    - tmux
-    - tree
-    - vim
-    - zsh
-    state: latest
-
-- name: centos8 | install yum packages
-  become: yes
-  yum:
-    name:
-    - util-linux-user
-    state: latest
-  when: is_centos_8
-
-- name: centos | install pip packages
+- name: centos | install dnf using yum and python2
   block:
-  - name: centos | create python2 symlink
-    become: yes
-    file:
-      src: "/usr/bin/python2"
-      dest: "/usr/bin/python"
-      state: link
-      force: yes
-    when: is_centos_7
-
   - name: centos | create python3 symlink
     become: yes
     file:
@@ -51,25 +11,83 @@
       force: yes
     when: is_centos_8
 
-  - name: centos | install pip
+  - name: centos | create python2 symlink
+    become: yes
+    file:
+      src: "/usr/bin/python2"
+      dest: "/usr/bin/python"
+      state: link
+      force: yes
+    when: is_centos_7
+
+  - name: centos | install dnf and python3
     become: yes
     yum:
+      name:
+      - dnf
+      - python3
+      state: latest
+    when: is_centos_8
+
+  - name: centos | install dnf and python3
+    become: yes
+    yum:
+      name:
+      - dnf
+      - python3
+      state: latest
+    vars:
+      ansible_python_interpreter: /usr/bin/python2
+    when: is_centos_7
+
+- name: centos | install epel-release
+  become: yes
+  dnf:
+    name:
+    - epel-release
+    state: latest
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
+
+- name: centos | install dnf packages
+  become: yes
+  dnf:
+    name:
+    - nfs-utils
+    - python3-libselinux
+    - curl
+    - git
+    - sshpass
+    - tar
+    - tmux
+    - tree        # display directory tree
+    - vim
+    - zsh
+    state: latest
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
+
+- name: centos8 | install dnf packages
+  become: yes
+  dnf:
+    name:
+    - util-linux-user
+    state: latest
+  vars:
+    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
+  when: is_centos_8
+
+- name: centos | install pip packages
+  block:
+  - name: centos | install pip
+    become: yes
+    dnf:
       name:
       - python3-pip
       - python2-pip
       state: latest
-
-  - name: centos | install pip dependencies
-    become: yes
-    yum:
-      name:
-      - gcc
-      - python2-devel
-      - python3-devel
-      - python3-libs
-      - python3-pip
-      - python3-setuptools
-      state: latest
+    vars:
+      ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
 
   - name: centos | create pip3 symlink
     become: yes
@@ -81,3 +99,31 @@
     with_items:
     - /usr/bin/pip3
     - /usr/bin/pip
+    when: is_centos_8
+
+  - name: centos | create pip2 symlink
+    become: yes
+    file:
+      src: "/usr/bin/pip2"
+      dest: "/usr/bin/pip"
+      state: link
+      force: yes
+    when: is_centos_7
+
+- name: centos | cleanup rrd cache
+  block:
+  - name: centos | remove collectd rrdtool
+    dnf:
+      name:
+      - collectd-rrdtool
+      state: absent
+    vars:
+      ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
+    when: is_centos
+
+  - name: delete rrd
+    file:
+      state: absent
+      path: /var/lib/collectd/rrd
+      force: yes
+    ignore_errors: yes
