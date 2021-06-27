@@ -62,7 +62,7 @@
           ForceCommand /bin/false
     when: not is_freeipa and global.bastion.host
     notify: restart ssh
-  when: (global.bastion is defined) and (global.bastion.host != lookup('dig', ansible_host))
+  when: (global.bastion is defined) and not is_bastion
 
 - name: centos | install fail2ban
   import_tasks: centos.yaml
