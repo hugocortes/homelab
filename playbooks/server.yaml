@@ -10,13 +10,6 @@
   - global
   tags: always
 
-# - name: install freeipa server
-#   hosts: ipaserver
-#   become: yes
-#   tags: freeipa-server
-#   roles:
-#   - services/freeipa/server
-
 - name: install & update packages
   hosts: all
   become: yes
@@ -33,16 +26,78 @@
   roles:
   - terminal
 
+- name: configure acme certs
+  hosts: acme
+  tags: acme
+  vars:
+  - letsencrypt_production: yes
+  - include_intermediate: yes
+  tasks:
+  - include_role:
+      name: ansible-letsencrypt-cloudflare
+  - include_role:
+      name: services/acme
+
+# - name: uninstall freeipa clients
+#   become: yes
+#   tags: freeipa-client-uninstall
+#   import_playbook: ../ansible-freeipa/playbooks/uninstall-client.yml
+#   vars:
+#     ansible_python_interpreter: /usr/bin/python2
+
+- name: configure freeipa server/replica
+  become: yes
+  hosts: ipaservers,ipareplicas
+  tags: freeipa
+  tasks:
+  - name: update hostname
+    command: "hostnamectl set-hostname {{ ansible_host }}"
+  - include_role:
+      name: services/freeipa/server
+
+- name: install freeipa server
+  become: yes
+  hosts: ipaservers
+  tags: freeipa-server
+  tasks:
+  - include_role:
+      name: ipaserver
+
+# manually append isrg root x1 let's encrypt cert and re-run ipa-certupdate (if using let's encrypt)
+# https://yyhh.org/blog/2021/01/fix-freeipa-httpd-lets-encrypt-certificate-update/
+- name: install freeipa replica
+  become: yes
+  hosts: ipareplicas
+  tags: freeipa-replicas
+  tasks:
+  - include_role:
+      name: ipareplica
+
+# disable anonymous binds
+# https://stomp.colorado.edu/blog/blog/2011/12/19/on-increasing-the-security-of-a-freeipa-server/
+# sudo service ipa stop
+# sudo vi /etc/dirsrv/slapd-DOMAIN-COM/dse.ldif
+# Search for nsslapd-allow-anonymous-access and change on to rootdse
+# sudo service ipa start
+- name: configure freeipa server
+  become: yes
+  hosts: ipaservers,ipareplicas
+  tags: freeipa-configure
+  roles:
+  - services/freeipa/server/configure
+
 - name: register freeipa clients
   import_playbook: ../ansible-freeipa/playbooks/install-client.yml
   tags: freeipa-client
+  vars:
+    ansible_python_interpreter: "{{ '/usr/bin/python2' if is_centos_7 else '/usr/bin/python3' }}"
 
 - name: configure servers group
   hosts: servers
   become: yes
   vars:
     sync: false # resets all configuration before re-applying
-  tags: configure
+  tags: server
   roles:
   - services/ssh/setup
   - name: services/collectd
@@ -53,10 +108,13 @@
   become: yes
   tags: docker
   roles:
-  - services/docker
+  - name: services/docker
+    when: not is_kubernetes
   - name: docker/metrics
     when: not is_workstation
 
+# todo centos8 need to remove podman: sudo yum -y remove podman buildah
+# todo centos8 needs to manually install containerd https://linuxhint.com/install_docker_ce_centos8/
 - name: configure kubernetes group
   hosts: kubernetes
   become: yes
@@ -106,3 +164,10 @@
     initialize: false
   roles:
   - docker/postgresql
+
+- name: configure media
+  hosts: media
+  become: yes
+  tags: media
+  roles:
+  - docker/media
