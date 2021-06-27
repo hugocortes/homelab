@@ -6,6 +6,7 @@
     state: "{{ item.state | default('enabled') }}"
     port: "{{ item.port }}"
     permanent: yes
+  with_items: "{{ ports }}"
 
 - name: "{{ name }} | enable firewalld port (not permanant)"
   firewalld:
