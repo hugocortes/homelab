@@ -1,4 +1,4 @@
 ---
 
-kube_version: v1.17.5
+kube_version: v1.20.7
 dashboard_enabled: false

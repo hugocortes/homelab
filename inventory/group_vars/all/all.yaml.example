@@ -29,24 +29,14 @@ global:
       skey: ""
       host: ""
 
-  guacamole:
-    tag: "1.2.0"
-    db:
-      name: ""
-      user: ""
-      pass: ""
-    openid:
-      issuer: ""
-      jwks_endpoint: ""
-      auth_endpoint: ""
-      client_id: guacamole
-      scope: openid email profile
-      redirect_uri: ""
-      username_claim: preferred_username
-
-  influxdb:
+  collectd:
     host: ""
     port: "25826"
+
+  docker:
+    username: ""
+    password: ""
+    email: ""
 
   ipa:
     host: ""
@@ -59,17 +49,21 @@ global:
     groups:
       syncthing: ""
 
+  media:
+    nfs:
+      plex: ""
+      movies: ""
+      tvshows: ""
+
   nfs:
     host: ""
 
-  postgresql:
-    host: ""
-    port: "5432"
-    user: ""
-    pass: ""
-    nfs:
-      user_id: ""
-      path: ""
+  plex:
+    claim: ""
+    external:
+      proto: https
+      ip: ""
+      port: "32400"
 
   sish:
     tag: ""
