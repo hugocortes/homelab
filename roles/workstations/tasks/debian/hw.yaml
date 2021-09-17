@@ -39,58 +39,10 @@
     key: /org/gnome/desktop/background/picture-uri
     value: "'file://{{ ansible_env['HOME'] }}/.wallpaper.png'"
 
-- name: create gnome extension dash-to-dock dir
+- name: create gnome extension dir
   file:
-    path: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com"
+    path: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions"
     state: directory
-
-- name: download and untar dash-to-dock to gnome extension dir
-  unarchive:
-    remote_src: yes
-    src: https://extensions.gnome.org/extension-data/dash-to-dockmicxgx.gmail.com.v68.shell-extension.zip
-    dest: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com"
-
-- name: adjust dash-to-dock size
-  blockinfile:
-    dest: "{{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/stylesheet.css"
-    marker: "/* {mark}-dock-size */"
-    block: |
-      #dashtodockContainer .overview-icon {
-        padding-top:2px;
-        padding-bottom:2px;
-        padding-right: 1px;
-        padding-left: 1px;
-      }
-      #dashtodockContainer.icon {
-        padding-top:2px;
-        padding-bottom:2px;
-        padding-right: 1px;
-        padding-left: 1px;
-      }
-
-- name: enable dash-to-dock extension
-  dconf:
-    key: /org/gnome/shell/enabled-extensions
-    value: "['dash-to-dock@micxgx.gmail.com']"
-  notify: restart shell
-
-- name: set gnome dock
-  dconf:
-    key: "{{ item.key }}"
-    value: "{{ item.value }}"
-  with_items:
-  - key: /org/gnome/shell/extensions/dash-to-dock/isolate-monitors
-    value: "'true'"
-  - key: /org/gnome/shell/extensions/dash-to-dock/dock-fixed
-    value: "'true'"
-  - key: /org/gnome/shell/extensions/dash-to-dock/intellihide
-    value: "'false'"
-  - key: /org/gnome/shell/extensions/dash-to-dock/autohide
-    value: "'false'"
-  - key: /org/gnome/shell/extensions/dash-to-dock/dock-position
-    value: "'BOTTOM'"
-  - key: /org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size
-    value: "17"
 
 - name: install and configure vlc
   block:
@@ -137,4 +89,4 @@
 - name: enable sound output extension
   dconf:
     key: /org/gnome/shell/enabled-extensions
-    value: "['dash-to-dock@micxgx.gmail.com','sound-output-device-chooser@kgshank.net']"
+    value: "['sound-output-device-chooser@kgshank.net']"
