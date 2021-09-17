@@ -2,14 +2,6 @@
 
 - name: centos | install dnf using yum and python2
   block:
-  - name: centos | create python3 symlink
-    become: yes
-    file:
-      src: "/usr/bin/python3"
-      dest: "/usr/bin/python"
-      state: link
-      force: yes
-
   - name: centos | install dnf and python3
     become: yes
     dnf:
@@ -18,6 +10,23 @@
       - python3
       state: latest
     when: is_centos_8
+
+  - name: centos | create python3 symlink
+    become: yes
+    file:
+      src: "/usr/bin/python3"
+      dest: "/usr/bin/python"
+      state: link
+      force: yes
+      follow: yes
+
+- name: centos | install epel-release
+  dnf:
+    name:
+    - epel-release
+    state: latest
+  vars:
+    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
 
 - name: centos | install dnf packages
   become: yes

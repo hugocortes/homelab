@@ -1,13 +1,5 @@
 ---
 
-- name: centos | install epel-release
-  dnf:
-    name:
-    - epel-release
-    state: latest
-  vars:
-    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
-
 - name: centos | install fail2ban packages
   dnf:
     name:
