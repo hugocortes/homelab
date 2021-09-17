@@ -24,6 +24,18 @@
       env:
         POSTGRES_PASSWORD: password
 
+  - name: launch mongo container
+    docker_container:
+      name: mongo
+      image: mongo
+      state: stopped
+      restart_policy: "no"
+      ports:
+      - 27017:27017
+      env:
+        MONGO_INITDB_ROOT_USERNAME: root
+        MONGO_INITDB_ROOT_PASSWORD: password
+
   - name: launch redis container
     docker_container:
       name: redis
@@ -41,6 +53,7 @@
       - mysql-5.7
       - postgres
       - redis
+      - mongo
 
 - name: launch messaging containers
   block:
