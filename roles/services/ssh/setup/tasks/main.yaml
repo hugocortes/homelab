@@ -30,7 +30,7 @@
   when: is_freeipa
   notify: restart ssh
 
-- name: disable challenege response authentication
+- name: disable challenge response authentication
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"

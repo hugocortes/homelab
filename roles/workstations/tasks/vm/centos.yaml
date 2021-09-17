@@ -1,11 +1,13 @@
 ---
 
 - name: centos | install rdp packages
-  yum:
+  dnf:
     name:
     - tigervnc-server
     - xrdp
     state: latest
+  vars:
+    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
 
 - name: centos | open rdp ports
   include_role:

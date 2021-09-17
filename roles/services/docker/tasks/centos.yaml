@@ -13,7 +13,7 @@
     - lvm2
     state: latest
   vars:
-    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
+    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
 
 - name: centos | install docker packages
   dnf:
@@ -23,4 +23,4 @@
     - containerd.io
     state: latest
   vars:
-    ansible_python_interpreter: /usr/libexec/platform-python # required for centos7, python3.8 unable to import dnf
+    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7

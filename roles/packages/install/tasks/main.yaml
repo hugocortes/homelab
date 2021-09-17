@@ -11,11 +11,6 @@
 - name: pip | update pip3
   command: pip3 install --upgrade pip
 
-# maybe only needed for centos7
-- name: pip | update pip2
-  command: pip2 install --upgrade pip
-  ignore_errors: true
-
 # fails for some?
 - name: pip | install setuptools
   pip:
@@ -33,6 +28,7 @@
     name:
     - argparse-manpage
     - dnspython
+    - docker
     - neovim
     - pyOpenSSL
     - pytest
@@ -45,7 +41,6 @@
     name:
     - libs
     extra_args: --user
-    executable: /usr/bin/pip3
 
 - name: create thefuck symlink
   become: yes
