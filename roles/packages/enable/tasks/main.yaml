@@ -1,5 +1,5 @@
 ---
 
-- name: centos | enable yum
+- name: centos | enable centos repos
   import_tasks: centos.yaml
   when: is_centos

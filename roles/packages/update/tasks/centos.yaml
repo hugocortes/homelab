@@ -1,6 +1,6 @@
 ---
 
-- name: centos | update yum packages
+- name: centos | update dnf packages
   dnf:
     name: "*"
     state: latest

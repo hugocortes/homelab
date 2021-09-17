@@ -1,11 +1,11 @@
 ---
 
-- name: debian | update apt packages
-  import_tasks: apt.yaml
+- name: debian | update debian packages
+  import_tasks: debian.yaml
   when: is_debian
 
-- name: centos | update yum packages
-  import_tasks: yum.yaml
+- name: centos | update centos packages
+  import_tasks: centos.yaml
   when: is_centos
 
 - name: update packages for multiple users

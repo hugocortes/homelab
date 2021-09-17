@@ -1,5 +1,5 @@
 ---
 
-- name: centos | disable yum
+- name: centos | disable centos repos
   import_tasks: centos.yaml
   when: is_centos
