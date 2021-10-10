@@ -16,6 +16,7 @@
   tags: install-update
   roles:
   - name: packages/install
+    tags: install
   - name: packages/update
     tags: update
 
@@ -31,7 +32,7 @@
   tags: acme
   vars:
   - letsencrypt_production: yes
-  - include_intermediate: yes
+  - include_intermediate: no
   tasks:
   - include_role:
       name: ansible-letsencrypt-cloudflare
@@ -111,7 +112,7 @@
   - name: services/docker
     when: not is_kubernetes
   - name: docker/metrics
-    when: not is_workstation
+    when: not is_workstation and not is_kubernetes
 
 # todo centos8 need to remove podman: sudo yum -y remove podman buildah
 # todo centos8 needs to manually install containerd https://linuxhint.com/install_docker_ce_centos8/
@@ -124,6 +125,13 @@
     vars:
       create_mnt_dirs: no
       dirs: []
+
+- name: configure kubernetes partitions
+  hosts: kube_node
+  become: yes
+  tags: kubernetes-partition
+  roles:
+  - name: services/partition
 
 - name: configure workstations group
   hosts: workstations
@@ -146,24 +154,6 @@
   - services/ssh/bastion
   - name: docker/sish
     tags: docker/sish
-
-- name: configure guacamole
-  hosts: guacamole
-  become: yes
-  tags: guacamole
-  vars:
-    initialize: false
-  roles:
-  - docker/guacamole
-
-- name: configure postgresql
-  hosts: postgres
-  become: yes
-  tags: postgresql
-  vars:
-    initialize: false
-  roles:
-  - docker/postgresql
 
 - name: configure media
   hosts: media

@@ -1,0 +1,35 @@
+---
+
+- name: create new primary partition
+  parted:
+    device: /dev/sdb
+    state: present
+    number: 1
+    label: msdos
+    part_start: 1049KB
+    part_end: 100%
+
+- name: create ext4 filesystem on /dev/sdb1
+  filesystem:
+    fstype: ext4
+    dev: /dev/sdb1
+
+- name: create storage dir
+  file:
+    path: /media/storage
+    state: directory
+    mode: "0755"
+
+- name: register device uuid
+  command: blkid -s UUID -o value /dev/sdb1
+  register: uuid
+
+- name: append to fstab
+  blockinfile:
+    path: /etc/fstab
+    state: present
+    block: |
+      UUID={{ uuid.stdout }} /media/storage ext4 defaults,noatime,nodiratime 0 2
+
+- name: run mount
+  command: mount -a
