@@ -17,9 +17,6 @@ global:
     node: "14.10.1"
     # https://robomongo.org/download
     robo3t: 1.4.0-linux-x86_64-12e54cc
-    # http://release.tinymediamanager.org/
-    tmm_major: "3"
-    tmm: "3.1.8"
 
   bastion:
     user: ""

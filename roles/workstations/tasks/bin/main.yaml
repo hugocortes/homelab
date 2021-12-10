@@ -32,6 +32,3 @@
   
 - name: spin-cli | configure
   import_tasks: spin-cli/main.yaml
-
-- name: tmm | configure
-  import_tasks: tmm/main.yaml
