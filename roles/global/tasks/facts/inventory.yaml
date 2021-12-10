@@ -9,8 +9,8 @@
     is_freeipa_client: "{{ 'ipaclients' in group_names }}"
     is_kubernetes: "{{ 'kubernetes' in group_names }}"
     is_server: "{{ 'servers' in group_names }}"
-    is_vm_workstation: "{{ 'vmworkstations' in group_names }}"
-    is_physical_workstation: "{{ 'physicalworkstations' in group_names }}"
+    is_vm_workstation: "{{ 'vm_workstations' in group_names }}"
+    is_physical_workstation: "{{ 'physical_workstations' in group_names }}"
     is_workstation: "{{ 'workstations' in group_names }}"
 
 - name: set is_freeipa fact
