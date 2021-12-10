@@ -12,3 +12,7 @@ inventory/host_vars/**/*yaml*
 !inventory/host_vars/host/*.example
 users.json
 ipacluster.yml
+ipareplicas.yml
+ipaservers.yml
+acme.yml
+vm_workstations.yml
