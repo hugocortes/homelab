@@ -43,4 +43,4 @@
   become: no
   shell: "source {{ ansible_env['HOME'] }}/.zshrc && nvm install {{ global.version.node }} && nvm use {{ global.version.node }}"
   args:
-    executable: /bin/bash
+    executable: /bin/zsh

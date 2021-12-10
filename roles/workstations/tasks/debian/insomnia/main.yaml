@@ -10,7 +10,7 @@
     pkg_name: insomnia
     pkg_gpg_key: https://insomnia.rest/keys/debian-public.key.asc
     pkg_repository_name: insomnia
-    pkg_repository: deb [trusted=yes arch=amd64] https://download.konghq.com/insomnia-ubuntu/ default all"
+    pkg_repository: deb [trusted=yes arch=amd64] https://download.konghq.com/insomnia-ubuntu/ default all
     pkg_packages:
     - insomnia
 

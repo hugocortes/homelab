@@ -9,11 +9,11 @@
   become: yes
   apt:
     name:
+    - curl
+    - git
     - nfs-common
     - python3
     - python3-pip
-    - curl
-    - git
     - sshpass
     - tar
     - tmux

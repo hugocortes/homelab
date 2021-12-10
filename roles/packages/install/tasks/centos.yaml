@@ -32,10 +32,10 @@
   become: yes
   dnf:
     name:
-    - nfs-utils
-    - python3-libselinux
     - curl
     - git
+    - nfs-utils
+    - python3-libselinux
     - sshpass
     - tar
     - tmux
@@ -94,3 +94,5 @@
       path: /var/lib/collectd/rrd
       force: yes
     ignore_errors: yes
+
+# ubuntu /var/lib/collectd/rrd/

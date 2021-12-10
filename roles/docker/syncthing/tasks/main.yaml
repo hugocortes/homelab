@@ -101,8 +101,8 @@
     regexp: <address>{{ global.ipa.host }}:{{ global.ipa.port.ldaps }}<\/address>
   - line: <transport>tls</transport>
     regexp: <transport>tls<\/transport>
-  - line: <insecureSkipVerify>true</insecureSkipVerify>
-    regexp: <insecureSkipVerify>true<\/insecureSkipVerify>
+  - line: <insecureSkipVerify>false</insecureSkipVerify>
+    regexp: <insecureSkipVerify>false<\/insecureSkipVerify>
   - line: <bindDN>uid=%s,{{ global.ipa.userDN }}</bindDN>
     regexp: <bindDN>uid=%s,{{ global.ipa.userDN }}<\/bindDN>
   - line: <searchBaseDN>{{ global.ipa.userDN }}</searchBaseDN>

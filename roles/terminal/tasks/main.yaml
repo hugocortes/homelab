@@ -12,3 +12,4 @@
 - name: set zsh as default shell for {{ ansible_become_user }}
   become: yes
   command: "chsh -s /bin/zsh {{ ansible_become_user }}"
+  when: ansible_become_user is defined

@@ -32,9 +32,9 @@
 
 - name: go | get aditional bin tools
   block:
-  - name: go | download cloudlare ssl tools
+  - name: go | download cloudflare ssl tools
     become: no
-    command: "go get -u {{ item }}"
+    command: "go get {{ item }}"
     with_items:
     - github.com/cloudflare/cfssl/cmd/cfssl
     - github.com/cloudflare/cfssl/cmd/cfssljson
