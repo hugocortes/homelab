@@ -13,13 +13,12 @@
 - name: set system facts
   set_fact:
     is_centos_8: "{{ (ansible_distribution_version | regex_search('^8')) != None }}"
-    is_centos_7: "{{ (ansible_distribution_version | regex_search('^7')) != None }}"
     is_debian: "{{ ansible_os_family == 'Debian' or is_pop }}"
     is_darwin: "{{ ansible_os_family == 'Darwin' }}"
 
 - name: set is_centos fact
   set_fact:
-    is_centos: "{{ is_centos_7 or is_centos_8 }}"
+    is_centos: "{{ is_centos_8 }}"
 
 - name: set ansible_become_home
   block:

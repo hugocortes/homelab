@@ -3,7 +3,3 @@
 - name: clean centos8 dnf
   import_tasks: dnf.yaml
   when: is_centos_8
-
-- name: clean centos7 yum
-  import_tasks: yum.yaml
-  when: is_centos_7

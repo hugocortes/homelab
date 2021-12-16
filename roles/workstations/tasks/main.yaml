@@ -6,8 +6,6 @@
     name:
     - netaddr
     extra_args: --user
-  vars:
-    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
 
 - name: launch local docker containers
   import_tasks: docker/main.yaml

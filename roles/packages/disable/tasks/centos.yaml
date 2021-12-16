@@ -16,15 +16,6 @@
   with_items: "{{ repos.files }}"
   notify: clean repos
 
-- name: centos7 | disable additional repos
-  command: "yum-config-manager --disable {{ item }}"
-  with_items:
-  - CentOS-7 - Base
-  - CentOS-7 - Extras
-  - CentOS-7 - Updates
-  when: is_centos_7
-  notify: clean repos
-
 - name: centos8 | disable additional repos
   yum_repository:
     name: "{{ item }}"

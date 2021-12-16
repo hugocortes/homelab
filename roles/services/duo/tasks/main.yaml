@@ -5,8 +5,6 @@
     name:
     - duo_unix
     state: present
-  vars:
-    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
 
 - name: configure duo settings
   lineinfile:

@@ -18,8 +18,6 @@
     - iscsi-initiator-utils
     - nfs-utils
     state: latest
-  vars:
-    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
   when: is_centos
 
 - name: enable service

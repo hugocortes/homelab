@@ -24,13 +24,9 @@
     name:
     - docker
     extra_args: --user
-  vars:
-    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7
 
 - name: log into docker
   docker_login:
     username: "{{ global.docker.username }}"
     password: "{{ global.docker.password }}"
     email: "{{ global.docker.email }}"
-  vars:
-    ansible_python_interpreter: "{{ '/usr/libexec/platform-python' if is_centos else '/usr/bin/python3' }}" # remove when migrated away from centos_7

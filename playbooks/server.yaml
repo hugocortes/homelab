@@ -90,8 +90,6 @@
 - name: register freeipa clients
   import_playbook: ../ansible-freeipa/playbooks/install-client.yml
   tags: freeipa-client
-  vars:
-    ansible_python_interpreter: "{{ '/usr/bin/python2' if is_centos_7 else '/usr/bin/python3' }}"
 
 - name: configure servers group
   hosts: servers
