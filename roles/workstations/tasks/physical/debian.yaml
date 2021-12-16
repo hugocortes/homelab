@@ -4,7 +4,6 @@
   become: yes
   apt:
     name:
-    - anki
     - slack-desktop
     - thunderbird
     state: latest
@@ -30,15 +29,6 @@
     pkg_repository: deb https://dl.cloudsmith.io/public/balena/etcher/deb/ubuntu xenial main
     pkg_packages:
     - balena-etcher-electron
-
-- name: install spotify
-  import_tasks: ../debian/generic.yaml
-  vars:
-    pkg_name: spotify
-    pkg_gpg_key: https://download.spotify.com/debian/pubkey_0D811D58.gpg
-    pkg_repository: deb http://repository.spotify.com stable non-free
-    pkg_packages:
-    - spotify-client
 
 - name: install weechat
   import_tasks: ../debian/generic.yaml
@@ -66,3 +56,13 @@
     pkg_repository: deb http://ppa.launchpad.net/rmescandon/yq/ubuntu focal main
     pkg_packages:
     - yq
+
+- name: install spotify
+  flatpak:
+    name: com.spotify.Client
+    state: latest
+
+- name: install dbeaver ce
+  flatpak:
+    name: io.dbeaver.DBeaverCommunity
+    state: latest

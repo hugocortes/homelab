@@ -84,18 +84,6 @@
     pkg_packages:
     - postgresql
 
-- name: install dbeaver
-  import_tasks: generic.yaml
-  vars:
-    pkg_name: dbeaver
-    pkg_repository: ppa:serge-rider/dbeaver-ce
-
-    # pkg_deb: https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
-    # pkg_repository: ppa:micahflee/ppa
-    pkg_dependencies:
-    - openjdk-11-jdk
-    - openjdk-11-jre
-
 - name: install kubectl
   import_tasks: generic.yaml
   vars:
@@ -143,12 +131,6 @@
     - openjdk-8-jre
     - openjdk-11-jre
     - openjdk-11-jdk
-
-- name: install gitkraken
-  import_tasks: generic.yaml
-  vars:
-    pkg_name: gitkraken
-    pkg_deb: https://release.gitkraken.com/linux/gitkraken-amd64.deb
  
 - name: install gcloud sdk
   import_tasks: generic.yaml
