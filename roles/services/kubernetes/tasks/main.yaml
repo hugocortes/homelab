@@ -20,6 +20,13 @@
     state: latest
   when: is_centos
 
+- name: debian | install packages
+  become: yes
+  apt:
+    name: open-iscsi
+    state: latest
+  when: is_debian
+
 - name: enable service
   service:
     name: iscsid

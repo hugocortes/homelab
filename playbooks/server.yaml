@@ -112,8 +112,6 @@
   - name: docker/metrics
     when: not is_workstation and not is_kubernetes
 
-# todo centos8 need to remove podman: sudo yum -y remove podman buildah
-# todo centos8 needs to manually install containerd https://linuxhint.com/install_docker_ce_centos8/
 - name: configure kubernetes group
   hosts: kubernetes
   become: yes
