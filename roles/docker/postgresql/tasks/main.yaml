@@ -14,6 +14,7 @@
   register: conf
 
 - name: retrieve default conf
+  become: true
   docker_container:
     name: postgres-tmp
     image: postgres:12
@@ -29,6 +30,7 @@
   when: conf.stat.exists == false
 
 - name: remove temp container
+  become: true
   docker_container:
     name: postgres-tmp
     state: absent
@@ -40,6 +42,7 @@
     state: unmounted
 
 - name: create volumes
+  become: true
   docker_volume:
     name: "{{ item.name }}"
     driver_options:
@@ -51,6 +54,7 @@
     mount: "{{ global.postgresql.nfs.path }}"
 
 - name: start container
+  become: true
   docker_container:
     name: postgres
     image: hugocortes/postgres:9
@@ -69,6 +73,7 @@
     - data:/var/lib/postgresql/data
 
 - name: start exporter container
+  become: true
   docker_container:
     name: postgresql-metrics
     image: wrouesnel/postgres_exporter

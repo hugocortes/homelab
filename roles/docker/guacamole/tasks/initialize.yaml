@@ -20,6 +20,7 @@
 - name: initialize guacamole database
   block:
   - name: get guacamole initdb script
+    become: true
     docker_container:
       name: guacamole-tmp
       image: guacamole/guacamole

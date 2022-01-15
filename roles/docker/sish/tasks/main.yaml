@@ -10,6 +10,7 @@
   with_items: "{{ global.sish.forwardingPorts.tcp }}"
 
 - name: launch sish container
+  become: true
   docker_container:
     name: sish
     image: "antoniomika/sish:{{ global.sish.tag }}"

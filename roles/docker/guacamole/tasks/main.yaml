@@ -5,12 +5,14 @@
   when: initialize
 
 - name: launch guacd container
+  become: true
   docker_container:
     name: guacd
     image: guacamole/guacd
     restart_policy: unless-stopped
 
 - name: launch guacamole container
+  become: true
   docker_container:
     name: guacamole
     image: "guacamole/guacamole:{{ global.guacamole.tag }}"
@@ -39,11 +41,13 @@
       -c "wget http://archive.apache.org/dist/guacamole/1.2.0/binary/guacamole-auth-openid-1.2.0.tar.gz -O \$HOME/.guacamole/extensions/guacamole-auth-openid-1.2.0.tar.gz"
 
 - name: restart guacamole container
+  become: true
   docker_container:
     name: guacamole
     restart: yes
 
 - name: create guacamole network
+  become: true
   docker_network:
     name: guacamole
     connected:

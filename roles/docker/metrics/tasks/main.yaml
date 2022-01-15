@@ -1,6 +1,7 @@
 ---
 
 - name: launch node-exporter container
+  become: true
   docker_container:
     name: node-exporter
     image: prom/node-exporter:latest
@@ -13,6 +14,7 @@
     - /:/hostfs
 
 - name: launch cadvisor container
+  become: true
   docker_container:
     name: cadvisor
     image: google/cadvisor:latest

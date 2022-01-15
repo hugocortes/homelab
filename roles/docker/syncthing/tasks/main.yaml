@@ -49,6 +49,7 @@
 - name: initialize syncthing config
   block:
   - name: get syncthing config
+    become: true
     docker_container:
       name: syncthing-tmp
       image: syncthing/syncthing
@@ -59,6 +60,7 @@
     command: "docker cp syncthing-tmp:/var/syncthing/config/config.xml {{ ansible_env['HOME'] }}/.sync/config/config.xml"
 
   - name: remove tmp container
+    become: true
     docker_container:
       name: syncthing-tmp
       state: absent
@@ -117,7 +119,7 @@
     regexp: <address>127.0.0.1:8384<\/address>
 
 - name: launch syncthing container
-  become: no
+  become: true
   docker_container:
     name: syncthing
     image: syncthing/syncthing
