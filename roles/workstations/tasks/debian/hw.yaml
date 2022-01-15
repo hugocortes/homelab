@@ -18,7 +18,9 @@
 - name: pip install dependencies
   become: no
   pip:
-    name: psutil
+    name:
+      - decorator
+      - psutil
     executable: pip3
     extra_args: --user
 

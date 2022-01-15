@@ -91,8 +91,10 @@
     description: "{{ item.name }} authorized users"
     gidnumber: "{{ item.gid }}"
   with_items:
-  - name: ssh
+  - name: posixadminsso
     gid: 10003
+  - name: posixsso
+    gid: 10004
 
 - name: create nonposix authorization groups
   ipagroup:
@@ -102,10 +104,8 @@
     nonposix: yes
   with_items:
   # pfsense config: https://gist.github.com/lucasgrelaud/092f296600a5b41ee36c314cb0205c0a
-  - pfsense
-  - vpn
-  - radius
-  - keycloak
+  - adminsso
+  - sso
 
 - name: create `adminusers` group
   ipagroup:
@@ -128,8 +128,8 @@
     group:
     - users
   with_items:
-  - keycloak
-  - radius
+  - sso
+  - posixsso
 
 - name: add `adminusers` as group member to valid groups
   ipagroup:
@@ -138,9 +138,8 @@
     group:
     - adminusers
   with_items:
-  - ssh
-  - pfsense
-  - vpn
+  - adminsso
+  - posixadminsso
   - users
 
 - name: add users to `users` group

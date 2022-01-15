@@ -20,25 +20,6 @@
   - name: packages/update
     tags: update
 
-- name: configure terminal
-  hosts: all
-  become: no
-  tags: terminal
-  roles:
-  - terminal
-
-- name: configure acme certs
-  hosts: acme
-  tags: acme
-  vars:
-  - letsencrypt_production: yes
-  - include_intermediate: no
-  tasks:
-  - include_role:
-      name: ansible-letsencrypt-cloudflare
-  - include_role:
-      name: services/acme
-
 # - name: uninstall freeipa clients
 #   become: yes
 #   tags: freeipa-client-uninstall
@@ -90,6 +71,25 @@
 - name: register freeipa clients
   import_playbook: ../ansible-freeipa/playbooks/install-client.yml
   tags: freeipa-client
+
+- name: configure terminal
+  hosts: all
+  become: no
+  tags: terminal
+  roles:
+  - terminal
+
+- name: configure acme certs
+  hosts: acme
+  tags: acme
+  vars:
+  - letsencrypt_production: yes
+  - include_intermediate: no
+  tasks:
+  - include_role:
+      name: ansible-letsencrypt-cloudflare
+  - include_role:
+      name: services/acme
 
 - name: configure servers group
   hosts: servers
