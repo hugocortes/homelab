@@ -1,0 +1,7 @@
+ipaserver_idstart: ""
+ipaserver_dirsrv_cert_files: ""
+ipaserver_http_cert_files: ""
+ipaserver_dirsrv_pin: ""
+ipaserver_http_pin: ""
+ipaserver_pkinit_pin: ""
+ipaserver_no_pkinit: ""

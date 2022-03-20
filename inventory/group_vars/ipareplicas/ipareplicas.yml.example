@@ -1,0 +1,8 @@
+ipareplica_domain: ""
+ipareplica_realm: ""
+ipareplica_dirsrv_cert_files: ""
+ipareplica_http_cert_files: ""
+ipareplica_dirsrv_pin: ""
+ipareplica_http_pin: ""
+ipareplica_pkinit_pin: ""
+ipareplica_no_pkinit: ""

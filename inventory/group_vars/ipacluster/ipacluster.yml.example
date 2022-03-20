@@ -1,0 +1,8 @@
+ipaadmin_principal: ""
+ipaadmin_password: ""
+ipadm_password: ""
+ipaserver_domain: ""
+ipaserver_realm: ""
+ipaclient_mkhomedir: ""
+ipaclient_servers: ""
+ipa_default_emaildomain: ""
