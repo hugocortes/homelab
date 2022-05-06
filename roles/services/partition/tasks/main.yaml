@@ -1,5 +1,7 @@
 ---
 
+# for apps
+
 - name: create new primary partition
   parted:
     device: /dev/sdb
@@ -30,6 +32,12 @@
     state: present
     block: |
       UUID={{ uuid.stdout }} /media/storage ext4 defaults,noatime,nodiratime 0 2
+
+- name: search for disk
+  include_tasks: disks.yaml
+  vars:
+    volume_directory: /media/database
+  with_items: "{{ ansible_devices.keys() | select('string') | list }}"
 
 - name: run mount
   command: mount -a

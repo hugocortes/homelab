@@ -1,0 +1,34 @@
+- name: partition disk
+  block:
+    - name: create new primary parition
+      parted:
+        device: "/dev/{{ item }}"
+        state: present
+        number: 1
+        label: msdos
+        part_start: 1049KB
+        part_end: 100%
+      
+    - name: "create ext4 filesystem on /dev/{{ item }}1"
+      filesystem:
+        fstype: ext4
+        dev: "/dev/{{ item }}1"
+
+    - name: register device uuid
+      command: "blkid -s UUID -o value /dev/{{ item }}1"
+      register: uuid
+
+    - name: create database dir
+      file:
+        path: "{{ volume_directory }}"
+        state: directory
+        mode: "0755"
+
+    - name: append to fstab
+      blockinfile:
+        path: /etc/fstab
+        state: present
+        marker: "# ansible fstab for {{ item }}"
+        block: |
+          UUID={{ uuid.stdout }} {{ volume_directory }} ext4 defaults,noatime,nodiratime 0 2
+  when: item != 'sdb' and ansible_devices[item].size == '128.00 GB'
