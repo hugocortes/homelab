@@ -1,4 +1,10 @@
 ---
 
-kube_version: v1.22.4
-dashboard_enabled: false
+# addons
+metallb_speaker_enabled: false
+
+# k8s_cluster
+kube_version: v1.23.6
+
+# k8s_net_calico (look into migrating to kdd)
+calico_datastore: etcd
