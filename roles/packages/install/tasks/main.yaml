@@ -23,7 +23,7 @@
   ignore_errors: yes
 
 - name: pip | install
-  become: no
+  become: false
   pip:
     name:
     - argparse-manpage
@@ -36,14 +36,14 @@
     extra_args: --user
 
 - name: pip | install pip3 deps
-  become: no
+  become: false
   pip:
     name:
     - libs
     extra_args: --user
 
 - name: create thefuck symlink
-  become: yes
+  become: true
   file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -58,27 +58,27 @@
 - name: install neovim
   block:
   - name: download neovim install script
-    become: no
+    become: false
     get_url:
       url: https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
       dest: /tmp/nvim.appimage
       mode: +x
 
   - name: run neovim install script
-    become: no
+    become: false
     shell: cd /tmp && /tmp/nvim.appimage --appimage-extract
     args:
       executable: /bin/bash
 
   # todo may need to move to /usr/local/bin instead or 744 permissions
   - name: move neovim to /opt
-    become: yes
+    become: true
     shell: rm -rf /opt/squashfs-root && mv /tmp/squashfs-root /opt
     args:
       executable: /bin/bash
 
   - name: create neovim link
-    become: yes
+    become: true
     file:
       src: /opt/squashfs-root/AppRun
       dest: /usr/bin/nvim

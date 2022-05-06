@@ -5,13 +5,13 @@
     install_path: "/opt/go-{{ global.version.go }}"
 
 - name: go | create install dir
-  become: yes
+  become: true
   file:
     path: "{{ install_path }}"
     state: directory
 
 - name: go | download and untar
-  become: yes
+  become: true
   unarchive:
     remote_src: yes
     src: "https://dl.google.com/go/go{{ global.version.go }}.linux-amd64.tar.gz"
@@ -20,7 +20,7 @@
     - --strip-components=1
 
 - name: go | create symlinks
-  become: yes
+  become: true
   file:
     src: "{{ install_path }}/bin/{{ item }}"
     dest: "/usr/local/bin/{{ item }}"
@@ -33,7 +33,7 @@
 - name: go | get aditional bin tools
   block:
   - name: go | download cloudflare ssl tools
-    become: no
+    become: false
     command: "go get {{ item }}"
     with_items:
     - github.com/cloudflare/cfssl/cmd/cfssl

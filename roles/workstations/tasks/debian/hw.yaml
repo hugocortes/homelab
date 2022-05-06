@@ -16,7 +16,7 @@
       value: "'true'"
 
 - name: pip install dependencies
-  become: no
+  become: false
   pip:
     name:
       - decorator
@@ -25,7 +25,7 @@
     extra_args: --user
 
 - name: set profile picture
-  become: yes
+  become: true
   copy:
     src: files/profile.jpeg
     dest: "/var/lib/AccountsService/icons/{{ ansible_user }}"
@@ -49,21 +49,21 @@
 - name: install and configure vlc
   block:
   - name: install vlc
-    become: yes
+    become: true
     apt:
       name:
       - vlc    
       state: latest
 
   - name: set vlc as default video player
-    become: yes
+    become: true
     replace:
       path: /usr/share/applications/defaults.list
       regexp: org\.gnome\.Totem\.desktop$
       replace: vlc.desktop
 
   - name: set vlc as only option in mime cache
-    become: yes
+    become: true
     replace:
       path: /usr/share/applications/mimeinfo.cache
       regexp: org\.gnome\.Totem\.desktop;(vlc\.desktop;)?$

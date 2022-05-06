@@ -2,8 +2,8 @@
 
 - name: set facts and ssh user
   hosts: all
-  become: no
-  gather_facts: no
+  become: false
+  gather_facts: false
   ignore_errors: true
   ignore_unreachable: true
   roles:
@@ -12,7 +12,7 @@
 
 - name: install & update packages
   hosts: all
-  become: yes
+  become: true
   tags: install-update
   roles:
   - name: packages/install
@@ -21,14 +21,14 @@
     tags: update
 
 # - name: uninstall freeipa clients
-#   become: yes
+#   become: true
 #   tags: freeipa-client-uninstall
 #   import_playbook: ../ansible-freeipa/playbooks/uninstall-client.yml
 #   vars:
 #     ansible_python_interpreter: /usr/bin/python2
 
 - name: configure freeipa server/replica
-  become: yes
+  become: true
   hosts: ipaservers,ipareplicas
   tags: freeipa
   tasks:
@@ -38,7 +38,7 @@
       name: services/freeipa/server
 
 - name: install freeipa server
-  become: yes
+  become: true
   hosts: ipaservers
   tags: freeipa-server
   tasks:
@@ -48,7 +48,7 @@
 # manually append isrg root x1 let's encrypt cert and re-run ipa-certupdate (if using let's encrypt)
 # https://yyhh.org/blog/2021/01/fix-freeipa-httpd-lets-encrypt-certificate-update/
 - name: install freeipa replica
-  become: yes
+  become: true
   hosts: ipareplicas
   tags: freeipa-replicas
   tasks:
@@ -62,7 +62,7 @@
 # Search for nsslapd-allow-anonymous-access and change on to rootdse
 # sudo service ipa start
 - name: configure freeipa server
-  become: yes
+  become: true
   hosts: ipaservers,ipareplicas
   tags: freeipa-configure
   roles:
@@ -74,7 +74,7 @@
 
 - name: configure terminal
   hosts: all
-  become: no
+  become: false
   tags: terminal
   roles:
   - terminal
@@ -93,7 +93,7 @@
 
 - name: configure servers group
   hosts: servers
-  become: yes
+  become: true
   vars:
     sync: false # resets all configuration before re-applying
   tags: server
@@ -104,7 +104,7 @@
 
 - name: configure docker group
   hosts: docker
-  become: yes
+  become: true
   tags: docker
   roles:
   - name: services/docker
@@ -114,7 +114,7 @@
 
 - name: configure kubernetes group
   hosts: kubernetes
-  become: yes
+  become: true
   tags: kubernetes
   roles:
   - name: services/kubernetes
@@ -124,7 +124,7 @@
 
 - name: configure kubernetes partitions
   hosts: kube_node
-  become: yes
+  become: true
   tags: kubernetes-partition
   roles:
   - name: services/partition
@@ -139,7 +139,7 @@
 
 - name: configure bastion
   hosts: bastion
-  become: yes
+  become: true
   pre_tasks:
   - fail:
       msg: bastion host and duo settings required
@@ -153,7 +153,7 @@
 
 - name: configure media
   hosts: media
-  become: yes
+  become: true
   tags: media
   roles:
   - docker/media

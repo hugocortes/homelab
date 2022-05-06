@@ -3,7 +3,7 @@
 # require manual configuration!
 # lightdm
 - name: install dependencies
-  become: yes
+  become: true
   apt:
     name:
     - xfce4
@@ -14,7 +14,7 @@
     state: present
 
 - name: install packages
-  become: yes
+  become: true
   apt:
     name:
     - xrdp

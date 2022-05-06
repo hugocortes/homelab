@@ -1,21 +1,21 @@
 ---
 
 - name: install virtualbox
-  become: yes
+  become: true
   apt:
     name: virtualbox
     state: latest
   when: is_debian
 
 - name: minikube | download
-  become: no
+  become: false
   get_url:
     url: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
     dest: /tmp/minikube
     mode: +x
 
 - name: minikube | install to bin
-  become: yes
+  become: true
   shell: install /tmp/minikube /usr/local/bin/
 
 - name: minikube | set default driver to virtualbox

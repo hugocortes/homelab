@@ -3,7 +3,7 @@
 - name: centos | install dnf using yum and python2
   block:
   - name: centos | install dnf and python3
-    become: yes
+    become: true
     dnf:
       name:
       - dnf
@@ -12,7 +12,7 @@
     when: is_centos_8
 
   - name: centos | create python3 symlink
-    become: yes
+    become: true
     file:
       src: "/usr/bin/python3"
       dest: "/usr/bin/python"
@@ -27,7 +27,7 @@
     state: latest
 
 - name: centos | install dnf packages
-  become: yes
+  become: true
   dnf:
     name:
     - curl
@@ -43,7 +43,7 @@
     state: latest
 
 - name: centos8 | install dnf packages
-  become: yes
+  become: true
   dnf:
     name:
     - util-linux-user
@@ -53,14 +53,14 @@
 - name: centos | install pip packages
   block:
   - name: centos | install pip
-    become: yes
+    become: true
     dnf:
       name:
       - python3-pip
       state: latest
 
   - name: centos | create pip3 symlink
-    become: yes
+    become: true
     file:
       src: "/usr/bin/pip3.6"
       dest: "{{ item }}"

@@ -7,5 +7,5 @@
     mode: +x
 
 - name: faas-cli | run install script
-  become: yes
+  become: true
   command: /bin/sh /tmp/faas-cli-install.sh

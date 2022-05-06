@@ -34,5 +34,5 @@
     state: present
 
 - name: "debian | add user {{ ansible_user }} to docker group"
-  become: yes
+  become: true
   command: "usermod -aG docker {{ ansible_user }}"

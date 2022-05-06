@@ -1,7 +1,7 @@
 ---
 
 - name: install pip dependencies
-  become: no
+  become: false
   pip:
     name:
     - netaddr

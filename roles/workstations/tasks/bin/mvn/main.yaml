@@ -5,13 +5,13 @@
     install_path: "/opt/mvn-{{ global.version.mvn }}"
 
 - name: mvn | create install dir
-  become: yes
+  become: true
   file:
     path: "{{ install_path }}"
     state: directory
 
 - name: mvn | download and untar
-  become: yes
+  become: true
   unarchive:
     remote_src: yes
     src: "https://mirror.jframeworks.com/apache/maven/maven-3/{{ global.version.mvn }}/binaries/apache-maven-{{ global.version.mvn }}-bin.tar.gz"
@@ -20,7 +20,7 @@
     - --strip-components=1
 
 - name: mvn | register bin files
-  become: yes
+  become: true
   find:
     paths:
     - "{{ install_path }}/bin"
@@ -31,7 +31,7 @@
   register: find_maven
 
 - name: mvn | create symlinks
-  become: yes
+  become: true
   file:
     src: "{{ item.path }}"
     dest: "/usr/local/bin/{{ item.path | basename }}"
@@ -40,7 +40,7 @@
   with_items: "{{ find_maven.files }}"
 
 - name: nvm | install and use
-  become: no
+  become: false
   shell: "source {{ ansible_env['HOME'] }}/.zshrc && nvm install {{ global.version.node }} && nvm use {{ global.version.node }}"
   args:
     executable: /bin/zsh

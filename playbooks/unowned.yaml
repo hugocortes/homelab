@@ -4,8 +4,8 @@
 
 - name: set facts and ssh user
   hosts: all
-  become: no
-  gather_facts: no
+  become: false
+  gather_facts: false
   ignore_errors: true
   ignore_unreachable: true
   roles:
@@ -13,7 +13,7 @@
   tags: always
 
 - name: configure unowned servers
-  become: yes
+  become: true
   hosts: all
   tags: configure
   pre_tasks:
@@ -37,6 +37,6 @@
       - /mnt/k8s/redis
 
 # - name: configure cluster
-#   become: yes
+#   become: true
 #   import_playbook: ../kubespray/cluster.yml
 #   tags: kubespray

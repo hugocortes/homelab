@@ -1,14 +1,14 @@
 ---
 
 - name: ledger | download install image
-  become: yes
+  become: true
   get_url:
     url: https://download-live.ledger.com/releases/latest/download/linux
     dest: /opt/ledger
     mode: +x
 
 - name: ledger | create shortcut
-  become: yes
+  become: true
   file:
     src: /opt/ledger
     dest: /usr/local/bin/ledger

@@ -1,7 +1,7 @@
 ---
 
 - name: istioctl | download
-  become: yes
+  become: true
   unarchive:
     remote_src: yes
     src: "https://github.com/istio/istio/releases/download/{{ global.version.istioctl }}/istio-{{ global.version.istioctl }}-linux-amd64.tar.gz"
@@ -9,7 +9,7 @@
     owner: "{{ ansible_user }}"
 
 - name: istioctl | create symlink
-  become: yes
+  become: true
   file:
     src: "/opt/istio-{{ global.version.istioctl }}/bin/istioctl"
     dest: /usr/local/bin/istioctl

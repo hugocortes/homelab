@@ -11,7 +11,7 @@
 # pkg_packages 
 
 - name: install {{ pkg_name }}
-  become: yes
+  become: true
   block:
   - name: add {{ pkg_name }} gpg key
     apt_key:

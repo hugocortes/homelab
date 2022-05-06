@@ -7,5 +7,5 @@
     mode: +x
 
 - name: helm | run install script
-  become: yes
+  become: true
   command: /bin/bash /tmp/helm-install.sh

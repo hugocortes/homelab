@@ -12,7 +12,7 @@
   when: create_mnt_dirs
 
 - name: centos | install packages
-  become: yes
+  become: true
   dnf:
     name:
     - iscsi-initiator-utils
@@ -21,7 +21,7 @@
   when: is_centos
 
 - name: debian | install packages
-  become: yes
+  become: true
   apt:
     name: open-iscsi
     state: latest

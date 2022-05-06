@@ -1,7 +1,7 @@
 ---
 
 - name: install apps in existing repo
-  become: yes
+  become: true
   apt:
     name:
     - slack-desktop

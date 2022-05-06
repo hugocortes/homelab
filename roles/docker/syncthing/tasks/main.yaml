@@ -1,7 +1,7 @@
 ---
 
 - name: create sync home dir
-  become: no
+  become: false
   file:
     path: "{{ item }}"
     state: directory

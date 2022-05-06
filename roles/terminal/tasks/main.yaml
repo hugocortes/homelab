@@ -5,11 +5,11 @@
   with_items: "{{ ansible_users }}"
 
 - name: set zsh as default shell for ansible user
-  become: yes
+  become: true
   command: "chsh -s /bin/zsh {{ ansible_user }}"
   when: not is_freeipa
 
 - name: set zsh as default shell for {{ ansible_become_user }}
-  become: yes
+  become: true
   command: "chsh -s /bin/zsh {{ ansible_become_user }}"
   when: ansible_become_user is defined
