@@ -35,20 +35,10 @@ global:
     password: ""
     email: ""
 
-  ipa:
-    host: ""
-    port:
-      ldap: "389"
-      ldaps: "636"
-    userDN: ""
-    groupDN: ""
-    user: ""
-    groups:
-      syncthing: ""
-
   media:
     nfs:
       plex: ""
+      plexlogs: ""
       movies: ""
       tvshows: ""
 
