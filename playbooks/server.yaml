@@ -134,8 +134,6 @@
   tags: workstations
   roles:
   - workstations
-  - name: docker/syncthing
-    tags: docker/syncthing
 
 - name: configure bastion
   hosts: bastion
