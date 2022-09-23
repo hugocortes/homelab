@@ -2,68 +2,19 @@
 
 - name: create transcode dir
   file:
-    # path: /dev/shm/plex
-    path: /tmp/plex
+    path: /dev/shm/plex
     owner: nobody
     group: nobody
     state: directory
     mode: "0777"
 
-- name: check /mnt/plex exists
-  stat:
-    path: /mnt/plex
-  register: config_mnt
-
-# - name: create /mnt/plex dir
-#   file:
-#     path: /mnt/plex
-#     owner: nobody
-#     group: nobody
-#     state: directory
-#     mode: "0777"
-#   when: config_mnt.stat.exists == false
-
-# - name: mount plex dir
-#   mount:
-#     path: /mnt/plex
-#     src: "{{ global.nfs.host }}:{{ global.media.nfs.plex }}"
-#     fstype: nfs4
-#     opts: defaults,proto=tcp,port=2049,rw
-#     state: mounted
-
-# sqlite sucks if being used over nfs...
-- name: check /opt/plex exists
-  stat:
+- name: create /opt/plex dir
+  file:
     path: /opt/plex
-  register: config
-
-- name: seed /opt/plex directory
-  block:
-  - name: create /opt/plex dir
-    file:
-      path: /opt/plex
-      owner: nobody
-      group: nobody
-      state: directory
-      mode: "0777"
-
-  - name: ensure plex container is stopped
-    become: true
-    docker_container:
-      name: plex
-      state: stopped
-    ignore_errors: yes
-
-  - name: dump nfs to /opt/plex
-    shell: cp -fvpr /mnt/plex/* /opt/plex/
-
-  - name: chmod to 777
-    file:
-      path: /opt/plex
-      mode: "0777"
-      state: directory
-      recurse: yes
-  when: config.stat.exists == false
+    owner: nobody
+    group: nobody
+    state: directory
+    mode: "0777"
 
 - name: create plex nfs volumes
   become: true
@@ -100,11 +51,13 @@
       CHANGE_CONFIG_DIR_OWNERSHIP: "false"
       PLEX_CLAIM: "{{ global.plex.claim }}"
       TV: America/Los_Angeles
-    # devices:
+    devices:
+    # tv tuner
+    - /dev/dvb:/dev/dvb
     # - /dev/dri:/dev/dri
     volumes:
     - /etc/ssl/{{ ansible_host }}/{{ ansible_host }}.pk12:/etc/ssl/cert.pk12
-    - /tmp/plex:/transcode
+    - /dev/shm/plex:/transcode
     - /opt/plex:/config
     - movies:/data/movies
     - tvshows:/data/tv-shows
@@ -113,6 +66,3 @@
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml
   when: is_centos
-
-# databases stay on local
-# logs go to nfs

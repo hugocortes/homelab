@@ -47,10 +47,6 @@ global:
 
   plex:
     claim: ""
-    external:
-      proto: https
-      ip: ""
-      port: "32400"
 
   sish:
     tag: ""
