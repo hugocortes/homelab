@@ -8,6 +8,13 @@
   import_tasks: debian.yaml
   when: is_debian
 
+- name: delete rrd
+  file:
+    state: absent
+    path: /var/lib/collectd/rrd
+    force: true
+  ignore_errors: true
+
 - name: pip | update pip3
   command: pip3 install --upgrade pip
 
@@ -22,7 +29,7 @@
     extra_args: --user
   ignore_errors: yes
 
-- name: pip | install
+- name: pip | install deps
   become: false
   pip:
     name:
@@ -60,9 +67,11 @@
   - name: download neovim install script
     become: false
     get_url:
-      url: https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+      # new fix to remove glibc requirement
+      url: https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
       dest: /tmp/nvim.appimage
       mode: +x
+      force: true      
 
   - name: run neovim install script
     become: false
@@ -84,6 +93,7 @@
       dest: /usr/bin/nvim
       state: link
       force: yes
+  when: not is_pi
 
 - name: install packages for multiple users
   include_tasks: multiple_users.yaml

@@ -1,10 +1,29 @@
 ---
 
-# addons
+kubelet_custom_flags:
+  - --v=1
+
+# addons.yml
 metallb_speaker_enabled: false
 
-# k8s_cluster
-kube_version: v1.23.6
+# k8s-clsuter.yml
+kube_version: v1.24.0
+searchdomains:
+  - internal.corteshq.net
+# reference to ips
+# kube_service_addresses: 10.233.0.0/18
+# kube_pods_subnet: 10.233.64.0/18
 
-# k8s_net_calico (look into migrating to kdd)
-calico_datastore: etcd
+# k8s-net-calico.yml
+calico_datastore: etcd # look into migrating to kdd
+calico_pool_blocksize: 24
+
+calico_ipip_mode: Always
+calico_vxlan_mode: Never
+calico_network_backend: bird
+
+# look into migratiing:
+# see https://github.com/kubernetes-sigs/kubespray/issues/8691
+# calico_ipip_mode: Never
+# calico_vxlan_mode: Always
+# calico_network_backend: vxlan

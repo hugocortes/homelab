@@ -128,6 +128,7 @@
   tags: kubernetes-partition
   roles:
   - name: services/partition
+    when: not is_pi
 
 - name: configure workstations group
   hosts: workstations

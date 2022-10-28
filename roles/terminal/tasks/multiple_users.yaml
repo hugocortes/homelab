@@ -47,6 +47,7 @@
 
   - name: install plug plugins
     command: nvim --headless +PlugInstall +qa
+    when: not is_pi
 
 - name: configure oh my zsh
   become: "{{ item.become }}"

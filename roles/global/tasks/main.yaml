@@ -13,5 +13,6 @@
   import_tasks: facts/system.yaml
 
 - name: update hostname
+  become: true
   command: "hostnamectl set-hostname {{ ansible_host }}"
-  when: is_workstation
+  when: is_workstation or is_pi == 'true'

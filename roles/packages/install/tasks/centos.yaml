@@ -32,6 +32,7 @@
     name:
     - curl
     - git
+    - glibc-common
     - nfs-utils
     - python3-libselinux
     - sshpass
@@ -77,10 +78,3 @@
       name:
       - collectd-rrdtool
       state: absent
-
-  - name: delete rrd
-    file:
-      state: absent
-      path: /var/lib/collectd/rrd
-      force: yes
-    ignore_errors: yes
