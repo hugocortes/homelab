@@ -36,18 +36,25 @@
     - argparse-manpage
     - dnspython
     - docker
+    - libs
     - neovim
+    - PGPy
     - pyOpenSSL
     - pytest
     - thefuck
     extra_args: --user
 
-- name: pip | install pip3 deps
+# see https://jasonralph.org/?p=997
+- name: pip | remove cryptography
   become: false
   pip:
-    name:
-    - libs
-    extra_args: --user
+    name: cryptography
+    state: absent
+- name: pip | install cryptography@37.0.4
+  become: false
+  pip:
+    name: cryptography
+    version: "37.0.4"
 
 - name: create thefuck symlink
   become: true
