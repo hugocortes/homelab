@@ -45,7 +45,7 @@
     name: plex
     image: plexinc/pms-docker:plexpass
     network_mode: host
-    restart_policy: unless-stopped
+    restart_policy: always
     env:
       ADVERTISE_IP: "https://{{ ansible_host }}:32400"
       CHANGE_CONFIG_DIR_OWNERSHIP: "false"
