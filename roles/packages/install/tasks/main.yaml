@@ -8,6 +8,10 @@
   import_tasks: debian.yaml
   when: is_debian
 
+- name: rpi | install packages
+  import_tasks: rpi.yaml
+  when: is_rpi == 'true'
+
 - name: delete rrd
   file:
     state: absent
@@ -27,7 +31,7 @@
     - wheel
     state: latest
     extra_args: --user
-  ignore_errors: yes
+  ignore_errors: true
 
 - name: pip | install deps
   become: false
@@ -100,7 +104,7 @@
       dest: /usr/bin/nvim
       state: link
       force: yes
-  when: not is_pi
+  when: not is_rpi
 
 - name: install packages for multiple users
   include_tasks: multiple_users.yaml

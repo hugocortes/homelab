@@ -15,4 +15,4 @@
 - name: update hostname
   become: true
   command: "hostnamectl set-hostname {{ ansible_host }}"
-  when: is_workstation or is_pi == 'true'
+  when: is_workstation or is_rpi == 'true'

@@ -20,7 +20,7 @@
   set_fact:
     is_centos: "{{ is_centos_8 }}"
 
-- name: set is_rpi fact
+- name: set is_pi fact
   set_fact:
     is_pi: not is_centos_8 and not is_debian and not is_darwin and not is_centos
 
