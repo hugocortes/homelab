@@ -17,7 +17,7 @@
   become: true
   docker_container:
     name: cadvisor
-    image: google/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:latest
     restart_policy: unless-stopped
     hostname: "{{ inventory_hostname }}"
     ports:
@@ -28,6 +28,24 @@
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
     - /dev/disk/:/dev/disk:ro
+  when: not is_rpi
+
+- name: launch cadvisor container
+  become: true
+  docker_container:
+    name: cadvisor
+    image: gcr.io/cadvisor/cadvisor-arm:v0.46.0
+    restart_policy: unless-stopped
+    hostname: "{{ inventory_hostname }}"
+    ports:
+    - 9080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:ro
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro
+  when: is_rpi
 
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml
