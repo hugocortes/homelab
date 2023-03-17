@@ -1,89 +1,49 @@
----
+- name: create network
+  docker_network:
+    name: postgres
 
-- name: mount data dir
-  mount:
-    path: /tmp/mnt
-    src: "{{ global.nfs.host }}:{{ global.postgresql.nfs.path }}"
-    fstype: nfs4
-    opts: defaults,proto=tcp,port=2049,rw
-    state: mounted
-
-- name: check conf exists
-  stat:
-    path: /tmp/mnt/conf/postgresql.conf
-  register: conf
-
-- name: retrieve default conf
-  become: true
-  docker_container:
-    name: postgres-tmp
-    image: postgres:12
-    command: cat /usr/share/postgresql/postgresql.conf.sample
-    detach: no
-  register: default_conf
-  when: conf.stat.exists == false
-
-- name: create conf file
-  copy:
-    content: "{{ default_conf.ansible_facts.docker_container.Output }}"
-    dest: /tmp/mnt/conf/postgresql.conf
-  when: conf.stat.exists == false
-
-- name: remove temp container
-  become: true
-  docker_container:
-    name: postgres-tmp
-    state: absent
-  ignore_errors: yes
-
-- name: unmount conf dir
-  mount:
-    path: /tmp/mnt
-    state: unmounted
-
-- name: create volumes
-  become: true
-  docker_volume:
-    name: "{{ item.name }}"
-    driver_options:
-      type: nfs
-      device: ":/{{ item.mount }}"
-      o: "addr={{ global.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+- name: create service dirs
+  file:
+    group: nobody
+    mode: "0777"
+    owner: nobody
+    path: "{{ item.path }}"
+    state: directory
   with_items:
-  - name: data
-    mount: "{{ global.postgresql.nfs.path }}"
+    - path: /opt/postgres
 
 - name: start container
   become: true
   docker_container:
-    name: postgres
-    image: hugocortes/postgres:9
-    restart_policy: unless-stopped
-    user: "{{ global.postgresql.nfs.user_id }}:0"
-    command:
-    - "-c 'config_file=/var/lib/postgresql/data/conf/postgresql.conf'"
-    ports:
-    - 5432:5432
     env:
-      POSTGRES_USER: "{{ global.postgresql.user }}"
-      POSTGRES_PASSWORD: "{{ global.postgresql.pass }}"
+      POSTGRES_USER: "{{ global.postgresql.username }}"
+      POSTGRES_PASSWORD: "{{ global.postgresql.password }}"
       PGDATA: /var/lib/postgresql/data/data
       PGUSER: postgres
+    image: bitnami/postgresql:15.2.0
+    name: postgres
+    networks:
+      - name: postgres
+    ports:
+      - 5432:5432
+    restart_policy: always
     volumes:
-    - data:/var/lib/postgresql/data
+      - /opt/postgres:/var/lib/postgresql/data
 
 - name: start exporter container
   become: true
   docker_container:
-    name: postgresql-metrics
-    image: wrouesnel/postgres_exporter
-    restart_policy: unless-stopped
-    ports:
-    - 9187:9187
     env:
-      DATA_SOURCE_URI: "{{ global.postgresql.host }}:{{ global.postgresql.port }}/?sslmode=disable"
-      DATA_SOURCE_USER: "{{ global.postgresql.user }}"
-      DATA_SOURCE_PASS: "{{ global.postgresql.pass }}"
+      DATA_SOURCE_URI: "postgres:5432/?sslmode=disable"
+      DATA_SOURCE_USER: "{{ global.postgresql.username }}"
+      DATA_SOURCE_PASS: "{{ global.postgresql.password }}"
+    image: wrouesnel/postgres_exporter
+    name: postgresql-metrics
+    networks:
+      - name: postgres
+    ports:
+      - 9187:9187
+    restart_policy: unless-stopped
 
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml

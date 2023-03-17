@@ -2,7 +2,7 @@
 
 - name: set is_pop fact
   set_fact:
-    is_pop: "{{ ansible_distribution == 'Pop!_OS' }}"
+    is_pop: "{{ ansible_distribution == 'Pop!_OS' | default(false) }}"
 
 - name: rename Pop!_OS to Debian
   set_fact:
@@ -12,17 +12,17 @@
 
 - name: set system facts
   set_fact:
-    is_centos_8: "{{ (ansible_distribution_version | regex_search('^8')) != None }}"
-    is_debian: "{{ ansible_os_family == 'Debian' or is_pop }}"
-    is_darwin: "{{ ansible_os_family == 'Darwin' }}"
+    is_centos_8: "{{ (ansible_distribution_version | default('false') | regex_search('^8')) != None }}"
+    is_debian: "{{ ansible_os_family == 'Debian' or is_pop | default(false) }}"
+    is_darwin: "{{ ansible_os_family == 'Darwin' | default(false) }}"
 
 - name: set is_centos fact
   set_fact:
-    is_centos: "{{ is_centos_8 }}"
+    is_centos: "{{ is_centos_8 | default(false) }}"
 
-- name: set is_pi fact
+- name: set is_rpi fact
   set_fact:
-    is_pi: not is_centos_8 and not is_debian and not is_darwin and not is_centos
+    is_rpi: not is_centos_8 and not is_debian and not is_darwin and not is_centos
 
 - name: set ansible_become_home
   block:

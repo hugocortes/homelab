@@ -1,0 +1,68 @@
+- name: centos | open jackett services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: jackett
+    ports:
+      - name: jackett
+        port: 9117/tcp
+
+- name: centos | open transmission services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: transmission
+    ports:
+      - name: transmission
+        port: 9091/tcp
+      - name: transmission-vpn
+        port: 54949/tcp
+      - name: transmission-vpn-udp
+        port: 54949/tcp
+
+- name: centos | open sabnzbd services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: sabnzbd
+    ports:
+      - name: sabnzbd
+        port: 8080/tcp
+
+- name: centos | open radarr services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: radarr
+    ports:
+      - name: radarr
+        port: 7878/tcp
+
+- name: centos | open sonarr services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: sonarr
+    ports:
+      - name: sonarr
+        port: 8989/tcp
+
+- name: centos | open readarr services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: readarr
+    ports:
+      - name: readarr
+        port: 8787/tcp
+
+- name: centos | open calibre-server services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: calibre-server
+    ports:
+      - name: calibre-server
+        port: 7070/tcp
+      - name: calibre-server
+        port: 8081/tcp

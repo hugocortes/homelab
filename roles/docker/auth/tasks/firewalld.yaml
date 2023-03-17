@@ -1,0 +1,17 @@
+- name: centos | open pomerium services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: pomerium
+    ports:
+    - name: pomerium
+      port: 8080/tcp
+
+- name: centos | open keycloak services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: keycloak
+    ports:
+    - name: keycloak
+      port: 7080/tcp

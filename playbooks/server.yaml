@@ -150,9 +150,26 @@
   - name: docker/sish
     tags: docker/sish
 
+- name: configure auth
+  hosts: auth
+  become: true
+  tags: auth
+  roles:
+  - docker/postgresql
+  - docker/auth
+
 - name: configure media
   hosts: media
   become: true
   tags: media
   roles:
+  - docker/mysql
+  - docker/postgresql
   - docker/media
+
+- name: configure pirate
+  hosts: pirate
+  become: true
+  tags: pirate
+  roles:
+  - docker/pirate

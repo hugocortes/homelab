@@ -1,0 +1,155 @@
+- name: create nfs volumes
+  become: true
+  docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ global.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+  with_items:
+  - name: downloads
+    mount: "{{ global.pirate.nfs.downloads }}"
+  - name: ebooks
+    mount: "{{ global.pirate.nfs.ebooks }}"
+  - name: movies
+    mount: "{{ global.pirate.nfs.movies }}"
+  - name: tv
+    mount: "{{ global.pirate.nfs.tv }}"
+
+- name: create service dirs
+  file:
+    path: "{{ item.path }}"
+    owner: nobody
+    group: nobody
+    state: directory
+    mode: "0777"
+  with_items:
+    - path: /opt/jackett
+    - path: /opt/readarr
+    - path: /opt/radarr
+    - path: /opt/sabnzbd
+    - path: /opt/sonarr
+    - path: /opt/transmission
+    - path: /opt/calibre-server
+
+- name: create /opt/jackett/config dir
+  file:
+    path: /opt/jackett/config
+    owner: nobody
+    group: nobody
+    state: directory
+    mode: "0777"
+- name: create /opt/jackett/downloads dir
+  file:
+    path: /opt/jackett/downloads
+    owner: nobody
+    group: nobody
+    state: directory
+    mode: "0777"
+- name: start jackett container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/jackett:0.20.3599
+    name: jackett
+    ports:
+      - 9117:9117
+    restart_policy: always
+    volumes:
+      - /opt/jackett/config:/config
+      - /opt/jackett/downloads:/downloads
+
+- name: start transmission container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/transmission:4.0.1
+    name: transmission
+    ports:
+      - 9091:9091
+      - 54949:54949/udp
+      - 54949:54949
+    restart_policy: always
+    volumes:
+      - /opt/transmission:/config
+      - downloads:/downloads
+
+- name: start sabnzbd container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/sabnzbd:3.7.2
+    name: sabnzbd
+    ports:
+      - 8080:8080
+    restart_policy: always
+    volumes:
+      - /opt/sabnzbd:/config
+      - downloads:/downloads
+
+- name: start radarr container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/radarr:nightly-version-4.4.3.7000
+    name: radarr
+    ports:
+      - 7878:7878
+    restart_policy: always
+    volumes:
+      - /opt/radarr:/config
+      - downloads:/downloads
+      - movies:/movies
+
+- name: start sonarr container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/sonarr:3.0.10
+    name: sonarr
+    ports:
+      - 8989:8989
+    restart_policy: always
+    volumes:
+      - /opt/sonarr:/config
+      - downloads:/downloads
+      - tv:/tv
+
+- name: start readarr container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/readarr:0.1.4-develop
+    name: readarr
+    ports:
+      - 8787:8787
+    restart_policy: always
+    volumes:
+      - /opt/readarr:/config
+      - downloads:/downloads
+      - ebooks:/books
+
+- name: start calibre server container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/calibre:6.14.0
+    name: calibre-server
+    ports:
+      - 7070:8080
+      - 8081:8081
+    restart_policy: always
+    volumes:
+      - /opt/calibre-server:/config
+      - ebooks:/books
+
+- name: centos | open firewalld ports
+  import_tasks: firewalld.yaml
+  when: is_centos
