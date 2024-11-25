@@ -7,14 +7,14 @@
       device: ":/{{ item.mount }}"
       o: "addr={{ global.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
   with_items:
-  - name: downloads
-    mount: "{{ global.pirate.nfs.downloads }}"
-  - name: ebooks
-    mount: "{{ global.pirate.nfs.ebooks }}"
-  - name: movies
-    mount: "{{ global.pirate.nfs.movies }}"
-  - name: tv
-    mount: "{{ global.pirate.nfs.tv }}"
+    - name: downloads
+      mount: "{{ global.pirate.nfs.downloads }}"
+    - name: ebooks
+      mount: "{{ global.pirate.nfs.ebooks }}"
+    - name: movies
+      mount: "{{ global.pirate.nfs.movies }}"
+    - name: tv
+      mount: "{{ global.pirate.nfs.tv }}"
 
 - name: create service dirs
   file:
@@ -51,7 +51,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/jackett:0.20.3599
+    image: linuxserver/jackett:0.21.424
     name: jackett
     ports:
       - 9117:9117
@@ -65,7 +65,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/transmission:4.0.1
+    image: linuxserver/transmission:4.0.3
     name: transmission
     ports:
       - 9091:9091
@@ -81,7 +81,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/sabnzbd:3.7.2
+    image: linuxserver/sabnzbd:4.0.2
     name: sabnzbd
     ports:
       - 8080:8080
@@ -95,7 +95,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/radarr:nightly-version-4.4.3.7000
+    image: linuxserver/radarr:4.6.4
     name: radarr
     ports:
       - 7878:7878
@@ -120,31 +120,32 @@
       - downloads:/downloads
       - tv:/tv
 
-- name: start readarr container
-  become: true
-  docker_container:
-    env:
-      TZ: America/Los_Angeles
-    image: linuxserver/readarr:0.1.4-develop
-    name: readarr
-    ports:
-      - 8787:8787
-    restart_policy: always
-    volumes:
-      - /opt/readarr:/config
-      - downloads:/downloads
-      - ebooks:/books
+# - name: start readarr container
+#   become: true
+#   docker_container:
+#     env:
+#       TZ: America/Los_Angeles
+#     image: linuxserver/readarr:0.2.2-nightly
+#     name: readarr
+#     ports:
+#       - 8787:8787
+#     restart_policy: always
+#     volumes:
+#       - /opt/readarr:/config
+#       - downloads:/downloads
+#       - ebooks:/books
 
 - name: start calibre server container
   become: true
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/calibre:6.14.0
+    image: linuxserver/calibre:6.28.0
     name: calibre-server
     ports:
-      - 7070:8080
-      - 8081:8081
+      - 6060:8080
+      - 6061:8081
+      - 6161:8181
     restart_policy: always
     volumes:
       - /opt/calibre-server:/config
@@ -152,4 +153,3 @@
 
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml
-  when: is_centos

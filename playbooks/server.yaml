@@ -30,18 +30,18 @@
   hosts: ipaservers,ipareplicas
   tags: freeipa
   tasks:
-  - name: update hostname
-    command: "hostnamectl set-hostname {{ ansible_host }}"
-  - include_role:
-      name: services/freeipa/server
+    - name: update hostname
+      command: "hostnamectl set-hostname {{ ansible_host }}"
+    - include_role:
+        name: services/freeipa/server
 
 - name: install freeipa server
   become: true
   hosts: ipaservers
   tags: freeipa-server
   tasks:
-  - include_role:
-      name: ipaserver
+    - include_role:
+        name: ipaserver
 
 # manually append isrg root x1 let's encrypt cert and re-run ipa-certupdate (if using let's encrypt)
 # https://yyhh.org/blog/2021/01/fix-freeipa-httpd-lets-encrypt-certificate-update/
@@ -50,8 +50,8 @@
   hosts: ipareplicas
   tags: freeipa-replicas
   tasks:
-  - include_role:
-      name: ipareplica
+    - include_role:
+        name: ipareplica
 
 # disable anonymous binds
 # https://stomp.colorado.edu/blog/blog/2011/12/19/on-increasing-the-security-of-a-freeipa-server/
@@ -64,7 +64,7 @@
   hosts: ipaservers,ipareplicas
   tags: freeipa-configure
   roles:
-  - services/freeipa/server/configure
+    - services/freeipa/server/configure
 
 - name: register freeipa clients
   import_playbook: ../ansible-freeipa/playbooks/install-client.yml
@@ -75,7 +75,7 @@
   become: false
   tags: terminal
   roles:
-  - terminal
+    - terminal
 
 - name: configure acme certs
   hosts: acme
@@ -115,10 +115,10 @@
   become: true
   tags: kubernetes
   roles:
-  - name: services/kubernetes
-    vars:
-      create_mnt_dirs: no
-      dirs: []
+    - name: services/kubernetes
+      vars:
+        create_mnt_dirs: no
+        dirs: []
 
 - name: configure kubernetes partitions
   hosts: kube_node
@@ -138,36 +138,36 @@
   hosts: bastion
   become: true
   pre_tasks:
-  - fail:
-      msg: bastion host and duo settings required
-    when: global.bastion is undefined or not global.bastion.host or not global.bastion.duo or not global.bastion.duo.ikey or not global.bastion.duo.skey or not global.bastion.duo.host
+    - fail:
+        msg: bastion host and duo settings required
+      when: global.bastion is undefined or not global.bastion.host or not global.bastion.duo or not global.bastion.duo.ikey or not global.bastion.duo.skey or not global.bastion.duo.host
   tags: bastion
   roles:
-  - services/duo
-  - services/ssh/bastion
-  - name: docker/sish
-    tags: docker/sish
+    - services/duo
+    - services/ssh/bastion
+    - name: docker/sish
+      tags: docker/sish
 
 - name: configure auth
   hosts: auth
   become: true
   tags: auth
   roles:
-  - docker/postgresql
-  - docker/auth
+    - docker/postgresql
+    - docker/auth
 
 - name: configure media
   hosts: media
   become: true
   tags: media
   roles:
-  - docker/mysql
-  - docker/postgresql
-  - docker/media
+    - docker/mysql
+    - docker/postgresql
+    - docker/media
 
 - name: configure pirate
   hosts: pirate
   become: true
   tags: pirate
   roles:
-  - docker/pirate
+    - docker/pirate

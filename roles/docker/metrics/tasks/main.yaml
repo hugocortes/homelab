@@ -1,51 +1,31 @@
----
-
 - name: launch node-exporter container
   become: true
   docker_container:
     name: node-exporter
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.8.2
     restart_policy: unless-stopped
     command: --path.rootfs=/hostfs
     hostname: "{{ inventory_hostname }}"
     ports:
-    - 9100:9100
+      - 9100:9100
     volumes:
-    - /:/hostfs
+      - /:/hostfs
 
 - name: launch cadvisor container
   become: true
   docker_container:
     name: cadvisor
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:v0.50.0
     restart_policy: unless-stopped
     hostname: "{{ inventory_hostname }}"
     ports:
-    - 9080:8080
+      - 9080:8080
     volumes:
-    - /:/rootfs:ro
-    - /var/run:/var/run:ro
-    - /sys:/sys:ro
-    - /var/lib/docker/:/var/lib/docker:ro
-    - /dev/disk/:/dev/disk:ro
-  when: not is_rpi
-
-- name: launch cadvisor container
-  become: true
-  docker_container:
-    name: cadvisor
-    image: gcr.io/cadvisor/cadvisor-arm:v0.46.0
-    restart_policy: unless-stopped
-    hostname: "{{ inventory_hostname }}"
-    ports:
-    - 9080:8080
-    volumes:
-    - /:/rootfs:ro
-    - /var/run:/var/run:ro
-    - /sys:/sys:ro
-    - /var/lib/docker/:/var/lib/docker:ro
-    - /dev/disk/:/dev/disk:ro
-  when: is_rpi
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
 
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml

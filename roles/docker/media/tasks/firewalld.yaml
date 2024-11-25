@@ -1,5 +1,3 @@
----
-
 - name: centos | open plex services
   include_role:
     name: services/firewalld
@@ -8,3 +6,48 @@
     ports:
     - name: plex
       port: 32400/tcp
+
+- name: centos | open ombi services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: ombi
+    ports:
+    - name: ombi
+      port: 3579/tcp
+
+- name: centos | open stash services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: stash
+    ports:
+    - name: stash
+      port: 9999/tcp
+
+- name: centos | open tautulli services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: tautulli
+    ports:
+    - name: tautulli
+      port: 8181/tcp
+
+- name: centos | open calibre services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: calibre
+    ports:
+    - name: calibre
+      port: 8083/tcp
+
+- name: centos | open miniflux services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: miniflux
+    ports:
+    - name: miniflux
+      port: 8080/tcp
