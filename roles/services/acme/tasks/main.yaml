@@ -1,15 +1,14 @@
 ---
-
 - name: copy rootx1 crt
   copy:
     force: yes
     src: "rootx1.crt"
     dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt
 
-- name: copy r3 crt
+- name: copy intermediate crt
   copy:
     force: yes
-    src: "r3.crt"
+    src: "intermediate.crt"
     dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt
 
 - name: create file
@@ -30,7 +29,7 @@
     privatekey_path: "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.key"
     certificate_path: "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt"
     other_certificates:
-    - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt"
-    - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt"
+      - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt"
+      - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt"
     state: present
     passphrase: password

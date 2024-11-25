@@ -1,5 +1,3 @@
----
-
 - name: set facts and ssh user
   hosts: all
   become: false
@@ -7,7 +5,7 @@
   ignore_errors: true
   ignore_unreachable: true
   roles:
-  - global
+    - global
   tags: always
 
 - name: install & update packages
@@ -15,10 +13,10 @@
   become: true
   tags: install-update
   roles:
-  - name: packages/install
-    tags: install
-  - name: packages/update
-    tags: update
+    - name: packages/install
+      tags: install
+    - name: packages/update
+      tags: update
 
 # - name: uninstall freeipa clients
 #   become: true
@@ -83,13 +81,13 @@
   hosts: acme
   tags: acme
   vars:
-  - letsencrypt_production: yes
-  - include_intermediate: no
+    - letsencrypt_production: yes
+    - include_intermediate: no
   tasks:
-  - include_role:
-      name: ansible-letsencrypt-cloudflare
-  - include_role:
-      name: services/acme
+    - include_role:
+        name: ansible-letsencrypt-cloudflare
+    - include_role:
+        name: services/acme
 
 - name: configure servers group
   hosts: servers
@@ -98,19 +96,19 @@
     sync: false # resets all configuration before re-applying
   tags: server
   roles:
-  - services/ssh/setup
-  - name: services/collectd
-    tags: collectd
+    - services/ssh/setup
+    - name: services/collectd
+      tags: collectd
 
 - name: configure docker group
   hosts: docker
   become: true
   tags: docker
   roles:
-  - name: services/docker
-    when: not is_kubernetes
-  - name: docker/metrics
-    when: not is_workstation and not is_kubernetes
+    - name: services/docker
+      when: not is_kubernetes
+    - name: docker/metrics
+      when: not is_kubernetes
 
 - name: configure kubernetes group
   hosts: kubernetes
