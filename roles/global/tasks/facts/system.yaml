@@ -1,5 +1,3 @@
----
-
 - name: set is_pop fact
   set_fact:
     is_pop: "{{ ansible_distribution == 'Pop!_OS' | default(false) }}"
@@ -13,50 +11,51 @@
 - name: set system facts
   set_fact:
     is_centos_8: "{{ (ansible_distribution_version | default('false') | regex_search('^8')) != None }}"
+    is_centos_9: "{{ (ansible_distribution_version | default('false') | regex_search('^9')) != None }}"
     is_debian: "{{ ansible_os_family == 'Debian' or is_pop | default(false) }}"
     is_darwin: "{{ ansible_os_family == 'Darwin' | default(false) }}"
 
 - name: set is_centos fact
   set_fact:
-    is_centos: "{{ is_centos_8 | default(false) }}"
+    is_centos: "{{ (is_centos_8 or is_centos_9) | default(false) }} "
 
 - name: set is_rpi fact
   set_fact:
-    is_rpi: not is_centos_8 and not is_debian and not is_darwin and not is_centos
+    is_rpi: not is_centos and not is_debian and not is_darwin and not is_centos
 
 - name: set ansible_become_home
   block:
-  - name: get directory
-    shell: "getent passwd {{ ansible_become_user }}  | awk -F: '{ print $6 }'"
-    register: home
-    ignore_errors: yes
+    - name: get directory
+      shell: "getent passwd {{ ansible_become_user }}  | awk -F: '{ print $6 }'"
+      register: home
+      ignore_errors: yes
 
-  - name: set fact
-    set_fact:
-      ansible_become_home: "{{ home.stdout }}"
+    - name: set fact
+      set_fact:
+        ansible_become_home: "{{ home.stdout }}"
 
 - name: set ansible_user_home
   block:
-  - name: get directory
-    shell: "getent passwd {{ ansible_user }}  | awk -F: '{ print $6 }'"
-    register: home
+    - name: get directory
+      shell: "getent passwd {{ ansible_user }}  | awk -F: '{ print $6 }'"
+      register: home
 
-  - name: set fact
-    set_fact:
-      ansible_user_home: "{{ home.stdout }}"
+    - name: set fact
+      set_fact:
+        ansible_user_home: "{{ home.stdout }}"
 
 - name: set ansible_users for installing packages to multiple users
   set_fact:
     ansible_users:
-    - home: "{{ ansible_user_home }}"
-      user: "{{ ansible_user }}"
-      become: false
+      - home: "{{ ansible_user_home }}"
+        user: "{{ ansible_user }}"
+        become: false
 
 - name: append become user to ansible_users
   set_fact:
     ansible_users:
-    - "{{ ansible_users }}"
-    - home: "{{ ansible_become_home }}"
-      user: "{{ ansible_become_user }}"
-      become: true
+      - "{{ ansible_users }}"
+      - home: "{{ ansible_become_home }}"
+        user: "{{ ansible_become_user }}"
+        become: true
   when: ansible_user != ansible_become_user

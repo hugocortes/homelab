@@ -9,7 +9,6 @@ plugins=(
   minikube
   node
   npm
-  nvm
 )
 export DISABLE_AUTO_UPDATE=true
 export EDITOR=nvim
@@ -17,21 +16,4 @@ export ZSH={{ item.home }}/.oh-my-zsh
 source $ZSH/oh-my-zsh.sh
 
 # plugins
-eval $(thefuck --alias)
-
-# java
-{% if is_workstation and is_debian %}
-export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
-export M2_HOME=/opt/maven
-{% endif %}
-
-{% if is_workstation %}
-# go
-export GOPATH={{ item.home }}/go
-export GOBIN=$GOPATH/bin
-export PATH=$PATH:$GOBIN
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-{% endif %}
+# eval $(thefuck --alias)

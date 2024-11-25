@@ -1,5 +1,4 @@
 ---
-
 - name: set server usage facts
   set_fact:
     is_bastion: "{{ inventory_hostname == 'bastion' }}"
@@ -9,9 +8,6 @@
     is_freeipa_client: "{{ 'ipaclients' in group_names }}"
     is_kubernetes: "{{ 'kubernetes' in group_names }}"
     is_server: "{{ 'servers' in group_names }}"
-    is_vm_workstation: "{{ 'vm_workstations' in group_names }}"
-    is_physical_workstation: "{{ 'physical_workstations' in group_names }}"
-    is_workstation: "{{ 'workstations' in group_names }}"
 
 - name: set is_freeipa fact
   set_fact:

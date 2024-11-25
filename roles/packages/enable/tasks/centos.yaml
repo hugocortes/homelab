@@ -1,12 +1,10 @@
----
-
 - name: centos8 | enable additional repos
   yum_repository:
     name: "{{ item }}"
     state: present
   with_items:
-  - CentOS-8 - AppStream
-  - CentOS-8 - Base
-  - CentOS-8 - Extras
+    - CentOS-8 - AppStream
+    - CentOS-8 - Base
+    - CentOS-8 - Extras
   when: is_centos_8
   notify: clean repos

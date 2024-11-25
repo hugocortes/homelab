@@ -1,5 +1,4 @@
 ---
-
 - name: set inventory facts
   import_tasks: facts/inventory.yaml
 
@@ -15,4 +14,4 @@
 - name: update hostname
   become: true
   command: "hostnamectl set-hostname {{ ansible_host }}"
-  when: is_workstation or is_rpi == 'true'
+  when: is_rpi == 'true'

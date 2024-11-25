@@ -1,9 +1,7 @@
----
-
 - name: centos | find all yum repos
   find:
     paths:
-    - /etc/yum.repos.d/
+      - /etc/yum.repos.d/
     patterns: "*.repo"
   register: repos
 
@@ -21,8 +19,8 @@
     name: "{{ item }}"
     state: absent
   with_items:
-  - CentOS-8 - AppStream
-  - CentOS-8 - Base
-  - CentOS-8 - Extras
+    - CentOS-8 - AppStream
+    - CentOS-8 - Base
+    - CentOS-8 - Extras
   when: is_centos_8
   notify: clean repos

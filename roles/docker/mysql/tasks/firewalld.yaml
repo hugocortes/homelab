@@ -1,0 +1,11 @@
+- name: centos | open mysql services
+  include_role:
+    name: services/firewalld/tasks
+  vars:
+    name: mysql
+    services:
+    - name: msyql
+      service: mysql
+    ports:
+    - name: mysql monitoring
+      port: 9104/tcp

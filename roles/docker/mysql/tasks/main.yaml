@@ -17,7 +17,7 @@
   docker_container:
     env:
       MYSQL_ROOT_PASSWORD: "{{ global.mysql.password }}"
-    image: mysql:5.7
+    image: mysql:8.2.0
     name: mysql
     networks:
       - name: mysql
@@ -30,9 +30,10 @@
 - name: start exporter container
   become: true
   docker_container:
-    env:
-      DATA_SOURCE_NAME: "root:{{ global.mysql.password }}@(mysql:3306)/"
-    image: prom/mysqld-exporter:v0.14.0
+    command:
+      - "--mysqld.username=root:{{ global.mysql.password }}"
+      - "--mysqld.address=mysql:3306"
+    image: prom/mysqld-exporter:v0.15.1
     name: mysql-metrics
     networks:
       - name: mysql

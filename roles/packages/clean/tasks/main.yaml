@@ -1,5 +1,3 @@
----
-
-- name: clean centos8 dnf
+- name: clean centos dnf
   import_tasks: dnf.yaml
-  when: is_centos_8
+  when: is_centos

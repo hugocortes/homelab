@@ -1,10 +1,9 @@
 ---
-
 - name: install pip dependencies
   become: false
   pip:
     name:
-    - netaddr
+      - netaddr
     extra_args: --user
 
 - name: launch local docker containers
@@ -21,10 +20,6 @@
   import_tasks: centos/main.yaml
   when: is_centos
 
-- name: configure physical workstation
-  import_tasks: physical/main.yaml
-  when: is_physical_workstation
-
 - name: configure vm workstation
   import_tasks: vm/main.yaml
   when: is_vm_workstation
@@ -34,8 +29,8 @@
     src: "files/{{ item }}"
     dest: "{{ ansible_env['HOME'] }}/{{ item }}"
   with_items:
-  - .gitignore_global
-  - .gittemplate_global
+    - .gitignore_global
+    - .gittemplate_global
 
 - name: git | create .gitconfig
   template:

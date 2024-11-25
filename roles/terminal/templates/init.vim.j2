@@ -4,9 +4,6 @@ source {{ item.home }}/.vimrc
 
 call plug#begin('{{ item.home }}/.vim/plugged')
 
-{% if is_workstation %}
-Plug 'neoclide/coc.nvim', {'branch': 'release'}	" intellisense type autocomplete
-{% endif %}
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-commentary'
 Plug 'fatih/vim-go'
