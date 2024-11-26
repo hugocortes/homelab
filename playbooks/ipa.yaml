@@ -1,0 +1,71 @@
+- name: set facts and ssh user
+  hosts: all
+  become: false
+  gather_facts: false
+  ignore_errors: true
+  ignore_unreachable: true
+  roles:
+    - global
+  tags: always
+
+- name: install & update packages
+  hosts: all
+  become: true
+  tags: install-update
+  roles:
+    - name: packages/install
+      tags: install
+    - name: packages/update
+      tags: update
+
+# - name: uninstall freeipa clients
+#   become: true
+#   tags: freeipa-client-uninstall
+#   import_playbook: ../ansible-freeipa/playbooks/uninstall-client.yml
+#   vars:
+#     ansible_python_interpreter: /usr/bin/python2
+
+- name: configure freeipa server/replica
+  become: true
+  hosts: ipaservers,ipareplicas
+  tags: freeipa
+  tasks:
+    - name: update hostname
+      command: "hostnamectl set-hostname {{ ansible_host }}"
+    - include_role:
+        name: services/freeipa/server
+
+- name: install freeipa server
+  become: true
+  hosts: ipaservers
+  tags: freeipa-server
+  tasks:
+    - include_role:
+        name: ipaserver
+
+# manually append isrg root x1 let's encrypt cert and re-run ipa-certupdate (if using let's encrypt)
+# https://yyhh.org/blog/2021/01/fix-freeipa-httpd-lets-encrypt-certificate-update/
+- name: install freeipa replica
+  become: true
+  hosts: ipareplicas
+  tags: freeipa-replicas
+  tasks:
+    - include_role:
+        name: ipareplica
+
+# disable anonymous binds
+# https://stomp.colorado.edu/blog/blog/2011/12/19/on-increasing-the-security-of-a-freeipa-server/
+# sudo service ipa stop
+# sudo vi /etc/dirsrv/slapd-DOMAIN-COM/dse.ldif
+# Search for nsslapd-allow-anonymous-access and change on to rootdse
+# sudo service ipa start
+- name: configure freeipa server
+  become: true
+  hosts: ipaservers,ipareplicas
+  tags: freeipa-configure
+  roles:
+    - services/freeipa/server/configure
+
+- name: register freeipa clients
+  import_playbook: ../ansible-freeipa/playbooks/install-client.yml
+  tags: freeipa-client
