@@ -1,0 +1,21 @@
+- name: set facts and ssh user
+  hosts: all
+  become: false
+  gather_facts: false
+  ignore_errors: true
+  ignore_unreachable: true
+  roles:
+    - global
+  tags: always
+
+- name: configure acme certs
+  hosts: acme
+  tags: acme
+  vars:
+    - letsencrypt_production: yes
+    - include_intermediate: no
+  tasks:
+    - include_role:
+        name: ansible-letsencrypt-cloudflare
+    - include_role:
+        name: services/acme

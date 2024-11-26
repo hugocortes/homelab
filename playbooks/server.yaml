@@ -25,18 +25,6 @@
   roles:
     - terminal
 
-- name: configure acme certs
-  hosts: acme
-  tags: acme
-  vars:
-    - letsencrypt_production: yes
-    - include_intermediate: no
-  tasks:
-    - include_role:
-        name: ansible-letsencrypt-cloudflare
-    - include_role:
-        name: services/acme
-
 - name: configure servers group
   hosts: servers
   become: true
