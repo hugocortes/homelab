@@ -1,5 +1,3 @@
----
-
 - name: installing packages for user {{ item.user }}
   debug:
 
@@ -7,62 +5,60 @@
   become: "{{ item.become }}"
   become_user: "{{ item.user }}"
   block:
-  - name: create vim-plug dir
-    file:
-      path: "{{ item.home }}/.local/share/nvim/site/autoload"
-      state: directory
+    - name: create vim-plug dir
+      file:
+        path: "{{ item.home }}/.local/share/nvim/site/autoload"
+        state: directory
 
-  - name: download vim-plug
-    get_url:
-      url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-      dest: "{{ item.home }}/.local/share/nvim/site/autoload/plug.vim"
+    - name: download vim-plug
+      get_url:
+        url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        dest: "{{ item.home }}/.local/share/nvim/site/autoload/plug.vim"
 
-  - name: create .vim cache dir
-    file:
-      path: "{{ item.home }}/.cache"
-      state: directory
+    - name: create .vim cache dir
+      file:
+        path: "{{ item.home }}/.cache"
+        state: directory
 
-  - name: create .vimrc config
-    template:
-      src: .vimrc.j2
-      dest: "{{ item.home }}/.vimrc"
-      force: yes
+    - name: create .vimrc config
+      template:
+        src: .vimrc.j2
+        dest: "{{ item.home }}/.vimrc"
+        force: yes
 
-  - name: create init.vim config dir
-    file:
-      path: "{{ item.home }}/.config/nvim"
-      state: directory
+    - name: create init.vim config dir
+      file:
+        path: "{{ item.home }}/.config/nvim"
+        state: directory
 
-  - name: create init.vim config
-    template:
-      src: init.vim.j2
-      dest: "{{ item.home }}/.config/nvim/init.vim"
-      force: yes
+    - name: create init.vim config
+      template:
+        src: init.vim.j2
+        dest: "{{ item.home }}/.config/nvim/init.vim"
+        force: yes
 
-  - name: create .zshrc config
-    template:
-      src: .zshrc.j2
-      dest: "{{ item.home }}/.zshrc"
-      force: yes
+    - name: create .zshrc config
+      template:
+        src: .zshrc.j2
+        dest: "{{ item.home }}/.zshrc"
+        force: yes
 
-  - name: install plug plugins
-    command: nvim --headless +PlugInstall +qa
-    when: not is_rpi
+    - name: install plug plugins
+      command: nvim --headless +PlugInstall +qa
 
 - name: configure oh my zsh
   become: "{{ item.become }}"
   become_user: "{{ item.user }}"
   block:
-  - name: copy minimal plugin to custom
-    command: >
-      cp
-      {{ item.home }}/.oh-my-zsh/themes/minimal.zsh-theme
-      {{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme
+    - name: copy minimal plugin to custom
+      command: >
+        cp
+        {{ item.home }}/.oh-my-zsh/themes/minimal.zsh-theme
+        {{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme
 
-  - name: add user@host to minimal theme
-    lineinfile:
-      dest: "{{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme"
-      regexp: "^PROMPT='"
-      line: PROMPT='$USER@%{% raw %}{%{% endraw %}}%m:%2~ $(vcs_status)»%b '
-      state: present
-    when: not is_physical_workstation
+    - name: add user@host to minimal theme
+      lineinfile:
+        dest: "{{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme"
+        regexp: "^PROMPT='"
+        line: PROMPT='$USER@%{% raw %}{%{% endraw %}}%m:%2~ $(vcs_status)»%b '
+        state: present

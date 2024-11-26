@@ -10,8 +10,3 @@
 
 - name: set system facts
   import_tasks: facts/system.yaml
-
-- name: update hostname
-  become: true
-  command: "hostnamectl set-hostname {{ ansible_host }}"
-  when: is_rpi == 'true'

@@ -1,4 +1,12 @@
----
+- name: debian | install docker dependencies
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+    state: latest
 
 - name: debian | add gpg key
   apt_key:
@@ -10,22 +18,12 @@
     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
     state: present
 
-- name: debian | install docker dependencies
-  apt:
-    name:
-    - apt-transport-https
-    - ca-certificates
-    - curl
-    - gnupg-agent
-    - software-properties-common
-    state: latest
-
 - name: debian | install docker packages
   apt:
     name:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
     state: latest
 
 - name: debian | create docker group

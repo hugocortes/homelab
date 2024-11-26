@@ -61,14 +61,7 @@
   become: true
   tags: kubernetes-partition
   roles:
-  - name: services/partition
-    when: not is_rpi
-
-- name: configure workstations group
-  hosts: workstations
-  tags: workstations
-  roles:
-  - workstations
+    - name: services/partition
 
 - name: configure bastion
   hosts: bastion
