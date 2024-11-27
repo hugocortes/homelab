@@ -1,5 +1,3 @@
----
-
 - name: restart shell
   debug:
     msg: ALT + F2 and 'r'

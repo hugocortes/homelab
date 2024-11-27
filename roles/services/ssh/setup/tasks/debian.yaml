@@ -1,8 +1,6 @@
----
-
 - name: debian | install
   apt:
     name:
-    - fail2ban
+      - fail2ban
     state: latest
   notify: enable fail2ban

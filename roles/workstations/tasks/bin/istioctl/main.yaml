@@ -1,5 +1,3 @@
----
-
 - name: istioctl | download
   become: true
   unarchive:

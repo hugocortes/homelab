@@ -1,5 +1,3 @@
----
-
 - name: gnome - disable gdm setup
   lineinfile:
     dest: /etc/gdm/custom.conf

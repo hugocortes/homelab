@@ -1,5 +1,3 @@
----
-
 - name: centos | install packages
   import_tasks: centos.yaml
   when: is_centos
@@ -19,14 +17,13 @@
     state: started
 
 - name: install docker pip using python3
-  become: true
+  become: false
   pip:
     name:
-    - docker
+      - docker
 
 - name: log into docker
   become: true
   docker_login:
     username: "{{ global.docker.username }}"
     password: "{{ global.docker.password }}"
-    email: "{{ global.docker.email }}"

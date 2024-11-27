@@ -1,57 +1,55 @@
----
-
 # pkg_name
 # pkg_gpg_key
 # pkg_gpg_id
 # pkg_gpg_keyserver
 # pkg_repository_name
-# pkg_repository 
+# pkg_repository
 # pkg_deb
 # pkg_dependencies
-# pkg_packages 
+# pkg_packages
 
 - name: install {{ pkg_name }}
   become: true
   block:
-  - name: add {{ pkg_name }} gpg key
-    apt_key:
-      url: "{{ pkg_gpg_key }}"
-      state: present
-    when: pkg_gpg_key is defined
+    - name: add {{ pkg_name }} gpg key
+      apt_key:
+        url: "{{ pkg_gpg_key }}"
+        state: present
+      when: pkg_gpg_key is defined
 
-  - name: add {{ pkg_name }} gpg key
-    apt_key:
-      id: "{{ pkg_gpg_id }}"
-      keyserver: "{{ pkg_gpg_keyserver }}"
-    when: pkg_gpg_keyserver is defined and pkg_gpg_id is defined
+    - name: add {{ pkg_name }} gpg key
+      apt_key:
+        id: "{{ pkg_gpg_id }}"
+        keyserver: "{{ pkg_gpg_keyserver }}"
+      when: pkg_gpg_keyserver is defined and pkg_gpg_id is defined
 
-  - name: add {{ pkg_name }} repository
-    apt_repository:
-      repo: "{{ pkg_repository }}"
-      update_cache: yes
-    when: pkg_repository is defined and pkg_repository_name is not defined
+    - name: add {{ pkg_name }} repository
+      apt_repository:
+        repo: "{{ pkg_repository }}"
+        update_cache: yes
+      when: pkg_repository is defined and pkg_repository_name is not defined
 
-  - name: add {{ pkg_name }} repository with name
-    apt_repository:
-      repo: "{{ pkg_repository }}"
-      filename: "{{ pkg_repository_name }}"
-      update_cache: yes
-    when: pkg_repository is defined and pkg_repository_name is defined
+    - name: add {{ pkg_name }} repository with name
+      apt_repository:
+        repo: "{{ pkg_repository }}"
+        filename: "{{ pkg_repository_name }}"
+        update_cache: yes
+      when: pkg_repository is defined and pkg_repository_name is defined
 
-  - name: install {{ pkg_name }} deb
-    apt:
-      deb: "{{ pkg_deb }}"
-      update_cache: yes
-    when: pkg_deb is defined
+    - name: install {{ pkg_name }} deb
+      apt:
+        deb: "{{ pkg_deb }}"
+        update_cache: yes
+      when: pkg_deb is defined
 
-  - name: install {{ pkg_name }} dependencies
-    apt:
-      name: "{{ pkg_dependencies }}"
-      state: latest
-    when: pkg_dependencies is defined
+    - name: install {{ pkg_name }} dependencies
+      apt:
+        name: "{{ pkg_dependencies }}"
+        state: latest
+      when: pkg_dependencies is defined
 
-  - name: install {{ pkg_name }} packages
-    apt:
-      name: "{{ pkg_packages }}"
-      state: latest
-    when: pkg_packages is defined
+    - name: install {{ pkg_name }} packages
+      apt:
+        name: "{{ pkg_packages }}"
+        state: latest
+      when: pkg_packages is defined

@@ -1,5 +1,3 @@
----
-
 - name: debian | configure hw
   import_tasks: hw.yaml
 
@@ -16,34 +14,34 @@
   become: true
   apt:
     name:
-    - apache2-utils
-    - build-essential
-    - discord
-    - gnome-tweaks # may have to manually enable `extensions` in `tweaks` ui
-    - gnome-shell-extensions
-    - gnupg
-    - gnupg2
-    - jq
-    - libmediainfo0v5
-    - libssl-dev
-    - mysql-client
-    - network-manager-openvpn-gnome
-    - nfs-common
-    - openvpn-systemd-resolved
-    - protobuf-compiler
-    - redis-tools
-    - software-properties-common
-    - sshpass
-    - traceroute
-    - virtualbox
-    - wireshark
+      - apache2-utils
+      - build-essential
+      - discord
+      - gnome-tweaks # may have to manually enable `extensions` in `tweaks` ui
+      - gnome-shell-extensions
+      - gnupg
+      - gnupg2
+      - jq
+      - libmediainfo0v5
+      - libssl-dev
+      - mysql-client
+      - network-manager-openvpn-gnome
+      - nfs-common
+      - openvpn-systemd-resolved
+      - protobuf-compiler
+      - redis-tools
+      - software-properties-common
+      - sshpass
+      - traceroute
+      - virtualbox
+      - wireshark
     state: latest
 
 - name: remove apps
   become: true
   apt:
     name:
-    - geary
+      - geary
     state: absent
 
 # todo do pip install ansible-base>=2.9,<2.10
@@ -64,7 +62,7 @@
     pkg_name: tor
     pkg_repository: ppa:micahflee/ppa
     pkg_packages:
-    - torbrowser-launcher
+      - torbrowser-launcher
 
 - name: install mongodb
   import_tasks: generic.yaml
@@ -73,7 +71,7 @@
     pkg_gpg_key: https://www.mongodb.org/static/pgp/server-4.2.asc
     pkg_repository: deb [arch=amd64,arm64] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse
     pkg_packages:
-    - mongodb-org
+      - mongodb-org
 
 - name: install postgresql
   import_tasks: generic.yaml
@@ -82,7 +80,7 @@
     pkg_gpg_key: https://www.postgresql.org/media/keys/ACCC4CF8.asc
     pkg_repository: "deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release | lower }}-pgdg main"
     pkg_packages:
-    - postgresql
+      - postgresql
 
 - name: install kubectl
   import_tasks: generic.yaml
@@ -91,7 +89,7 @@
     pkg_gpg_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     pkg_repository: deb https://apt.kubernetes.io/ kubernetes-xenial main
     pkg_packages:
-    - kubectl
+      - kubectl
 
 - name: install vscode
   import_tasks: generic.yaml
@@ -101,14 +99,14 @@
     pkg_repository: deb [arch=amd64] http://packages.microsoft.com/repos/vscode stable main
     pkg_repository_name: vscode
     pkg_dependencies:
-    - ca-certificates
-    - apt-transport-https
-    - gconf2
-    - libasound2
-    - libgtk2.0-0
-    - libxss1
+      - ca-certificates
+      - apt-transport-https
+      - gconf2
+      - libasound2
+      - libgtk2.0-0
+      - libxss1
     pkg_packages:
-    - code
+      - code
 
 - name: install erlang & elixir
   import_tasks: generic.yaml
@@ -116,22 +114,22 @@
     pkg_name: elixir & erlang
     pkg_deb: https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb
     pkg_dependencies:
-    - esl-erlang
+      - esl-erlang
     pkg_packages:
-    - elixir
+      - elixir
 
 - name: install java
   import_tasks: generic.yaml
   vars:
     pkg_name: java
     pkg_packages:
-    - default-jdk
-    - default-jre
-    - openjdk-8-jdk
-    - openjdk-8-jre
-    - openjdk-11-jre
-    - openjdk-11-jdk
- 
+      - default-jdk
+      - default-jre
+      - openjdk-8-jdk
+      - openjdk-8-jre
+      - openjdk-11-jre
+      - openjdk-11-jdk
+
 - name: install gcloud sdk
   import_tasks: generic.yaml
   vars:
@@ -139,4 +137,4 @@
     pkg_gpg_key: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     pkg_repository: deb http://packages.cloud.google.com/apt cloud-sdk main
     pkg_packages:
-    - google-cloud-sdk
+      - google-cloud-sdk

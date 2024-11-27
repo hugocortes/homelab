@@ -1,5 +1,3 @@
----
-
 - name: restart ssh | force lookup ipa user id
   command: "id {{ global.ipa.user }}"
   when: is_freeipa_client
@@ -20,8 +18,8 @@
   include_tasks: ../roles/global/tasks/ipa.yaml # include required to read vars
   when: is_freeipa_client
   listen:
-  - enable fail2ban
-  - restart fail2ban
+    - enable fail2ban
+    - restart fail2ban
 
 - name: enable fail2ban
   service:

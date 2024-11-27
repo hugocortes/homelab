@@ -1,5 +1,3 @@
----
-
 - name: configure terminal for multiple users
   include_tasks: multiple_users.yaml
   with_items: "{{ ansible_users }}"

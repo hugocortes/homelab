@@ -1,5 +1,3 @@
----
-
 - name: reboot
   reboot:
     reboot_timeout: 30
@@ -9,11 +7,11 @@
 - name: swap ansible_user to ipa.user
   include_tasks: "{{ item }}"
   with_first_found:
-  - files:
-    - ipa.yaml
-    paths:
-    - ./
-    - ../roles/global/tasks/
+    - files:
+        - ipa.yaml
+      paths:
+        - ./
+        - ../roles/global/tasks/
 
 - name: wait for reboot
   wait_for_connection:

@@ -1,21 +1,19 @@
----
-
 # require manual configuration!
 # lightdm
 - name: install dependencies
   become: true
   apt:
     name:
-    - xfce4
-    - xfce4-goodies
-    - xorg
-    - dbus-x11
-    - x11-xserver-utils
+      - xfce4
+      - xfce4-goodies
+      - xorg
+      - dbus-x11
+      - x11-xserver-utils
     state: present
 
 - name: install packages
   become: true
   apt:
     name:
-    - xrdp
+      - xrdp
     state: present

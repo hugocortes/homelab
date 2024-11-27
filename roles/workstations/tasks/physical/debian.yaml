@@ -1,11 +1,9 @@
----
-
 - name: install apps in existing repo
   become: true
   apt:
     name:
-    - slack-desktop
-    - thunderbird
+      - slack-desktop
+      - thunderbird
     state: latest
 
 - name: install duck
@@ -16,7 +14,7 @@
     pkg_gpg_keyserver: keyserver.ubuntu.com
     pkg_repository: deb https://s3.amazonaws.com/repo.deb.cyberduck.io stable main
     pkg_packages:
-    - duck
+      - duck
 
 # example deb url
 # https://dl.cloudsmith.io/public/balena/etcher/config.deb.txt?distro=ubuntu&codename=xenial&version=20.10&arch=amd64
@@ -28,7 +26,7 @@
     pkg_repository_name: etcher
     pkg_repository: deb https://dl.cloudsmith.io/public/balena/etcher/deb/ubuntu xenial main
     pkg_packages:
-    - balena-etcher-electron
+      - balena-etcher-electron
 
 - name: install weechat
   import_tasks: ../debian/generic.yaml
@@ -37,15 +35,15 @@
     pkg_gpg_id: 11E9DE8848F2B65222AA75B8D1820DB22A11534E
     pkg_gpg_keyserver: keys.openpgp.org
     pkg_dependencies:
-    - dirmngr
-    - gnupg-agent
-    - apt-transport-https
+      - dirmngr
+      - gnupg-agent
+      - apt-transport-https
     pkg_packages:
-    - screen
-    - weechat-curses
-    - weechat-plugins
-    - weechat-python
-    - weechat-perl
+      - screen
+      - weechat-curses
+      - weechat-plugins
+      - weechat-python
+      - weechat-perl
 
 - name: install yq
   import_tasks: ../debian/generic.yaml
@@ -55,7 +53,7 @@
     pkg_gpg_keyserver: keyserver.ubuntu.com
     pkg_repository: deb http://ppa.launchpad.net/rmescandon/yq/ubuntu focal main
     pkg_packages:
-    - yq
+      - yq
 
 - name: install spotify
   flatpak:

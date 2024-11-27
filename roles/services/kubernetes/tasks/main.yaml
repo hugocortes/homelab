@@ -1,5 +1,3 @@
----
-
 - name: centos | disable firewalld
   import_tasks: firewalld.yaml
   when: is_centos
@@ -15,8 +13,8 @@
   become: true
   dnf:
     name:
-    - iscsi-initiator-utils
-    - nfs-utils
+      - iscsi-initiator-utils
+      - nfs-utils
     state: latest
   when: is_centos
 

@@ -1,5 +1,3 @@
----
-
 - name: centos | install packages
   import_tasks: centos.yaml
   when: is_centos
@@ -42,5 +40,5 @@
     role: "{{ database_user }}"
     type: "{{ item }}"
   with_items:
-  - table
-  - sequence
+    - table
+    - sequence

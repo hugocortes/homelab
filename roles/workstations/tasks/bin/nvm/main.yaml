@@ -1,5 +1,3 @@
----
-
 - name: nvm | get latest version
   uri:
     url: https://api.github.com/repos/nvm-sh/nvm/releases/latest

@@ -1,5 +1,3 @@
----
-
 - name: rust | download install script
   get_url:
     url: https://sh.rustup.rs

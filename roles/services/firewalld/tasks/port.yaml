@@ -1,4 +1,8 @@
----
+- name: enable firewalld
+  service:
+    name: firewalld
+    enabled: yes
+    state: started
 
 - name: "{{ name }} | enable firewalld port (permanant)"
   firewalld:

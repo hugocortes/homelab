@@ -1,5 +1,3 @@
----
-
 - name: insomnia | set facts
   set_fact:
     plugin_path: "{{ ansible_env['HOME'] }}/.config/Insomnia/plugins"
@@ -12,7 +10,7 @@
     pkg_repository_name: insomnia
     pkg_repository: deb [trusted=yes arch=amd64] https://download.konghq.com/insomnia-ubuntu/ default all
     pkg_packages:
-    - insomnia
+      - insomnia
 
 - name: insomnia | create plugin dir
   file:
@@ -22,4 +20,4 @@
 - name: insomnia | install plugins
   include_tasks: plugins.yaml
   with_items:
-  - insomnia-plugin-accesstoken
+    - insomnia-plugin-accesstoken

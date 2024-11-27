@@ -1,5 +1,3 @@
----
-
 - name: ensure default config is set
   ipaconfig:
     ipaadmin_password: "{{ ipaadmin_password }}"
@@ -35,8 +33,8 @@
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: super user
     sudocmd:
-    - /usr/bin/su
-    - /usr/bin/sudo
+      - /usr/bin/su
+      - /usr/bin/sudo
     action: member
 
 - name: add `admins` sudo rule
@@ -44,9 +42,9 @@
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: admins
     options:
-    - "!authenticate"
+      - "!authenticate"
     group:
-    - admins
+      - admins
     hostcategory: "all"
     cmdcategory: "all"
     runasusercategory: "all"
@@ -59,7 +57,7 @@
     name: admins
     description: allow admins to access any host from any host
     group:
-    - admins
+      - admins
     hostcategory: "all"
     servicecategory: "all"
 
@@ -91,10 +89,10 @@
     description: "{{ item.name }} authorized users"
     gidnumber: "{{ item.gid }}"
   with_items:
-  - name: posixadminsso
-    gid: 10003
-  - name: posixsso
-    gid: 10004
+    - name: posixadminsso
+      gid: 10003
+    - name: posixsso
+      gid: 10004
 
 - name: create nonposix authorization groups
   ipagroup:
@@ -103,9 +101,9 @@
     description: "{{ item }} authorized users"
     nonposix: yes
   with_items:
-  # pfsense config: https://gist.github.com/lucasgrelaud/092f296600a5b41ee36c314cb0205c0a
-  - adminsso
-  - sso
+    # pfsense config: https://gist.github.com/lucasgrelaud/092f296600a5b41ee36c314cb0205c0a
+    - adminsso
+    - sso
 
 - name: create `adminusers` group
   ipagroup:
@@ -126,21 +124,21 @@
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: "{{ item }}"
     group:
-    - users
+      - users
   with_items:
-  - sso
-  - posixsso
+    - sso
+    - posixsso
 
 - name: add `adminusers` as group member to valid groups
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: "{{ item }}"
     group:
-    - adminusers
+      - adminusers
   with_items:
-  - adminsso
-  - posixadminsso
-  - users
+    - adminsso
+    - posixadminsso
+    - users
 
 - name: add users to `users` group
   ipagroup:
@@ -158,70 +156,70 @@
 
 - name: add keycloak tree group mappings
   block:
-  - name: create tree node groups
-    ipagroup:
-      ipaadmin_password: "{{ ipaadmin_password }}"
-      name: "{{ item.name }}"
-      description: "{{ item.description }}"
-      nonposix: yes
-    with_items:
-    - name: ipa
-      description: /ipa
-    - name: eng
-      description: /ipa/eng
-    - name: dre
-      description: /ipa/eng/dre
-    - name: sre
-      description: /ipa/eng/sre
-    - name: swe
-      description: /ipa/eng/swe
-    - name: media
-      description: /ipa/media
-    - name: ebooks
-      description: /ipa/media/ebooks
-    - name: games
-      description: /ipa/media/games
-    - name: movies
-      description: /ipa/media/movies
-    - name: music
-      description: /ipa/media/music
-    - name: random
-      description: /ipa/media/random
-    - name: tvshows
-      description: /ipa/media/tvshows
+    - name: create tree node groups
+      ipagroup:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        nonposix: yes
+      with_items:
+        - name: ipa
+          description: /ipa
+        - name: eng
+          description: /ipa/eng
+        - name: dre
+          description: /ipa/eng/dre
+        - name: sre
+          description: /ipa/eng/sre
+        - name: swe
+          description: /ipa/eng/swe
+        - name: media
+          description: /ipa/media
+        - name: ebooks
+          description: /ipa/media/ebooks
+        - name: games
+          description: /ipa/media/games
+        - name: movies
+          description: /ipa/media/movies
+        - name: music
+          description: /ipa/media/music
+        - name: random
+          description: /ipa/media/random
+        - name: tvshows
+          description: /ipa/media/tvshows
 
-  - name: assign child nodes to /ipa
-    ipagroup:
-      ipaadmin_password: "{{ ipaadmin_password }}"
-      name: ipa
-      group:
-      - eng
-      - media
+    - name: assign child nodes to /ipa
+      ipagroup:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: ipa
+        group:
+          - eng
+          - media
 
-  - name: assign child nodes to /ipa/eng
-    ipagroup:
-      ipaadmin_password: "{{ ipaadmin_password }}"
-      name: eng
-      group:
-      - dre
-      - sre
-      - swe
+    - name: assign child nodes to /ipa/eng
+      ipagroup:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: eng
+        group:
+          - dre
+          - sre
+          - swe
 
-  - name: assign child nodes to /ipa/media
-    ipagroup:
-      ipaadmin_password: "{{ ipaadmin_password }}"
-      name: media
-      group:
-      - ebooks
-      - games
-      - movies
-      - music
-      - random
-      - tvshows
+    - name: assign child nodes to /ipa/media
+      ipagroup:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: media
+        group:
+          - ebooks
+          - games
+          - movies
+          - music
+          - random
+          - tvshows
 
-  - name: add ipamembers to `ipa` group
-    ipagroup:
-      ipaadmin_password: "{{ ipaadmin_password }}"
-      name: ipa
-      action: member
-      user: "{{ ipaipamembers }}"
+    - name: add ipamembers to `ipa` group
+      ipagroup:
+        ipaadmin_password: "{{ ipaadmin_password }}"
+        name: ipa
+        action: member
+        user: "{{ ipaipamembers }}"

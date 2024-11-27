@@ -1,5 +1,3 @@
----
-
 - name: spin-cli | get latest version
   uri:
     url: https://storage.googleapis.com/spinnaker-artifacts/spin/latest

@@ -13,15 +13,14 @@
     force: true
   ignore_errors: true
 
-- name: pip | update pip3
-  command: pip3 install --upgrade pip
-  when: not is_centos_9
-- name: pip | update pip
-  command: pip install --upgrade pip
-  when: is_centos_9
+- name: python | update pip
+  command: python -m ensurepip --upgrade
+- name: python | install modules
+  command: pip install packaging
 
 # fails for some?
 - name: pip | install setuptools
+  become: false
   pip:
     name:
       - setuptools
@@ -46,18 +45,6 @@
       - pytest
     # - thefuck remove
     extra_args: --user
-
-# see https://jasonralph.org/?p=997
-- name: pip | remove cryptography
-  become: true
-  pip:
-    name: cryptography
-    state: absent
-- name: pip | install cryptography@37.0.4
-  become: false
-  pip:
-    name: cryptography
-    version: "37.0.4"
 
 - name: install neovim
   block:

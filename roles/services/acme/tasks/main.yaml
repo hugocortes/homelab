@@ -1,4 +1,3 @@
----
 - name: copy rootx1 crt
   copy:
     force: yes
@@ -20,6 +19,12 @@
 - name: copy ca
   shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt /etc/ipa/ca.crt
   when: is_freeipa
+
+- name: pip | install cryptography
+  become: false
+  pip:
+    name: cryptography
+    state: latest
 
 - name: create pk12
   openssl_pkcs12:

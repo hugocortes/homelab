@@ -1,5 +1,3 @@
----
-
 - name: set sish docker ports
   set_fact:
     ports: "['{{ global.sish.sshPort }}:{{ global.sish.sshPort }}', '{{ global.sish.forwardingPorts.http }}:{{ global.sish.forwardingPorts.http }}', '{{ global.sish.forwardingPorts.https }}:{{ global.sish.forwardingPorts.https }}']"
@@ -34,9 +32,9 @@
       --domain={{ global.sish.domain }}
       --idle-connection-timeout=600s
     volumes:
-    - "~/sish/ssl:/ssl"
-    - "~/sish/keys:/keys"
-    - "~/sish/pubkeys:/pubkeys"
+      - "~/sish/ssl:/ssl"
+      - "~/sish/keys:/keys"
+      - "~/sish/pubkeys:/pubkeys"
 
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml

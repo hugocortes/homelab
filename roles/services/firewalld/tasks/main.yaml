@@ -1,5 +1,3 @@
----
-
 - name: "{{ name }} - enabling firewalld ports"
   import_tasks: port.yaml
   when: ports is defined

@@ -1,57 +1,55 @@
----
-
 - name: sync firewalld
   block:
-  - name: check if deprecated dmz file exists
-    stat:
-      path: /etc/firewalld/zones/dmz.xml
-    register: dmz
+    - name: check if deprecated dmz file exists
+      stat:
+        path: /etc/firewalld/zones/dmz.xml
+      register: dmz
 
-  - name: remove previous dmz usage
-    file:
-      path: /etc/firewalld/zones/dmz.xml
-      state: absent
-    when: dmz.stat.exists == true
-    notify: enable firewalld
+    - name: remove previous dmz usage
+      file:
+        path: /etc/firewalld/zones/dmz.xml
+        state: absent
+      when: dmz.stat.exists == true
+      notify: enable firewalld
 
-  - name: check if deprecated dmz old file exists
-    stat:
-      path: /etc/firewalld/zones/dmz.xml.old
-    register: dmz_old
+    - name: check if deprecated dmz old file exists
+      stat:
+        path: /etc/firewalld/zones/dmz.xml.old
+      register: dmz_old
 
-  - name: remove previous dmz usage
-    file:
-      path: /etc/firewalld/zones/dmz.xml.old
-      state: absent
-    when: dmz_old.stat.exists == true
-    notify: enable firewalld
+    - name: remove previous dmz usage
+      file:
+        path: /etc/firewalld/zones/dmz.xml.old
+        state: absent
+      when: dmz_old.stat.exists == true
+      notify: enable firewalld
 
-  - name: public zone - set interface
-    firewalld:
-      zone: public
-      permanent: "{{ item }}"
-      state: enabled
-      interface: "{{ ansible_default_ipv4.interface }}"
-    with_items:
-    - no
-    - yes
-    notify: enable firewalld
+    - name: public zone - set interface
+      firewalld:
+        zone: public
+        permanent: "{{ item }}"
+        state: enabled
+        interface: "{{ ansible_default_ipv4.interface }}"
+      with_items:
+        - no
+        - yes
+      notify: enable firewalld
 
-  - name: public zone - allow ssh
-    firewalld:
-      zone: public
-      permanent: "{{ item }}"
-      state: enabled
-      service: ssh
-    with_items:
-    - no
-    - yes
-    notify: enable firewalld
+    - name: public zone - allow ssh
+      firewalld:
+        zone: public
+        permanent: "{{ item }}"
+        state: enabled
+        service: ssh
+      with_items:
+        - no
+        - yes
+      notify: enable firewalld
 
-  - name: public zone - set as default
-    command: firewall-cmd --set-default-zone=public
-    notify: enable firewalld
+    - name: public zone - set as default
+      command: firewall-cmd --set-default-zone=public
+      notify: enable firewalld
 
-  - name: firewalld reload
-    command: firewall-cmd --runtime-to-permanent
+    - name: firewalld reload
+      command: firewall-cmd --runtime-to-permanent
   when: sync

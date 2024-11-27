@@ -1,5 +1,3 @@
----
-
 - name: "{{ name }} | enable firewalld service (permanant)"
   firewalld:
     zone: public

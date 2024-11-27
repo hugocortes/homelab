@@ -1,5 +1,3 @@
----
-
 - name: bloomrpc | get latest version
   uri:
     url: https://api.github.com/repos/uw-labs/bloomrpc/releases/latest

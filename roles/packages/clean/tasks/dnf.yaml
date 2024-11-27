@@ -1,5 +1,3 @@
----
-
 - name: centos8 | dnf clean
   command: dnf clean all
   args:

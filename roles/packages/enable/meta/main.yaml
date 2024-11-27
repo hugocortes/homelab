@@ -1,6 +1,4 @@
----
-
 dependencies:
-- role: packages/clean
-  tags:
-  - never
+  - role: packages/clean
+    tags:
+      - never

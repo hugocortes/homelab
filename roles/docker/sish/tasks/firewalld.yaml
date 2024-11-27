@@ -1,24 +1,22 @@
----
-
 - name: centos | open bastion ports
   include_role:
     name: services/firewalld/tasks
   vars:
     name: bastion
     ports:
-    - name: bastion sish ssh server
-      port: "{{ global.sish.sshPort }}/tcp"
-    - name: bastion sish http
-      port: "{{ global.sish.forwardingPorts.http }}/tcp"
-    - name: bastion sish https
-      port: "{{ global.sish.forwardingPorts.https }}/tcp"
+      - name: bastion sish ssh server
+        port: "{{ global.sish.sshPort }}/tcp"
+      - name: bastion sish http
+        port: "{{ global.sish.forwardingPorts.http }}/tcp"
+      - name: bastion sish https
+        port: "{{ global.sish.forwardingPorts.https }}/tcp"
 
 - name: create tcp port var
   set_fact:
     tcpPorts: "{{ tcpPorts | default([]) +
       [{
-        'name': 'tcp forwarding port',
-        'port': '{{ item }}/tcp'
+      'name': 'tcp forwarding port',
+      'port': '{{ item }}/tcp'
       }] }}"
   with_items: "{{ global.sish.forwardingPorts.tcp }}"
 

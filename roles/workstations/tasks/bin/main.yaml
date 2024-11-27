@@ -1,5 +1,3 @@
----
-
 - name: faas-cli | configure
   import_tasks: faas-cli/main.yaml
 
@@ -29,6 +27,6 @@
 
 - name: rust | configure
   import_tasks: rust/main.yaml
-  
+
 - name: spin-cli | configure
   import_tasks: spin-cli/main.yaml

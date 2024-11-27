@@ -1,10 +1,8 @@
----
-
 - name: centos | install rdp packages
   dnf:
     name:
-    - tigervnc-server
-    - xrdp
+      - tigervnc-server
+      - xrdp
     state: latest
 
 - name: centos | open rdp ports
@@ -13,5 +11,5 @@
   vars:
     name: rdp
     ports:
-    - name: xrdp
-      port: 3389/tcp
+      - name: xrdp
+        port: 3389/tcp

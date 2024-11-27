@@ -1,5 +1,3 @@
----
-
 - name: reset ansible_user
   import_tasks: ipa.yaml
   listen: reset ansible_user

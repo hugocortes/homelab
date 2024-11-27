@@ -1,5 +1,3 @@
----
-
 - name: insomnia | check if plugin exists
   stat:
     path: "{{ plugin_path }}/{{ item }}"

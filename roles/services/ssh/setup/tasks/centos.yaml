@@ -1,9 +1,13 @@
----
+- name: add fail2ban
+  become: false
+  pip:
+    name: fail2ban
+    state: latest
 
 - name: centos | install fail2ban packages
   dnf:
     name:
-    - fail2ban
-    - fail2ban-systemd
+      - fail2ban
+      - fail2ban-systemd
     state: latest
   notify: enable fail2ban

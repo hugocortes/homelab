@@ -1,5 +1,3 @@
----
-
 kubelet_custom_flags:
   - --v=1
 
@@ -21,7 +19,6 @@ calico_pool_blocksize: 24
 calico_ipip_mode: Always
 calico_vxlan_mode: Never
 calico_network_backend: bird
-
 # look into migratiing:
 # see https://github.com/kubernetes-sigs/kubespray/issues/8691
 # calico_ipip_mode: Never

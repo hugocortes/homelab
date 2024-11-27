@@ -1,5 +1,3 @@
----
-
 - name: install ledger
   import_tasks: ledger/main.yaml
 

@@ -1,16 +1,14 @@
----
-
 - name: centos | install collectd
   dnf:
     name:
-    - collectd
+      - collectd
     state: present
   when: is_centos
 
 - name: debian | install collectd
   apt:
     name:
-    - collectd
+      - collectd
     state: present
   when: is_debian
 
@@ -25,18 +23,18 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-  - regexp: FQDNLookup\s
-    line: FQDNLookup true
-  - regexp: Hostname\s
-    line: Hostname "{{ inventory_hostname }}"
-  - regexp: TypesDB\s
-    line: TypesDB "/usr/share/collectd/types.db"
-  - regexp: ^[#]?BaseDir\s
-    line: BaseDir "/var/lib/collectd"
-  - regexp: ^[#]?PluginDir\s
-    line: "{{ 'PluginDir \"/usr/lib/collectd/\"' if is_debian else 'PluginDir \"/usr/lib64/collectd\"' }}"
-  - regexp: ^[#]?Interval\s
-    line: Interval 60
+    - regexp: FQDNLookup\s
+      line: FQDNLookup true
+    - regexp: Hostname\s
+      line: Hostname "{{ inventory_hostname }}"
+    - regexp: TypesDB\s
+      line: TypesDB "/usr/share/collectd/types.db"
+    - regexp: ^[#]?BaseDir\s
+      line: BaseDir "/var/lib/collectd"
+    - regexp: ^[#]?PluginDir\s
+      line: '{{ ''PluginDir "/usr/lib/collectd/"'' if is_debian else ''PluginDir "/usr/lib64/collectd"'' }}'
+    - regexp: ^[#]?Interval\s
+      line: Interval 60
 
 - name: load plugins
   lineinfile:
@@ -46,12 +44,12 @@
     insertafter: ^TypesDB\s
     state: present
   with_items:
-  - regexp: ^LoadPlugin network$
-    line: LoadPlugin network
-  - regexp: ^LoadPlugin df$
-    line: LoadPlugin df
-  - regexp: ^LoadPlugin fhcount$
-    line: LoadPlugin fhcount
+    - regexp: ^LoadPlugin network$
+      line: LoadPlugin network
+    - regexp: ^LoadPlugin df$
+      line: LoadPlugin df
+    - regexp: ^LoadPlugin fhcount$
+      line: LoadPlugin fhcount
 
 - name: configure network plugin with influxdb
   blockinfile:

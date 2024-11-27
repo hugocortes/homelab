@@ -1,0 +1,58 @@
+- name: create service dirs
+  file:
+    group: nobody
+    mode: "0777"
+    owner: nobody
+    path: "{{ item.path }}"
+    state: directory
+  with_items:
+    - path: /opt/pomerium
+    - path: /opt/keycloak
+
+- name: start pomerium container
+  become: true
+  docker_container:
+    image: pomerium/pomerium:{{ global.version.pomerium }}
+    name: pomerium
+    ports:
+      - 8080:8080
+    restart_policy: always
+    volumes:
+      - /opt/pomerium/config.yaml:/pomerium/config.yaml:ro
+
+- name: start keycloak container
+  become: true
+  docker_container:
+    command: start --db=postgres --hostname-strict=false --proxy-headers=xforwarded
+    # entrypoint:
+    #   - /bin/bash
+    #   - -c
+    #   - /opt/keycloak/bin/kc.sh build
+    #   - /opt/keycloak/bin/kc.sh start --optimized --hostname-strict=false
+    env:
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+
+      KC_PROXY: edge # sets http enabled and proxy address forwarding
+      KC_HTTP_ENABLED: "true"
+
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_PORT: "5432"
+      KC_DB_URL_DATABASE: "{{ global.postgresql.keycloak.database }}"
+      KC_DB_SCHEMA: public
+      KC_DB_USERNAME: "{{ global.postgresql.keycloak.username }}"
+      KC_DB_PASSWORD: "{{ global.postgresql.keycloak.password }}"
+
+      X509_CA_BUNDLE: /etc/x509/https/ipa-0.homelabops.dev.intermediate.crt /etc/x509/https/ipa-0.homelabops.dev.root.crt
+    image: quay.io/keycloak/keycloak:{{ global.version.keycloak }}
+    name: keycloak
+    networks:
+      - name: postgres
+    ports:
+      - 7080:8080
+    restart_policy: always
+    volumes:
+      - /opt/keycloak/secrets:/secrets/auth
+      - /opt/keycloak/startup:/opt/jboss/startup-scripts
+      - /opt/keycloak/x509:/etc/x509/https

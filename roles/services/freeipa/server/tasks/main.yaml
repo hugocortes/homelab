@@ -1,5 +1,3 @@
----
-
 - name: centos | open firewalld ports
   import_tasks: firewalld.yaml
   when: is_centos

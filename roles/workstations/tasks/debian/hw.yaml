@@ -1,19 +1,17 @@
----
-
 - name: configure keyboard
   block:
-  - name: remap capslock to escape
-    shell: gsettings set org.gnome.desktop.input-sources xkb-options "['caps:escape']"
+    - name: remap capslock to escape
+      shell: gsettings set org.gnome.desktop.input-sources xkb-options "['caps:escape']"
 
-  - name: disable emoji picker
-    shell: gsettings set org.freedesktop.ibus.panel.emoji hotkey "@as []"
+    - name: disable emoji picker
+      shell: gsettings set org.freedesktop.ibus.panel.emoji hotkey "@as []"
 
 - name: configure settings
   block:
-  - name: gnome autosave session
-    dconf:
-      key: /org/gnome/gnome-session/auto-save-session
-      value: "'true'"
+    - name: gnome autosave session
+      dconf:
+        key: /org/gnome/gnome-session/auto-save-session
+        value: "'true'"
 
 - name: pip install dependencies
   become: false
@@ -48,26 +46,26 @@
 
 - name: install and configure vlc
   block:
-  - name: install vlc
-    become: true
-    apt:
-      name:
-      - vlc    
-      state: latest
+    - name: install vlc
+      become: true
+      apt:
+        name:
+          - vlc
+        state: latest
 
-  - name: set vlc as default video player
-    become: true
-    replace:
-      path: /usr/share/applications/defaults.list
-      regexp: org\.gnome\.Totem\.desktop$
-      replace: vlc.desktop
+    - name: set vlc as default video player
+      become: true
+      replace:
+        path: /usr/share/applications/defaults.list
+        regexp: org\.gnome\.Totem\.desktop$
+        replace: vlc.desktop
 
-  - name: set vlc as only option in mime cache
-    become: true
-    replace:
-      path: /usr/share/applications/mimeinfo.cache
-      regexp: org\.gnome\.Totem\.desktop;(vlc\.desktop;)?$
-      replace: vlc.desktop;
+    - name: set vlc as only option in mime cache
+      become: true
+      replace:
+        path: /usr/share/applications/mimeinfo.cache
+        regexp: org\.gnome\.Totem\.desktop;(vlc\.desktop;)?$
+        replace: vlc.desktop;
 
 - name: check if sound output extension exists
   stat:
@@ -76,16 +74,16 @@
 
 - name: install sound output extension
   block:
-  - name: download sound output extension
-    git:
-      repo: https://github.com/kgshank/gse-sound-output-device-chooser.git
-      dest: /tmp/gse-sound-output-device-chooser
+    - name: download sound output extension
+      git:
+        repo: https://github.com/kgshank/gse-sound-output-device-chooser.git
+        dest: /tmp/gse-sound-output-device-chooser
 
-  - name: move extension to gnome shell
-    command: |
-      mv \
-      /tmp/gse-sound-output-device-chooser/sound-output-device-chooser@kgshank.net \
-      {{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/sound-output-device-chooser@kgshank.net
+    - name: move extension to gnome shell
+      command: |
+        mv \
+        /tmp/gse-sound-output-device-chooser/sound-output-device-chooser@kgshank.net \
+        {{ ansible_env['HOME'] }}/.local/share/gnome-shell/extensions/sound-output-device-chooser@kgshank.net
   when: not sound_output.stat.exists
 
 - name: enable sound output extension

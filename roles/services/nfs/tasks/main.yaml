@@ -1,5 +1,3 @@
----
-
 - name: centos | install packages
   import_tasks: centos.yaml
   when: is_centos
@@ -9,7 +7,7 @@
     path: "{{ item.client }}"
     state: directory
   with_items:
-  - "{{ global.nfs_mount_paths }}"
+    - "{{ global.nfs_mount_paths }}"
 
 - name: auto mount nfs share
   lineinfile:
@@ -19,7 +17,7 @@
     state: present
     insertbefore: "exit 0"
   with_items:
-  - "{{ global.nfs_mount_paths }}"
+    - "{{ global.nfs_mount_paths }}"
   register: fstab
 
 - name: reboot
