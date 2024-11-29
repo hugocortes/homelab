@@ -16,6 +16,7 @@
 - name: python | update pip
   command: python -m ensurepip --upgrade
 - name: python | install modules
+  become: false
   command: pip install packaging
 
 # fails for some?
@@ -43,7 +44,6 @@
       - PGPy
       # - pyOpenSSL investigate this.., fails on rpi
       - pytest
-    # - thefuck remove
     extra_args: --user
 
 - name: install neovim

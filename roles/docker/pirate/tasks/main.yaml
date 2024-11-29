@@ -51,7 +51,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/jackett:0.21.424
+    image: linuxserver/jackett:{{ global.version.jackett }}
     name: jackett
     ports:
       - 9117:9117
@@ -65,7 +65,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/transmission:4.0.3
+    image: linuxserver/transmission:{{ global.version.transmission }}
     name: transmission
     ports:
       - 9091:9091
@@ -81,7 +81,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/sabnzbd:4.0.2
+    image: linuxserver/sabnzbd:{{ global.version.sabnzbd }}
     name: sabnzbd
     ports:
       - 8080:8080
@@ -95,7 +95,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/radarr:4.6.4
+    image: linuxserver/radarr:{{ global.version.radarr }}
     name: radarr
     ports:
       - 7878:7878
@@ -110,7 +110,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/sonarr:3.0.10
+    image: linuxserver/sonarr:{{ global.version.sonarr }}
     name: sonarr
     ports:
       - 8989:8989
@@ -125,7 +125,7 @@
 #   docker_container:
 #     env:
 #       TZ: America/Los_Angeles
-#     image: linuxserver/readarr:0.2.2-nightly
+#     image: linuxserver/readarr:{{ global.version.readarr }}
 #     name: readarr
 #     ports:
 #       - 8787:8787
@@ -140,7 +140,7 @@
   docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/calibre:6.28.0
+    image: linuxserver/calibre:{{ global.version.calibre }}
     name: calibre-server
     ports:
       - 6060:8080

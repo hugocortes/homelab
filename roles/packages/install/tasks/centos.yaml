@@ -49,34 +49,13 @@
       - zsh
     state: latest
 
-- name: centos8 | install dnf packages
+- name: centos | install dnf packages
   become: true
   dnf:
     name:
       - util-linux-user
     state: latest
   when: is_centos
-
-- name: centos | install pip packages
-  block:
-    - name: centos | install pip
-      become: true
-      dnf:
-        name:
-          - python3-pip
-        state: latest
-
-    - name: centos | create pip3 symlink
-      become: true
-      file:
-        src: "/usr/bin/pip3.6"
-        dest: "{{ item }}"
-        state: link
-        force: yes
-      with_items:
-        - /usr/bin/pip3
-        - /usr/bin/pip
-      when: is_centos_8
 
 - name: centos | cleanup
   block:

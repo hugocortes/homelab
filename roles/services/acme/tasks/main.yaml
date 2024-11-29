@@ -20,8 +20,9 @@
   shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt /etc/ipa/ca.crt
   when: is_freeipa
 
+# needs to be root for openssl location
 - name: pip | install cryptography
-  become: false
+  become: true
   pip:
     name: cryptography
     state: latest

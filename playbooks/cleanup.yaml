@@ -1,0 +1,75 @@
+# /root/.docker/config.json
+# rm above
+
+- name: set facts and ssh user
+  hosts: all
+  become: false
+  gather_facts: false
+  ignore_errors: true
+  ignore_unreachable: true
+  roles:
+    - global
+  tags: always
+
+- name: random cleanup
+  hosts: all
+  tasks:
+    - name: centos | install dnf and python
+      become: true
+      dnf:
+        name:
+          - dnf
+          - python3.9
+          - python3-dnf
+          - python3-pip
+          - python3
+        state: latest
+
+    - name: centos | create python3 symlink
+      become: true
+      file:
+        src: "/usr/bin/python3.9"
+        dest: "/usr/bin/python3"
+        state: link
+        force: yes
+        follow: yes
+    - name: centos | create python symlink
+      become: true
+      file:
+        src: "/usr/bin/python3"
+        dest: "/usr/bin/python"
+        state: link
+        force: yes
+        follow: yes
+
+    - name: python | install pip
+      command: python -m ensurepip --upgrade
+
+    - name: python | install modules
+      become: false
+      command: pip install packaging
+
+    - name: remove thefuck from non root
+      become: false
+      pip:
+        name: theuck
+        state: absent
+      ignore_errors: true
+
+    - name: centos | remove dnf packages
+      become: true
+      dnf:
+        name:
+          - python312
+          # - python36
+          - subscription-manager
+        state: absent
+
+- name: add cryptography only to root acme servers
+  hosts: acme
+  tasks:
+    - name: add cryptography to root
+      become: false
+      pip:
+        name: cryptography
+        state: latest

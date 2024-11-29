@@ -12,8 +12,8 @@
   hosts: acme
   tags: acme
   vars:
-    - letsencrypt_production: yes
-    - include_intermediate: no
+    letsencrypt_production: yes
+    include_intermediate: no
   tasks:
     - include_role:
         name: ansible-letsencrypt-cloudflare
