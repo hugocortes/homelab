@@ -25,16 +25,16 @@
   roles:
     - terminal
 
-- name: configure servers group
-  hosts: servers
-  become: true
-  vars:
-    sync: false # resets all configuration before re-applying
-  tags: server
-  roles:
-    - services/ssh/setup
-    - name: services/collectd
-      tags: collectd
+# - name: configure servers group
+#   hosts: servers
+#   become: true
+#   vars:
+#     sync: false # resets all configuration before re-applying
+#   tags: server
+#   roles:
+#     - services/ssh/setup
+#     - name: services/collectd
+#       tags: collectd
 
 - name: configure docker group
   hosts: docker
