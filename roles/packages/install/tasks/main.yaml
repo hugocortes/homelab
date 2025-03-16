@@ -52,7 +52,8 @@
       become: false
       get_url:
         # new fix to remove glibc requirement
-        url: https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
+        url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.appimage
+
         dest: /tmp/nvim.appimage
         mode: +x
         force: true
