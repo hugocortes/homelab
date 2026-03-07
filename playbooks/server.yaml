@@ -100,3 +100,10 @@
   tags: pirate
   roles:
     - docker/pirate
+
+- name: configure ops
+  hosts: ops
+  become: true
+  tags: ops
+  roles:
+    - docker/ops

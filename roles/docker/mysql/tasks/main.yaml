@@ -17,7 +17,7 @@
   docker_container:
     env:
       MYSQL_ROOT_PASSWORD: "{{ global.mysql.password }}"
-    image: mysql:8.2.0
+    image: mysql:8.4.8
     name: mysql
     networks:
       - name: mysql

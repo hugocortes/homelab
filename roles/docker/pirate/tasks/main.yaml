@@ -24,6 +24,7 @@
     state: directory
     mode: "0777"
   with_items:
+    - path: /opt/flaresolverr
     - path: /opt/jackett
     - path: /opt/readarr
     - path: /opt/radarr
@@ -31,6 +32,17 @@
     - path: /opt/sonarr
     - path: /opt/transmission
     - path: /opt/calibre-server
+
+- name: start flaresolverr container
+  become: true
+  docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: ghcr.io/flaresolverr/flaresolverr:{{ global.version.flaresolverr }}
+    name: flaresolverr
+    ports:
+      - 8191:8191
+    restart_policy: always
 
 - name: create /opt/jackett/config dir
   file:

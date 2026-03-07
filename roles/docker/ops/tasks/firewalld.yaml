@@ -1,0 +1,50 @@
+- name: centos | open grafana services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: grafana
+    ports:
+      - name: grafana
+        port: 3000/tcp
+
+- name: centos | open prometheus services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: prometheus
+    ports:
+      - name: prometheus
+        port: 9090/tcp
+
+- name: centos | open speedtest services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: speedtest
+    ports:
+      - name: speedtest
+        port: 9469/tcp
+
+- name: centos | open influxdb services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: influxdb
+    ports:
+      - name: http
+        port: 8086/tcp
+      - name: collectd
+        port: 25826/udp
+      - name: collectd
+        port: 8089/udp
+
+- name: centos | open powerwall services
+  include_role:
+    name: services/firewalld
+  vars:
+    name: powerwall
+    ports:
+      - name: pypowerwall
+        port: 8675/tcp
+      - name: weather411
+        port: 8676/tcp
