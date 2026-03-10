@@ -1,8 +1,0 @@
-- name: centos | open guacamole services
-  include_role:
-    name: services/firewalld/tasks
-  vars:
-    name: guacamole
-    services:
-      - name: guacamole http
-        service: http

@@ -1,3 +1,0 @@
-- name: clean centos dnf
-  import_tasks: dnf.yaml
-  when: is_centos
