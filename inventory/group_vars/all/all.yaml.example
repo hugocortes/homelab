@@ -22,6 +22,30 @@ global:
     password: ""
     email: ""
 
+  grafana:
+    oidc_client_secret: ""
+    smtp_password: ""
+
+  gramps:
+    smtp_password: ""
+    oidc_client_secret: ""
+
+  miniflux:
+    admin_password: ""
+    oidc_client_secret: ""
+
+  postgresql:
+    username: ""
+    password: ""
+    gramps:
+      database: ""
+      password: ""
+      username: ""
+    miniflux:
+      database: ""
+      password: ""
+      username: ""
+
   media:
     nfs:
       plex: ""

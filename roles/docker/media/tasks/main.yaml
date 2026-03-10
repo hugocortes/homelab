@@ -76,7 +76,7 @@
       GRAMPSWEB_EMAIL_HOST: smtp.zoho.com
       GRAMPSWEB_EMAIL_PORT: "465"
       GRAMPSWEB_EMAIL_HOST_USER: no-reply@homelabops.dev
-      GRAMPSWEB_EMAIL_HOST_PASSWORD: "{{ global.gramps.email_password }}"
+      GRAMPSWEB_EMAIL_HOST_PASSWORD: "{{ global.gramps.smtp_password }}"
       GRAMPSWEB_EMAIL_USE_SSL: "False"
       GRAMPSWEB_EMAIL_USE_STARTTLS: "False"
       GRAMPSWEB_DEFAULT_FROM_EMAIL: no-reply@corteshq.net

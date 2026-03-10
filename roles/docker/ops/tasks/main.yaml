@@ -1,0 +1,179 @@
+- name: create nfs volumes
+  become: true
+  docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ global.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+  with_items:
+    - name: grafana
+      mount: "{{ global.server.nfs.grafana }}"
+    - name: influxdb
+      mount: "{{ global.server.nfs.influxdb }}"
+    - name: influxdb_config
+      mount: "{{ global.server.nfs.influxdb_config }}"
+    - name: influxdb_startup
+      mount: "{{ global.server.nfs.influxdb_startup }}"
+    - name: prometheus
+      mount: "{{ global.server.nfs.prometheus }}"
+    - name: prometheus_config
+      mount: "{{ global.server.nfs.prometheus_config }}"
+
+- name: create grafana network
+  become: true
+  docker_network:
+    name: grafana
+- name: create influxdb network
+  become: true
+  docker_network:
+    name: powerwall
+
+- name: start grafana-image-renderer
+  become: true
+  docker_container:
+    env:
+      HTTP_HOST: "0.0.0.0"
+      RENDERING_ARGS: --no-sandbox,--disable-gpu,--window-size=1280x758
+    image: grafana/grafana-image-renderer:3.7.1
+    name: grafana-image-renderer
+    networks:
+      - name: grafana
+    ports:
+      - 8081:8081
+    restart_policy: always
+
+- name: start grafana container
+  become: true
+  docker_container:
+    env:
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "true"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
+      GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: "true"
+      GF_AUTH_GENERIC_OAUTH_CLIENT_ID: grafana
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "{{ global.grafana.oidc_client_secret }}"
+      GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://auth.homelabops.dev/realms/master/protocol/openid-connect/auth
+      GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://auth.homelabops.dev/realms/master/protocol/openid-connect/token
+      GF_AUTH_GENERIC_OAUTH_API_URL: https://auth.homelabops.dev/realms/master/protocol/openid-connect/userinfo
+      GF_AUTH_GENERIC_OAUTH_SCOPES: openid profile email
+      GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: contains(roles[*], 'Admin') && 'Admin' || contains(roles[*], 'Editor') && 'Editor' || 'Viewer'
+      GF_FEATURE_TOGGLES_ENABLE: tempoSearch tempoBackendSearch tempoApmTable traceqlEditor traceToMetrics
+      GF_GRAFANA_NET_URL: https://grafana.net
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,savantly-heatmap-panel,grafana-worldmap-panel,grafana-image-renderer,redis-datasource,fetzerch-sunandmoon-datasource,yesoreyeram-boomtable-panel
+      GF_LOG_MODEL: console
+      GF_RENDERING_SERVER_URL: http://grafana-image-renderer:8081/render
+      GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+      GF_SERVER_DOMAIN: grafana.homelabops.dev
+      GF_SERVER_ROOT_URL: https://grafana.homelabops.dev
+      GF_SMTP_ENABLED: "true"
+      GF_SMTP_HOST: smtp.zoho.com:587
+      GF_SMTP_FROM_ADDRESS: no-reply@homelabops.dev
+      GF_SMTP_FROM_NAME: Grafana
+      GF_SMTP_USER: no-reply@homelabops.dev
+      GF_SMTP_PASSWORD: "{{ global.grafana.smtp_password }}"
+    image: grafana/grafana:10.0.1
+    name: grafana
+    networks:
+      - name: grafana
+    ports:
+      - 3000:3000
+    restart_policy: always
+    volumes:
+      - grafana:/var/lib/grafana
+
+- name: start influxdb
+  become: true
+  docker_container:
+    env:
+      INFLUXDB_ADMIN_USER: "{{ global.influxdb.username }}"
+      INFLUXDB_ADMIN_PASSWORD: "{{ global.influxdb.password }}"
+    image: influxdb:1.7.11
+    name: influxdb
+    networks:
+      - name: powerwall
+    ports:
+      - 8086:8086
+      - 25826:25826 # udp, collectd
+      - 8089:8089 # proxmox
+    restart_policy: always
+    volumes:
+      - influxdb:/var/lib/influxdb
+      - influxdb_config:/etc/influxdb
+      - influxdb_startup:/docker-entrypoint-initdb.d
+
+- name: start prometheus
+  become: true
+  docker_container:
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-lifecycle
+      - --web.enable-admin-api
+      - --web.enable-remote-write-receiver
+      - --storage.tsdb.retention.size=15GB
+    image: prom/prometheus:v2.45.0
+    name: prometheus
+    ports:
+      - 9090:9090
+    restart_policy: always
+    volumes:
+      - prometheus_config:/etc/prometheus
+      - prometheus:/prometheus
+
+- name: start pypowerwall
+  become: true
+  docker_container:
+    env_file: /opt/powerwall/pypowerwall.env
+    image: jasonacox/pypowerwall:0.14.10t88
+    name: pypowerwall
+    networks:
+      - name: powerwall
+    ports:
+      - 8675:8675
+    restart_policy: always
+
+- name: start speedtest
+  become: true
+  docker_container:
+    image: billimek/prometheus-speedtest-exporter:latest
+    name: speedtest
+    ports:
+      - 9469:9469
+    restart_policy: always
+
+- name: start weather411
+  become: true
+  docker_container:
+    env:
+      WEATHERCONF: /var/lib/weather/weather411.conf
+    image: jasonacox/weather411:0.2.3
+    name: weather411
+    networks:
+      - name: powerwall
+    ports:
+      - 8676:8676
+    restart_policy: always
+    volumes:
+      - /opt/powerwall/weather411.conf:/var/lib/weather/weather411.conf
+
+- name: start telegraf
+  become: true
+  docker_container:
+    command:
+      - telegraf
+      - --config
+      - /etc/telegraf/telegraf.conf
+      - --config-directory
+      - /etc/telegraf/telegraf.d
+    image: telegraf:1.26.1
+    name: telegraf
+    networks:
+      - name: powerwall
+    restart_policy: always
+    volumes:
+      - /opt/powerwall/telegraf.conf:/etc/telegraf/telegraf.conf
+      - /opt/powerwall/telegraf.local:/etc/telegraf/telegraf.d/local.conf
+
+- name: centos | open firewalld ports
+  import_tasks: firewalld.yaml
+  when: is_centos
