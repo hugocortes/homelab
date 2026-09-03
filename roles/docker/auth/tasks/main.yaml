@@ -52,7 +52,7 @@
       KC_DB_USERNAME: "{{ global.postgresql.keycloak.username }}"
       KC_DB_PASSWORD: "{{ global.postgresql.keycloak.password }}"
 
-      X509_CA_BUNDLE: /etc/x509/https/ipa-0.homelabops.dev.intermediate.crt /etc/x509/https/ipa-0.homelabops.dev.root.crt
+      X509_CA_BUNDLE: /etc/x509/https/ipa-0.homelabops.dev.intermediate.crt /etc/x509/https/ipa-0.homelabops.dev.intermediate-2.crt /etc/x509/https/ipa-0.homelabops.dev.root.crt
     image: quay.io/keycloak/keycloak:{{ global.version.keycloak }}
     name: keycloak
     networks:

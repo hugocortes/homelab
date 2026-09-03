@@ -1,8 +1,14 @@
-- name: copy rootx1 crt
+- name: copy root crt
   copy:
     force: yes
-    src: "rootx1.crt"
+    src: "root.crt"
     dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt
+
+- name: copy intermediate-2 crt
+  copy:
+    force: yes
+    src: "intermediate-2.crt"
+    dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt
 
 - name: copy intermediate crt
   copy:
@@ -14,10 +20,10 @@
   command: touch /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
 
 - name: concatenate full chain
-  shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt > /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
+  shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt > /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
 
 - name: copy ca
-  shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt /etc/ipa/ca.crt
+  shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt /etc/ipa/ca.crt
   when: is_freeipa
 
 # needs to be root for openssl location
@@ -36,6 +42,7 @@
     certificate_path: "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt"
     other_certificates:
       - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt"
+      - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt"
       - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt"
     state: present
     passphrase: password
