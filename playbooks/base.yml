@@ -26,6 +26,15 @@
         # upgrade off the tag actually requested rather than hardcoding it.
         packages_upgrade_all: "{{ 'update' in ansible_run_tags }}"
 
+- name: configure sssd on freeipa-joined hosts
+  hosts: all
+  become: false
+  gather_facts: false
+  tags: sssd
+  roles:
+    - role: services/sssd
+      when: is_freeipa | default(false) | bool
+
 - name: host maintenance
   hosts: all
   become: false

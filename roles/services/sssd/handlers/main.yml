@@ -1,0 +1,7 @@
+---
+- name: restart sssd
+  become: true
+  service:
+    name: sssd
+    state: restarted
+  listen: restart sssd

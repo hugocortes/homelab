@@ -1,0 +1,28 @@
+---
+# A conf.d drop-in rather than editing /etc/sssd/sssd.conf, which is generated
+# by ipa-client-install and would be overwritten by a re-enrolment.
+- name: sssd | ensure conf.d exists
+  become: true
+  file:
+    path: /etc/sssd/conf.d
+    state: directory
+    owner: "{{ sssd_conf_owner }}"
+    group: "{{ sssd_conf_group }}"
+    mode: "0711"
+
+- name: sssd | restrict lookups to ipv4
+  become: true
+  copy:
+    dest: /etc/sssd/conf.d/10-lookup-family-order.conf
+    owner: "{{ sssd_conf_owner }}"
+    group: "{{ sssd_conf_group }}"
+    mode: "{{ sssd_conf_mode }}"
+    content: |
+      # Managed by Ansible -- roles/services/sssd (AI-63)
+      #
+      # Without this, an AAAA NODATA response makes sssd consider the server
+      # unresolvable and take the domain offline ~50x/day. See the role
+      # defaults for the log excerpt.
+      [domain/{{ sssd_domain }}]
+      lookup_family_order = {{ sssd_lookup_family_order }}
+  notify: restart sssd
