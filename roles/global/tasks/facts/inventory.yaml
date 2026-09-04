@@ -6,7 +6,6 @@
     is_freeipa_server: "{{ 'ipaservers' in group_names }}"
     is_freeipa_replica: "{{ 'ipareplicas' in group_names }}"
     is_freeipa_client: "{{ 'ipaclients' in group_names }}"
-    is_kubernetes: "{{ 'kubernetes' in group_names }}"
     is_server: "{{ 'servers' in group_names }}"
 
 - name: set is_freeipa fact

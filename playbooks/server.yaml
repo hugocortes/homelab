@@ -42,26 +42,7 @@
   tags: docker
   roles:
     - name: services/docker
-      when: not is_kubernetes
     - name: docker/metrics
-      when: not is_kubernetes
-
-- name: configure kubernetes group
-  hosts: kubernetes
-  become: true
-  tags: kubernetes
-  roles:
-    - name: services/kubernetes
-      vars:
-        create_mnt_dirs: no
-        dirs: []
-
-- name: configure kubernetes partitions
-  hosts: kube_node
-  become: true
-  tags: kubernetes-partition
-  roles:
-    - name: services/partition
 
 - name: configure bastion
   hosts: bastion

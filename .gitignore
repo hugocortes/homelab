@@ -6,11 +6,9 @@ inventory/*.ini
 !inventory/*.example.ini
 
 inventory/group_vars/all/all.yaml
-inventory/group_vars/all/kubespray.yml
 
 inventory/group_vars/**/*yml*
 !inventory/group_vars/**/*.example
-!inventory/group_vars/k8s_cluster/*.yml
 
 inventory/host_vars/**/*yaml*
 !inventory/host_vars/host/*.example
