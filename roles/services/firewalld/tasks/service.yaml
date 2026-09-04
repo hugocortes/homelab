@@ -1,17 +1,20 @@
-- name: "{{ name }} | enable firewalld service (permanant)"
+---
+- name: "{{ firewalld_rule_name }} | enable firewalld service (permanent)"
+  become: true
   firewalld:
-    zone: public
+    zone: "{{ firewalld_zone }}"
     state: "{{ item.state | default('enabled') }}"
     service: "{{ item.service }}"
-    permanent: yes
-  with_items: "{{ services }}"
+    permanent: true
+  loop: "{{ firewalld_services }}"
   notify: enable firewalld
 
-- name: "{{ name }} | enable firewalld service (not permanant)"
+- name: "{{ firewalld_rule_name }} | enable firewalld service (runtime)"
+  become: true
   firewalld:
-    zone: public
+    zone: "{{ firewalld_zone }}"
     state: "{{ item.state | default('enabled') }}"
     service: "{{ item.service }}"
-    permanent: no
-  with_items: "{{ services }}"
+    permanent: false
+  loop: "{{ firewalld_services }}"
   notify: enable firewalld

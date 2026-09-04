@@ -2,8 +2,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: calibre
-    ports:
+    firewalld_rule_name: calibre
+    firewalld_ports:
       - name: calibre
         port: 8083/tcp
 
@@ -11,8 +11,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: gramps
-    ports:
+    firewalld_rule_name: gramps
+    firewalld_ports:
       - name: gramps
         port: 5000/tcp
 
@@ -20,8 +20,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: miniflux
-    ports:
+    firewalld_rule_name: miniflux
+    firewalld_ports:
       - name: miniflux
         port: 8080/tcp
 
@@ -29,8 +29,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: ombi
-    ports:
+    firewalld_rule_name: ombi
+    firewalld_ports:
       - name: ombi
         port: 3579/tcp
 
@@ -38,8 +38,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: plex
-    ports:
+    firewalld_rule_name: plex
+    firewalld_ports:
       - name: plex
         port: 32400/tcp
 
@@ -47,7 +47,7 @@
   include_role:
     name: services/firewalld
   vars:
-    name: tautulli
-    ports:
+    firewalld_rule_name: tautulli
+    firewalld_ports:
       - name: tautulli
         port: 8181/tcp

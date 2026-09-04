@@ -1,9 +1,9 @@
 - name: centos | open bastion ports
   include_role:
-    name: services/firewalld/tasks
+    name: services/firewalld
   vars:
-    name: bastion
-    ports:
+    firewalld_rule_name: bastion
+    firewalld_ports:
       - name: bastion sish ssh server
         port: "{{ global.sish.sshPort }}/tcp"
       - name: bastion sish http
@@ -22,7 +22,7 @@
 
 - name: centos | open bastion ports
   include_role:
-    name: services/firewalld/tasks
+    name: services/firewalld
   vars:
-    name: bastion
-    ports: "{{ tcpPorts }}"
+    firewalld_rule_name: bastion
+    firewalld_ports: "{{ tcpPorts }}"

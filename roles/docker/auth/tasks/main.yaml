@@ -64,3 +64,7 @@
       - /opt/keycloak/providers:/opt/keycloak/providers
       - /opt/keycloak/secrets:/secrets/auth
       - /opt/keycloak/x509:/etc/x509/https
+
+- name: centos | open firewalld ports
+  import_tasks: firewalld.yaml
+  when: is_centos

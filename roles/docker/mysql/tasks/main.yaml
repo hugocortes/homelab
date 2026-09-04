@@ -44,3 +44,7 @@
     ports:
       - 9104:9104
     restart_policy: always
+
+- name: centos | open firewalld ports
+  import_tasks: firewalld.yaml
+  when: is_centos

@@ -1,9 +1,9 @@
 - name: centos | open freeipa server services
   include_role:
-    name: services/firewalld/tasks
+    name: services/firewalld
   vars:
-    name: freeipa
-    services:
+    firewalld_rule_name: freeipa
+    firewalld_services:
       - name: freeipa http
         service: http
       - name: freeipa https

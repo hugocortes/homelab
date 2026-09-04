@@ -1,22 +1,23 @@
-- name: enable firewalld
-  service:
-    name: firewalld
-    enabled: yes
-    state: started
-
-- name: "{{ name }} | enable firewalld port (permanant)"
+---
+# Applied to both configurations: permanent so it survives a reload, runtime so
+# it takes effect now. The old role notified the handler only from the runtime
+# task while service.yaml notified from both; normalised here.
+- name: "{{ firewalld_rule_name }} | enable firewalld port (permanent)"
+  become: true
   firewalld:
-    zone: public
+    zone: "{{ firewalld_zone }}"
     state: "{{ item.state | default('enabled') }}"
     port: "{{ item.port }}"
-    permanent: yes
-  with_items: "{{ ports }}"
+    permanent: true
+  loop: "{{ firewalld_ports }}"
+  notify: enable firewalld
 
-- name: "{{ name }} | enable firewalld port (not permanant)"
+- name: "{{ firewalld_rule_name }} | enable firewalld port (runtime)"
+  become: true
   firewalld:
-    zone: public
+    zone: "{{ firewalld_zone }}"
     state: "{{ item.state | default('enabled') }}"
     port: "{{ item.port }}"
-    permanent: no
-  with_items: "{{ ports }}"
+    permanent: false
+  loop: "{{ firewalld_ports }}"
   notify: enable firewalld

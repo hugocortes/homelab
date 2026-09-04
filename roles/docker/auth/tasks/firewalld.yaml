@@ -2,8 +2,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: pomerium
-    ports:
+    firewalld_rule_name: pomerium
+    firewalld_ports:
     - name: pomerium
       port: 8080/tcp
 
@@ -11,7 +11,7 @@
   include_role:
     name: services/firewalld
   vars:
-    name: keycloak
-    ports:
+    firewalld_rule_name: keycloak
+    firewalld_ports:
     - name: keycloak
       port: 7080/tcp

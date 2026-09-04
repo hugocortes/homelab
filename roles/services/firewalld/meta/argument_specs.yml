@@ -1,0 +1,33 @@
+---
+argument_specs:
+  main:
+    short_description: Open firewalld ports and services in a zone
+    description:
+      - Applies each rule to both the runtime and permanent configurations.
+      - >-
+        Parameters are prefixed firewalld_* deliberately. The role previously
+        took `name`, `ports` and `services`; `name` is a reserved Ansible
+        variable and warned at every call site (AI-31).
+    options:
+      firewalld_rule_name:
+        type: str
+        required: true
+        description: Label used in task names so output is readable.
+      firewalld_ports:
+        type: list
+        elements: dict
+        default: []
+        description: "Ports to manage, e.g. { name: plex, port: 32400/tcp }."
+      firewalld_services:
+        type: list
+        elements: dict
+        default: []
+        description: "Named services to manage, e.g. { name: web, service: http }."
+      firewalld_zone:
+        type: str
+        default: public
+        description: firewalld zone to apply the rules to.
+      firewalld_manage_package:
+        type: bool
+        default: false
+        description: Install and enable firewalld when it is not present.

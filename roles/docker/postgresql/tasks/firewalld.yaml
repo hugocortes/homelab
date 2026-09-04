@@ -1,8 +1,8 @@
 - name: centos | open postgresql services
   include_role:
-    name: services/firewalld/tasks
+    name: services/firewalld
   vars:
-    name: postgresql
-    ports:
+    firewalld_rule_name: postgresql
+    firewalld_ports:
     - name: postgresql monitoring
       port: 9187/tcp

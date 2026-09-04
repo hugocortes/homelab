@@ -1,0 +1,27 @@
+---
+- name: firewalld | install package
+  become: true
+  package:
+    name: firewalld
+    state: present
+  register: _firewalld_package
+
+- name: firewalld | enable and start
+  become: true
+  service:
+    name: firewalld
+    enabled: true
+    state: started
+
+# Docker writes its rules into the nat and FORWARD chains, which firewalld
+# flushes when it starts for the first time -- published container ports stop
+# answering until the daemon re-inserts them. Gated on the package having just
+# been installed so this does not bounce docker on every converge.
+- name: firewalld | restart docker so it re-inserts its chains
+  become: true
+  service:
+    name: docker
+    state: restarted
+  when:
+    - _firewalld_package is changed
+    - is_docker | default(false) | bool

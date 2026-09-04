@@ -2,8 +2,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: grafana
-    ports:
+    firewalld_rule_name: grafana
+    firewalld_ports:
       - name: grafana
         port: 3000/tcp
 
@@ -11,8 +11,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: prometheus
-    ports:
+    firewalld_rule_name: prometheus
+    firewalld_ports:
       - name: prometheus
         port: 9090/tcp
 
@@ -20,8 +20,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: speedtest
-    ports:
+    firewalld_rule_name: speedtest
+    firewalld_ports:
       - name: speedtest
         port: 9469/tcp
 
@@ -29,8 +29,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: influxdb
-    ports:
+    firewalld_rule_name: influxdb
+    firewalld_ports:
       - name: http
         port: 8086/tcp
       - name: collectd
@@ -42,8 +42,8 @@
   include_role:
     name: services/firewalld
   vars:
-    name: powerwall
-    ports:
+    firewalld_rule_name: powerwall
+    firewalld_ports:
       - name: pypowerwall
         port: 8675/tcp
       - name: weather411

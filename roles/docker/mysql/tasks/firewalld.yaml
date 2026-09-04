@@ -1,8 +1,8 @@
 - name: centos | open mysql services
   include_role:
-    name: services/firewalld/tasks
+    name: services/firewalld
   vars:
-    name: mysql
-    ports:
+    firewalld_rule_name: mysql
+    firewalld_ports:
     - name: mysql monitoring
       port: 9104/tcp
