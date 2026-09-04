@@ -1,0 +1,28 @@
+---
+# The root cause of the multi-GB logs: /etc/logrotate.d rules are present and
+# correct, but the timer that invokes them is disabled, so nothing has rotated
+# since 2024 (some entries in logrotate.status date to 2021).
+- name: logrotate | install
+  become: true
+  package:
+    name: logrotate
+    state: present
+
+- name: logrotate | enable and start the timer
+  become: true
+  systemd:
+    name: logrotate.timer
+    enabled: true
+    state: started
+
+- name: logrotate | report timer state
+  become: true
+  command: systemctl is-active logrotate.timer
+  register: _logrotate_timer
+  changed_when: false
+  check_mode: false
+  failed_when: false
+
+- name: logrotate | show state
+  debug:
+    msg: "{{ inventory_hostname }}: logrotate.timer is {{ _logrotate_timer.stdout | default('unknown') }}"

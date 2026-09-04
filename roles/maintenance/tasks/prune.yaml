@@ -1,0 +1,90 @@
+---
+# Everything here is opt-in via `--tags prune` (the role tags this file
+# `never`, so it is skipped unless the tag is asked for explicitly).
+
+- name: prune | measure disk before
+  become: true
+  shell: |
+    set -o pipefail
+    df -h / | awk 'NR==2 {print $3" used, "$4" avail ("$5")"}'
+  args:
+    executable: /bin/bash
+  register: _disk_before
+  changed_when: false
+  check_mode: false
+
+# --- logs ----------------------------------------------------------------
+- name: prune | force a rotation now instead of waiting for the timer
+  become: true
+  command: logrotate --force /etc/logrotate.conf
+  register: _logrotate_run
+  changed_when: _logrotate_run.rc == 0
+  failed_when: _logrotate_run.rc not in [0, 1]
+  when: maintenance_force_logrotate | bool
+
+- name: prune | find orphaned rotations from the old dateext scheme
+  become: true
+  find:
+    paths: /var/log
+    recurse: true
+    patterns:
+      - "*.log-*"
+      - "*.log.[0-9]*"
+    age: "{{ maintenance_orphan_log_age_days }}d"
+    size: 1m
+  register: _orphan_logs
+  when: maintenance_remove_orphan_logs | bool
+
+- name: prune | remove orphaned rotations
+  become: true
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ _orphan_logs.files | default([]) }}"
+  loop_control:
+    label: "{{ item.path }} ({{ (item.size / 1048576) | round(1) }} MB)"
+  when: maintenance_remove_orphan_logs | bool
+
+# --- docker --------------------------------------------------------------
+- name: prune | remove unused docker images
+  become: true
+  docker_prune:
+    images: true
+    images_filters:
+      # false means "not only dangling" -- i.e. every image no container uses,
+      # which is where the bulk of the reclaimable space is
+      dangling: false
+      until: "{{ maintenance_docker_prune_until }}"
+  register: _docker_prune
+  when:
+    - maintenance_prune_docker | bool
+    - is_docker | default(false) | bool
+
+- name: prune | report docker reclaim
+  debug:
+    msg: >-
+      {{ inventory_hostname }}: reclaimed
+      {{ ((_docker_prune.images_space_reclaimed | default(0)) / 1073741824) | round(2) }} GB
+      from {{ _docker_prune.images | default([]) | length }} images
+  when:
+    - maintenance_prune_docker | bool
+    - is_docker | default(false) | bool
+
+# --- result --------------------------------------------------------------
+- name: prune | measure disk after
+  become: true
+  shell: |
+    set -o pipefail
+    df -h / | awk 'NR==2 {print $3" used, "$4" avail ("$5")"}'
+  args:
+    executable: /bin/bash
+  register: _disk_after
+  changed_when: false
+  check_mode: false
+
+- name: prune | before and after
+  debug:
+    msg: >-
+      {{ inventory_hostname }}:
+      before [{{ _disk_before.stdout }}] ->
+      after [{{ _disk_after.stdout }}]

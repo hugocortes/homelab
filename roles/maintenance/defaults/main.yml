@@ -1,0 +1,31 @@
+---
+# --- convergence (safe, runs by default) --------------------------------
+# logrotate.timer is disabled on every host, which is why nothing has rotated
+# since 2024. Enabling it is the actual fix.
+maintenance_manage_logrotate: true
+
+# The journal is small today (8-12 MB) but uncapped. Cheap insurance.
+maintenance_manage_journald: true
+maintenance_journal_max_use: 500M
+
+# --- reclaim (opt-in) ----------------------------------------------------
+# Keyed off the requested tag, the same way packages_upgrade_all is. The
+# `never` tag is NOT sufficient on its own: a task carrying `never` still runs
+# if any of its other tags match, and these inherit `maintenance` and `update`
+# from the play. Override with -e maintenance_prune=true if needed.
+maintenance_prune: "{{ 'prune' in ansible_run_tags }}"
+
+# Force a rotation now rather than waiting for the timer's next daily run.
+maintenance_force_logrotate: "{{ maintenance_prune }}"
+
+# Remove unused docker images. Not just dangling ones -- every bump of
+# global.version leaves a full previous image behind. `until` keeps anything
+# recent so a rollback still has its image locally.
+maintenance_prune_docker: "{{ maintenance_prune }}"
+maintenance_docker_prune_until: 168h
+
+# Orphaned rotations from an older dateext scheme (e.g. krb5_child.log-20210530
+# from 2021). The current logrotate config tracks its own files and will never
+# clean these up.
+maintenance_remove_orphan_logs: "{{ maintenance_prune }}"
+maintenance_orphan_log_age_days: 30

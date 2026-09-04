@@ -26,6 +26,16 @@
         # upgrade off the tag actually requested rather than hardcoding it.
         packages_upgrade_all: "{{ 'update' in ansible_run_tags }}"
 
+- name: host maintenance
+  hosts: all
+  become: false
+  gather_facts: false
+  tags:
+    - maintenance
+    - update
+  roles:
+    - maintenance
+
 - name: baseline host firewall
   hosts: all
   become: false
