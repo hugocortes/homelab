@@ -1,0 +1,12 @@
+---
+# Keycloak / Pomerium and their postgres backend.
+- import_playbook: bootstrap.yml
+
+- name: configure auth
+  hosts: auth
+  become: true
+  gather_facts: false
+  tags: auth
+  roles:
+    - docker/postgresql
+    - docker/auth

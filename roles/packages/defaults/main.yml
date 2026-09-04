@@ -1,0 +1,25 @@
+---
+# Baseline package set is installed with state=present so a normal run is
+# idempotent. Upgrading is a separate, explicit decision.
+#
+# The old split roles both used state=latest on every package, which made
+# "install" and "update" the same operation and neither of them idempotent.
+packages_upgrade_all: false
+
+# Reboot when the OS reports one is needed to finish applying updates.
+# Only fires when `needs-restarting -r` says so, never speculatively.
+packages_reboot_if_required: true
+packages_reboot_timeout: 600
+packages_post_reboot_delay: 15
+
+# pip packages installed per user, with --user
+packages_pip:
+  - argparse-manpage
+  - dnspython
+  - docker
+  - libs
+  - neovim
+  - PGPy
+  - pytest
+
+packages_neovim_url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.appimage

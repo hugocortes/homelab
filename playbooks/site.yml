@@ -1,0 +1,10 @@
+---
+# Everything, in dependency order. Individual playbooks are runnable on their
+# own; each imports bootstrap.yml so the required facts always exist.
+- import_playbook: base.yml
+- import_playbook: docker.yml
+- import_playbook: auth.yml
+- import_playbook: media.yml
+- import_playbook: pirate.yml
+- import_playbook: ops.yml
+- import_playbook: bastion.yml

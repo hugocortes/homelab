@@ -1,5 +1,40 @@
-- name: installing packages for user {{ item.user }}
-  debug:
+---
+# oh-my-zsh is owned by this role, not by `packages`. It is a shell framework
+# and the dotfiles below depend on it already being present.
+- name: check if oh-my-zsh is installed
+  become: "{{ item.become }}"
+  become_user: "{{ item.user }}"
+  stat:
+    path: "{{ item.home }}/.oh-my-zsh"
+  register: ohmyzsh
+
+- name: install oh-my-zsh
+  become: "{{ item.become }}"
+  become_user: "{{ item.user }}"
+  when: not ohmyzsh.stat.exists
+  block:
+    - name: download oh-my-zsh install script
+      get_url:
+        url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+        dest: "/tmp/ohmyzsh-install-{{ item.user }}.sh"
+        mode: "0755"
+
+    - name: run oh-my-zsh install script
+      command: "/bin/sh /tmp/ohmyzsh-install-{{ item.user }}.sh"
+      args:
+        creates: "{{ item.home }}/.oh-my-zsh"
+
+- name: update oh-my-zsh
+  become: "{{ item.become }}"
+  become_user: "{{ item.user }}"
+  git:
+    repo: https://github.com/ohmyzsh/ohmyzsh.git
+    dest: "{{ item.home }}/.oh-my-zsh"
+    version: master
+    update: true
+  when:
+    - ohmyzsh.stat.exists
+    - terminal_upgrade | bool
 
 - name: configure vim
   become: "{{ item.become }}"

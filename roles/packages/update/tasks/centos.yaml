@@ -1,4 +1,0 @@
-- name: centos | update dnf packages
-  dnf:
-    name: "*"
-    state: latest

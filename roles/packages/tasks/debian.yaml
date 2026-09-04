@@ -1,0 +1,30 @@
+---
+- name: debian | update apt cache
+  become: true
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: debian | install baseline packages
+  become: true
+  apt:
+    name:
+      - curl
+      - git
+      - nfs-common
+      - python3
+      - python3-pip
+      - sshpass
+      - tar
+      - tmux
+      - tree # display directory tree
+      - vim
+      - zsh
+    state: present
+
+- name: debian | upgrade every package on the host
+  become: true
+  apt:
+    upgrade: dist
+    update_cache: true
+  when: packages_upgrade_all | bool

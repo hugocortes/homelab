@@ -1,0 +1,82 @@
+---
+- name: centos | install python and kernel headers
+  become: true
+  dnf:
+    name:
+      - dnf
+      - kernel-devel
+      - kernel-headers
+      - kernel-modules-extra
+      - linux-firmware
+      # TODO(AI-30): python3.9 is hardcoded and does not exist on el10.
+      # The two symlink tasks below force /usr/bin/python3 at it, which would
+      # break dnf and ansible if it ever resolved. Carried over unchanged so
+      # this restructure stays behaviour-preserving; fix under AI-30.
+      - python3.9
+      - python3-dnf
+      - python3-pip
+      - python3
+    state: present
+
+- name: centos | create python3 symlink
+  become: true
+  file:
+    src: /usr/bin/python3.9
+    dest: /usr/bin/python3
+    state: link
+    force: true
+    follow: true
+
+- name: centos | create python symlink
+  become: true
+  file:
+    src: /usr/bin/python3
+    dest: /usr/bin/python
+    state: link
+    force: true
+    follow: true
+
+- name: centos | install epel-release
+  become: true
+  dnf:
+    name: epel-release
+    state: present
+
+- name: centos | install baseline packages
+  become: true
+  dnf:
+    name:
+      - curl
+      - git
+      - glibc-common
+      - nfs-utils
+      - python3-libselinux
+      - sshpass
+      - tar
+      - tmux
+      - tree # display directory tree
+      - util-linux-user
+      - vim
+      - zsh
+    state: present
+
+- name: centos | remove packages we do not want
+  become: true
+  dnf:
+    name:
+      - collectd-rrdtool
+      - subscription-manager
+    state: absent
+
+- name: centos | remove leftover collectd rrd data
+  become: true
+  file:
+    path: /var/lib/collectd/rrd
+    state: absent
+
+- name: centos | upgrade every package on the host
+  become: true
+  dnf:
+    name: "*"
+    state: latest
+  when: packages_upgrade_all | bool

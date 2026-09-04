@@ -1,0 +1,23 @@
+---
+# SSH bastion with Duo and sish. No bastion host is currently defined in the
+# inventory, so this playbook matches no hosts.
+- import_playbook: bootstrap.yml
+
+- name: configure bastion
+  hosts: bastion
+  become: true
+  gather_facts: false
+  tags: bastion
+  pre_tasks:
+    - name: require bastion and duo settings
+      fail:
+        msg: bastion host and duo settings required
+      when: >-
+        global.bastion is undefined or not global.bastion.host
+        or not global.bastion.duo or not global.bastion.duo.ikey
+        or not global.bastion.duo.skey or not global.bastion.duo.host
+  roles:
+    - services/duo
+    - services/ssh/bastion
+    - role: docker/sish
+      tags: docker/sish

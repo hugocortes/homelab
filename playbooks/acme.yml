@@ -1,0 +1,19 @@
+---
+# Let's Encrypt certificates via the Cloudflare DNS challenge.
+- import_playbook: bootstrap.yml
+
+- name: configure acme certs
+  hosts: acme
+  gather_facts: false
+  tags: acme
+  vars:
+    letsencrypt_production: true
+    include_intermediate: false
+  tasks:
+    - name: obtain certificates
+      include_role:
+        name: ansible-letsencrypt-cloudflare
+
+    - name: install certificates
+      include_role:
+        name: services/acme

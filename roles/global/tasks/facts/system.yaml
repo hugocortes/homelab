@@ -7,9 +7,11 @@
 - name: set ansible_become_home
   block:
     - name: get directory
-      shell: "getent passwd {{ ansible_become_user }}  | awk -F: '{ print $6 }'"
+      shell: "getent passwd {{ ansible_become_user }} | awk -F: '{ print $6 }'"
       register: home
-      ignore_errors: yes
+      changed_when: false
+      check_mode: false
+      ignore_errors: true
 
     - name: set fact
       set_fact:
@@ -18,8 +20,10 @@
 - name: set ansible_user_home
   block:
     - name: get directory
-      shell: "getent passwd {{ ansible_user }}  | awk -F: '{ print $6 }'"
+      shell: "getent passwd {{ ansible_user }} | awk -F: '{ print $6 }'"
       register: home
+      changed_when: false
+      check_mode: false
 
     - name: set fact
       set_fact:

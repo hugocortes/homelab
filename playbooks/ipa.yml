@@ -1,0 +1,66 @@
+---
+# FreeIPA server, replicas and client enrolment.
+#
+# NOTE(AI-24): the plays below target `ipaservers` / `ipareplicas` (plural,
+# the ansible-freeipa convention) but the inventory group is `ipaserver`
+# (singular), so they currently match no hosts and do nothing. Renaming the
+# group makes them live against a working FreeIPA server -- see AI-24 before
+# relying on any of this.
+#
+# Baseline packages are no longer installed here; that is playbooks/base.yml.
+- import_playbook: bootstrap.yml
+
+- name: configure freeipa server/replica
+  hosts: ipaservers,ipareplicas
+  become: true
+  gather_facts: false
+  tags: freeipa
+  tasks:
+    - name: set hostname
+      hostname:
+        name: "{{ ansible_host }}"
+
+    - name: configure freeipa server
+      include_role:
+        name: services/freeipa/server
+
+- name: install freeipa server
+  hosts: ipaservers
+  become: true
+  gather_facts: false
+  tags: freeipa-server
+  tasks:
+    - name: run the ipaserver role
+      include_role:
+        name: ipaserver
+
+# Manually append the ISRG Root X1 Let's Encrypt cert and re-run
+# ipa-certupdate if using Let's Encrypt:
+# https://yyhh.org/blog/2021/01/fix-freeipa-httpd-lets-encrypt-certificate-update/
+- name: install freeipa replica
+  hosts: ipareplicas
+  become: true
+  gather_facts: false
+  tags: freeipa-replicas
+  tasks:
+    - name: run the ipareplica role
+      include_role:
+        name: ipareplica
+
+# Disable anonymous binds:
+# https://stomp.colorado.edu/blog/blog/2011/12/19/on-increasing-the-security-of-a-freeipa-server/
+#   sudo service ipa stop
+#   sudo vi /etc/dirsrv/slapd-DOMAIN-COM/dse.ldif
+#   set nsslapd-allow-anonymous-access from `on` to `rootdse`
+#   sudo service ipa start
+- name: configure freeipa server post-install
+  hosts: ipaservers,ipareplicas
+  become: true
+  gather_facts: false
+  tags: freeipa-configure
+  roles:
+    - services/freeipa/server/configure
+
+- name: register freeipa clients
+  import_playbook: ../ansible-freeipa/playbooks/install-client.yml
+  tags: freeipa-client
