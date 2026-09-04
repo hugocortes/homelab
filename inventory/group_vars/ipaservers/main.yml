@@ -5,3 +5,31 @@ ipaserver_dirsrv_pin: "{{ vault_ipaserver_dirsrv_pin }}"
 ipaserver_http_pin: "{{ vault_ipaserver_http_pin }}"
 ipaserver_pkinit_pin: "{{ vault_ipaserver_pkinit_pin }}"
 ipaserver_no_pkinit: yes
+
+# FreeIPA's required ingress. Previously declared inside
+# roles/services/freeipa/server, a role whose entire body was a firewalld
+# call -- and which never ran, because the group was named `ipaserver`
+# (AI-22, AI-24). Host port lists are inventory data, so it lives here now.
+#
+# Matches FreeIPA's documented requirements: 80, 443, 389, 636, 88, 464.
+# Deliberately NOT opened, though ipa-0 currently listens on both:
+#   111  rpcbind -- an nfs-utils artifact; ipa-0 serves no NFS
+#   749  kadmind admin protocol -- not required by clients, which use
+#        kpasswd (464) for password changes and the API over 443
+# `ntp` is also omitted: nothing listens on 123 (FreeIPA uses chrony as a
+# client). Add it here if ipa-0 is ever made a time server.
+firewalld_baseline_services:
+  - name: ssh
+    service: ssh
+  - name: freeipa http
+    service: http
+  - name: freeipa https
+    service: https
+  - name: freeipa ldap
+    service: ldap
+  - name: freeipa ldaps
+    service: ldaps
+  - name: freeipa kerberos
+    service: kerberos
+  - name: freeipa kpasswd
+    service: kpasswd

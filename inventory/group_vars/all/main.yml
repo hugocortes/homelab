@@ -142,3 +142,14 @@ global:
           - openid
           - email
           - profile
+
+# Baseline host firewall, applied by playbooks/base.yml. Each host declares the
+# ingress it genuinely needs; per-service ports are added on top by the docker
+# roles. Overridden per group -- see group_vars/ipaservers/main.yml.
+#
+# `ssh` is also in firewalld's stock public zone, but declaring it here means
+# the baseline is self-describing rather than relying on a distro default.
+firewalld_baseline_services:
+  - name: ssh
+    service: ssh
+firewalld_baseline_ports: []

@@ -2,7 +2,11 @@
 - name: firewalld | install package
   become: true
   package:
-    name: firewalld
+    name:
+      - firewalld
+      # the ansible firewalld module imports this python binding; it arrives as
+      # a dependency of firewalld, but naming it makes the requirement explicit
+      - python3-firewall
     state: present
   register: _firewalld_package
 
@@ -12,6 +16,10 @@
     name: firewalld
     enabled: true
     state: started
+  # In check mode the package above was not really installed, so the unit does
+  # not exist yet and starting it would fail spuriously. Skip it there and let
+  # --check report the install instead of a false error.
+  when: _firewalld_binary.stat.exists or not ansible_check_mode
 
 # Docker writes its rules into the nat and FORWARD chains, which firewalld
 # flushes when it starts for the first time -- published container ports stop

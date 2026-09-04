@@ -26,6 +26,23 @@
         # upgrade off the tag actually requested rather than hardcoding it.
         packages_upgrade_all: "{{ 'update' in ansible_run_tags }}"
 
+- name: baseline host firewall
+  hosts: all
+  become: false
+  gather_facts: false
+  tags: firewall
+  roles:
+    # firewalld_manage_package is true only here. This is the one place that
+    # applies a host's COMPLETE required ingress, so it is the only place where
+    # installing and starting firewalld is safe -- starting it elsewhere would
+    # apply the stock public zone and cut off everything not yet declared.
+    - role: services/firewalld
+      vars:
+        firewalld_rule_name: baseline
+        firewalld_manage_package: true
+        firewalld_services: "{{ firewalld_baseline_services }}"
+        firewalld_ports: "{{ firewalld_baseline_ports }}"
+
 - name: configure terminal
   hosts: all
   become: false

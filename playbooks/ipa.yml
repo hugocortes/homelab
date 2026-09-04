@@ -26,6 +26,8 @@
 # access is denied fleet-wide. Verify with `ipa hbacrule-find` first.
 - import_playbook: bootstrap.yml
 
+# FreeIPA's firewall rules are now inventory data in
+# group_vars/ipaservers/main.yml, applied by playbooks/base.yml --tags firewall.
 - name: converge freeipa server/replica host settings
   hosts: ipaservers,ipareplicas
   become: true
@@ -35,10 +37,6 @@
     - name: set hostname
       hostname:
         name: "{{ ansible_host }}"
-
-    - name: open freeipa firewall ports
-      include_role:
-        name: services/freeipa/server
 
 - name: install freeipa server
   hosts: ipaservers

@@ -10,25 +10,33 @@
   import_tasks: install.yaml
   when: firewalld_manage_package | bool
 
-- name: firewalld | skip rules because firewalld is absent
+# In check mode the package was never really installed, so neither the unit nor
+# the python3-firewall binding the module needs exist yet. Applying rules would
+# fail spuriously and mask real problems, so --check reports the install and
+# stops there.
+- name: firewalld | decide whether rules can be applied
+  set_fact:
+    _firewalld_usable: >-
+      {{ _firewalld_binary.stat.exists
+         or (firewalld_manage_package | bool and not ansible_check_mode) }}
+
+- name: firewalld | explain why rules are being skipped
   debug:
     msg: >-
-      firewalld is not installed on {{ inventory_hostname }} and
-      firewalld_manage_package is false, so the
-      "{{ firewalld_rule_name }}" rules were NOT applied. Enabling firewalld
-      here needs its complete rule set in the same change -- see AI-23.
-  when:
-    - not _firewalld_binary.stat.exists
-    - not (firewalld_manage_package | bool)
+      {{ inventory_hostname }}: not applying "{{ firewalld_rule_name }}" rules --
+      {{ 'firewalld would be installed by this run; re-run without --check to apply'
+         if (firewalld_manage_package | bool)
+         else 'firewalld is absent and firewalld_manage_package is false (see AI-23)' }}
+  when: not (_firewalld_usable | bool)
 
 - name: "{{ firewalld_rule_name }} | open ports"
   import_tasks: port.yaml
   when:
     - firewalld_ports | length > 0
-    - _firewalld_binary.stat.exists or (firewalld_manage_package | bool)
+    - _firewalld_usable | bool
 
 - name: "{{ firewalld_rule_name }} | open services"
   import_tasks: service.yaml
   when:
     - firewalld_services | length > 0
-    - _firewalld_binary.stat.exists or (firewalld_manage_package | bool)
+    - _firewalld_usable | bool
