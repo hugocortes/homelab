@@ -3,9 +3,6 @@
     name: services/firewalld/tasks
   vars:
     name: postgresql
-    services:
-    - name: postgresql
-      service: postgresql
     ports:
     - name: postgresql monitoring
       port: 9187/tcp

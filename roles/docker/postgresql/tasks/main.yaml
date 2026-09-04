@@ -24,8 +24,12 @@
     name: postgres
     networks:
       - name: postgres
-    ports:
-      - 5432:5432
+    # not published: consumers reach postgres over the 'postgres' network by name.
+    # published_ports defaults to allow_more_present, so an empty list alone will
+    # NOT unpublish an already-running container -- strict is required.
+    ports: []
+    comparisons:
+      published_ports: strict
     restart_policy: always
     volumes:
       - /opt/postgres:/var/lib/postgresql/data

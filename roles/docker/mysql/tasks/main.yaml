@@ -21,8 +21,12 @@
     name: mysql
     networks:
       - name: mysql
-    ports:
-      - 3306:3306
+    # not published: ombi reaches mysql over the 'mysql' network by name.
+    # published_ports defaults to allow_more_present, so an empty list alone will
+    # NOT unpublish an already-running container -- strict is required.
+    ports: []
+    comparisons:
+      published_ports: strict
     restart_policy: always
     volumes:
       - /opt/mysql:/var/lib/mysql
