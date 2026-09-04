@@ -1,0 +1,8 @@
+ipaadmin_principal: admin
+ipaadmin_password: "{{ vault_ipaadmin_password }}"
+ipadm_password: "{{ vault_ipadm_password }}"
+ipaserver_domain: ipa.homelabops.dev
+ipaserver_realm: IPA.HOMELABOPS.DEV
+ipaclient_mkhomedir: yes
+ipaclient_servers: ipa-0.homelabops.dev
+ipa_default_emaildomain: homelabops.dev

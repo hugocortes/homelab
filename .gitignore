@@ -2,15 +2,15 @@ vars.yaml
 
 inventory/credentials/*
 
-inventory/*.ini
-!inventory/*.example.ini
-
-inventory/group_vars/all/all.yaml
-
-inventory/group_vars/**/*yml*
-!inventory/group_vars/**/*.example
-
+# host_vars still holds no real content; revisit if any is added, using the
+# same main.yml / vault.yml split as group_vars.
 inventory/host_vars/**/*yaml*
 !inventory/host_vars/host/*.example
 
+# group_vars are now committed: main.yml is plaintext structure, vault.yml is
+# ansible-vault encrypted. Nothing secret is committed in the clear.
+
+# TODO(AI-42): roles/docker/media/tasks/private.yaml has never actually executed
+# (the stat guard checks a control-node path from the managed node). Its 53
+# lines need review before this ignore can be removed.
 roles/**/tasks/private.yaml

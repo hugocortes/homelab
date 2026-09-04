@@ -1,0 +1,7 @@
+ipaserver_idstart: 10000
+ipaserver_dirsrv_cert_files: /etc/ssl/{{ ansible_host }}/{{ ansible_host }}.fullchain,/etc/ssl/{{ ansible_host }}/{{ ansible_host }}.key
+ipaserver_http_cert_files: /etc/ssl/{{ ansible_host }}/{{ ansible_host }}.fullchain,/etc/ssl/{{ ansible_host }}/{{ ansible_host }}.key
+ipaserver_dirsrv_pin: "{{ vault_ipaserver_dirsrv_pin }}"
+ipaserver_http_pin: "{{ vault_ipaserver_http_pin }}"
+ipaserver_pkinit_pin: "{{ vault_ipaserver_pkinit_pin }}"
+ipaserver_no_pkinit: yes
