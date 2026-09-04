@@ -1,13 +1,8 @@
 - name: set system facts
   set_fact:
-    is_centos_8: "{{ (ansible_distribution_version | default('false') | regex_search('^8')) != None }}"
-    is_centos_9: "{{ (ansible_distribution_version | default('false') | regex_search('^9')) != None }}"
-    is_debian: "{{ ansible_os_family == 'Debian' | default(false) }}"
-    is_darwin: "{{ ansible_os_family == 'Darwin' | default(false) }}"
-
-- name: set is_centos fact
-  set_fact:
-    is_centos: "{{ (is_centos_8 or is_centos_9) | default(false) }} "
+    is_centos: "{{ ansible_os_family == 'RedHat' }}"
+    is_debian: "{{ ansible_os_family == 'Debian' }}"
+    is_darwin: "{{ ansible_os_family == 'Darwin' }}"
 
 - name: set ansible_become_home
   block:
