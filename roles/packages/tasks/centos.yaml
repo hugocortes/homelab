@@ -8,33 +8,50 @@
       - kernel-headers
       - kernel-modules-extra
       - linux-firmware
-      # TODO(AI-30): python3.9 is hardcoded and does not exist on el10.
-      # The two symlink tasks below force /usr/bin/python3 at it, which would
-      # break dnf and ansible if it ever resolved. Carried over unchanged so
-      # this restructure stays behaviour-preserving; fix under AI-30.
-      - python3.9
+      # `python3` is the distro's default interpreter: 3.9 on el9, 3.12 on
+      # el10. Never name a specific minor version here -- the old list pinned
+      # python3.9, which simply does not exist on el10.
+      - python3
+      # TODO(el10): dnf5 replaces this with python3-libdnf5. Cannot verify
+      # without an el10 host; confirm before the in-place upgrade.
       - python3-dnf
       - python3-pip
-      - python3
+      # provides /usr/bin/python. The role used to create that symlink by hand
+      # over an RPM-owned path; this is the packaged way to get it.
+      - python-unversioned-command
     state: present
 
-- name: centos | create python3 symlink
+# The two `file: state=link force=yes` tasks that used to live here pointed
+# /usr/bin/python3 at /usr/bin/python3.9 and /usr/bin/python at
+# /usr/bin/python3. Both paths are already owned and correctly linked by their
+# RPMs, so the tasks were redundant -- and because they wrote ABSOLUTE targets
+# where the packages record RELATIVE ones, every run left rpm -V reporting:
+#
+#     ....L....    /usr/bin/python3            (python3)
+#     ....L....    /usr/bin/python             (python-unversioned-command)
+#
+#     rpm expects  /usr/bin/python3 -> python3.9   on disk -> /usr/bin/python3.9
+#     rpm expects  /usr/bin/python  -> ./python3   on disk -> /usr/bin/python3
+#
+# Functionally equivalent, so nothing broke, but the packages have been
+# flagged as modified for years. leapp inspects RPM state during an in-place
+# el9 -> el10 upgrade, so this is worth repairing before that.
+- name: centos | check whether the python symlinks still match their rpms
   become: true
-  file:
-    src: /usr/bin/python3.9
-    dest: /usr/bin/python3
-    state: link
-    force: true
-    follow: true
+  command: rpm -V python3 python-unversioned-command
+  register: _python_rpm_verify
+  changed_when: false
+  failed_when: false
+  check_mode: false
 
-- name: centos | create python symlink
+- name: centos | restore rpm-owned python symlinks
   become: true
-  file:
-    src: /usr/bin/python3
-    dest: /usr/bin/python
-    state: link
-    force: true
-    follow: true
+  command: dnf -y reinstall python3 python-unversioned-command
+  when: "'/usr/bin/python' in (_python_rpm_verify.stdout | default(''))"
+  register: _python_restore
+  changed_when: _python_restore.rc == 0
+  # Version-agnostic on purpose: reinstalling restores whatever the packages
+  # record, so this keeps working on el10 without naming an interpreter.
 
 - name: centos | install epel-release
   become: true
