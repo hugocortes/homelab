@@ -1,6 +1,6 @@
 - name: configure terminal for multiple users
   include_tasks: multiple_users.yaml
-  with_items: "{{ ansible_users }}"
+  loop: "{{ ansible_users }}"
 
 - name: set zsh as default shell for ansible user
   become: true

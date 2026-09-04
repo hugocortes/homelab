@@ -34,9 +34,5 @@
 
 - name: append become user to ansible_users
   set_fact:
-    ansible_users:
-      - "{{ ansible_users }}"
-      - home: "{{ ansible_become_home }}"
-        user: "{{ ansible_become_user }}"
-        become: true
+    ansible_users: "{{ ansible_users + [{'home': ansible_become_home, 'user': ansible_become_user, 'become': true}] }}"
   when: ansible_user != ansible_become_user

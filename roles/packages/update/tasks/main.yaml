@@ -8,4 +8,4 @@
 
 - name: update packages for multiple users
   include_tasks: multiple_users.yaml
-  with_items: "{{ ansible_users }}"
+  loop: "{{ ansible_users }}"
