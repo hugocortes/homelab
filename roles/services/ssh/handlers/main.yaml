@@ -1,6 +1,7 @@
 ---
 - name: restart ssh | Force lookup ipa user id
   ansible.builtin.command: "id {{ homelab.ipa.user }}"
+  changed_when: false
   when: is_freeipa_client
   listen: restart ssh
 

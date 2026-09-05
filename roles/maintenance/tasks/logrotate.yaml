@@ -15,14 +15,12 @@
     enabled: true
     state: started
 
-- name: logrotate | Report timer state
+- name: logrotate | Gather service state
   become: true
-  ansible.builtin.command: systemctl is-active logrotate.timer
-  register: _logrotate_timer
-  changed_when: false
-  check_mode: false
-  failed_when: false
+  ansible.builtin.service_facts:
 
 - name: logrotate | Show state
   ansible.builtin.debug:
-    msg: "{{ inventory_hostname }}: logrotate.timer is {{ _logrotate_timer.stdout | default('unknown') }}"
+    msg: >-
+      {{ inventory_hostname }}: logrotate.timer is
+      {{ ansible_facts.services['logrotate.timer'].state | default('unknown') }}"

@@ -8,7 +8,11 @@
 - name: Set ansible_become_home
   block:
     - name: Get directory
-      ansible.builtin.shell: "getent passwd {{ ansible_become_user }} | awk -F: '{ print $6 }'"
+      ansible.builtin.shell: |
+        set -o pipefail
+        getent passwd {{ ansible_become_user }} | awk -F: '{ print $6 }'
+      args:
+        executable: /bin/bash
       register: home
       changed_when: false
       check_mode: false
@@ -21,7 +25,11 @@
 - name: Set ansible_user_home
   block:
     - name: Get directory
-      ansible.builtin.shell: "getent passwd {{ ansible_user }} | awk -F: '{ print $6 }'"
+      ansible.builtin.shell: |
+        set -o pipefail
+        getent passwd {{ ansible_user }} | awk -F: '{ print $6 }'
+      args:
+        executable: /bin/bash
       register: home
       changed_when: false
       check_mode: false

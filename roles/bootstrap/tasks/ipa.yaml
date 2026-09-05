@@ -5,7 +5,11 @@
   ignore_errors: true
   register: ping
 
-- name: Clear host errors
+# The probe above is *expected* to fail when the current ansible_user cannot
+# log in -- that failure is the signal to swap to the IPA user. ignore_errors
+# is load-bearing here, not laziness, so the rule is silenced locally rather
+# than repo-wide.
+- name: Clear host errors # noqa: ignore-errors
   ansible.builtin.meta: clear_host_errors
   ignore_unreachable: true
   ignore_errors: true

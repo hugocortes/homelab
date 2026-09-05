@@ -13,8 +13,12 @@
       - wheel
     state: "{{ 'latest' if packages_upgrade_all | bool else 'present' }}"
     extra_args: --user
-  # setuptools_rust needs a rust toolchain that is not present on every host
-  ignore_errors: true
+  # setuptools_rust needs a rust toolchain that is not present on every host.
+  # Tolerate that specific failure rather than blanket-ignoring everything.
+  register: _pip_prereqs
+  failed_when:
+    - _pip_prereqs is failed
+    - "'setuptools_rust' not in (_pip_prereqs.msg | default(''))"
 
 - name: python | Install user pip packages
   become: false

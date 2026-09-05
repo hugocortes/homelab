@@ -90,16 +90,23 @@
 
     - name: Install plug plugins
       ansible.builtin.command: nvim --headless +PlugInstall +qa
+      args:
+        creates: "{{ item.home }}/.vim/plugged"
 
 - name: Configure oh my zsh
   become: "{{ item.become }}"
   become_user: "{{ item.user }}"
   block:
     - name: Copy minimal plugin to custom
-      ansible.builtin.command: >
-        cp
-        {{ item.home }}/.oh-my-zsh/themes/minimal.zsh-theme
-        {{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme
+      ansible.builtin.copy:
+        src: "{{ item.home }}/.oh-my-zsh/themes/minimal.zsh-theme"
+        dest: "{{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme"
+        remote_src: true
+        mode: "0644"
+        # Seed once. The task below edits this copy to set PROMPT, so copying
+        # unconditionally would overwrite that edit on every run -- which is
+        # what the old `cp` did.
+        force: false
 
     - name: Add user@host to minimal theme
       ansible.builtin.lineinfile:

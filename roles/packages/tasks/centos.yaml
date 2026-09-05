@@ -36,7 +36,9 @@
 # Functionally equivalent, so nothing broke, but the packages have been
 # flagged as modified for years. leapp inspects RPM state during an in-place
 # el9 -> el10 upgrade, so this is worth repairing before that.
-- name: centos | Check whether the python symlinks still match their rpms
+# rpm -V (verify) has no module equivalent -- the rpm_key/dnf modules manage
+# packages, they do not report file-level drift. Genuine command territory.
+- name: centos | Check whether the python symlinks still match their rpms # noqa: command-instead-of-module
   become: true
   ansible.builtin.command: rpm -V python3 python-unversioned-command
   register: _python_rpm_verify

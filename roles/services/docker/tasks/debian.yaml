@@ -34,4 +34,7 @@
 
 - name: "debian | Add user {{ ansible_user }} to docker group"
   become: true
-  ansible.builtin.command: "usermod -aG docker {{ ansible_user }}"
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
