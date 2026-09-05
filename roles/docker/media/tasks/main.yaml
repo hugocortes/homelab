@@ -214,11 +214,13 @@
   ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos
 
-- name: Check for private tasks
-  ansible.builtin.stat:
-    path: "{{ role_path }}/tasks/private.yaml"
-  register: _private_tasks
-
+# private.yaml is deliberately gitignored and lives only on the control node.
+# The guard used to be an ansible.builtin.stat, which runs on the MANAGED node
+# against `role_path` -- a control-node path that does not exist there. It was
+# therefore always false and the include never fired (AI-42).
+#
+# `is exists` is a Jinja test, evaluated during templating on the control node,
+# which is where the file actually is.
 - name: Include private tasks
   ansible.builtin.include_tasks: private.yaml
-  when: _private_tasks.stat.exists
+  when: (role_path ~ '/tasks/private.yaml') is exists
