@@ -1,0 +1,9 @@
+---
+- name: centos | Open mysql services
+  ansible.builtin.include_role:
+    name: firewalld
+  vars:
+    firewalld_rule_name: mysql
+    firewalld_ports:
+      - name: mysql monitoring
+        port: 9104/tcp

@@ -10,4 +10,4 @@
   gather_facts: false
   tags: ops
   roles:
-    - docker/ops
+    - ops_stack

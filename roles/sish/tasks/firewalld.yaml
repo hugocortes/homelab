@@ -1,0 +1,25 @@
+---
+- name: centos | Open bastion ports
+  ansible.builtin.include_role:
+    name: firewalld
+  vars:
+    firewalld_rule_name: bastion
+    firewalld_ports:
+      - name: bastion sish ssh server
+        port: "{{ homelab.sish.sshPort }}/tcp"
+      - name: bastion sish http
+        port: "{{ homelab.sish.forwardingPorts.http }}/tcp"
+      - name: bastion sish https
+        port: "{{ homelab.sish.forwardingPorts.https }}/tcp"
+
+- name: Create tcp port var
+  ansible.builtin.set_fact:
+    tcpPorts: "{{ tcpPorts | default([]) + [{'name': 'tcp forwarding port', 'port': '{{ item }}/tcp'}] }}"
+  with_items: "{{ homelab.sish.forwardingPorts.tcp }}"
+
+- name: centos | Open bastion ports
+  ansible.builtin.include_role:
+    name: firewalld
+  vars:
+    firewalld_rule_name: bastion
+    firewalld_ports: "{{ tcpPorts }}"

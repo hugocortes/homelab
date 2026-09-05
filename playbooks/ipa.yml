@@ -82,7 +82,7 @@
   gather_facts: false
   tags: freeipa-configure
   roles:
-    - role: services/freeipa/server/configure
+    - role: freeipa_configure
       when: freeipa_configure | default(false) | bool
 
 - name: Register freeipa clients

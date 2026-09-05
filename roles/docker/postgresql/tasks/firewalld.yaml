@@ -1,9 +1,0 @@
----
-- name: centos | Open postgresql services
-  ansible.builtin.include_role:
-    name: services/firewalld
-  vars:
-    firewalld_rule_name: postgresql
-    firewalld_ports:
-      - name: postgresql monitoring
-        port: 9187/tcp

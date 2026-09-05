@@ -1,0 +1,11 @@
+---
+- name: centos | Open docker metrics ports
+  ansible.builtin.include_role:
+    name: firewalld
+  vars:
+    firewalld_rule_name: docker
+    firewalld_ports:
+      - name: docker node-exporter
+        port: 9100/tcp
+      - name: docker cadvisor
+        port: 9080/tcp

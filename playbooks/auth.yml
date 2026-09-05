@@ -8,5 +8,5 @@
   gather_facts: false
   tags: auth
   roles:
-    - docker/postgresql
-    - docker/auth
+    - postgresql
+    - auth_stack

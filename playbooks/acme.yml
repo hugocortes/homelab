@@ -16,4 +16,4 @@
 
     - name: Install certificates
       ansible.builtin.include_role:
-        name: services/acme
+        name: acme

@@ -32,7 +32,7 @@
   gather_facts: false
   tags: sssd
   roles:
-    - role: services/sssd
+    - role: sssd
       when: is_freeipa | default(false) | bool
 
 - name: Host maintenance
@@ -55,7 +55,7 @@
     # applies a host's COMPLETE required ingress, so it is the only place where
     # installing and starting firewalld is safe -- starting it elsewhere would
     # apply the stock public zone and cut off everything not yet declared.
-    - role: services/firewalld
+    - role: firewalld
       vars:
         firewalld_rule_name: baseline
         firewalld_manage_package: true

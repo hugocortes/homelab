@@ -8,4 +8,4 @@
   gather_facts: false
   tags: pirate
   roles:
-    - docker/pirate
+    - pirate_stack

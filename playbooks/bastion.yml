@@ -17,7 +17,7 @@
         or not homelab.bastion.duo or not homelab.bastion.duo.ikey
         or not homelab.bastion.duo.skey or not homelab.bastion.duo.host
   roles:
-    - services/duo
-    - services/ssh/bastion
-    - role: docker/sish
+    - duo
+    - ssh_bastion
+    - role: sish
       tags: docker/sish

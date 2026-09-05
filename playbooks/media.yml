@@ -8,6 +8,6 @@
   gather_facts: false
   tags: media
   roles:
-    - docker/mysql
-    - docker/postgresql
-    - docker/media
+    - mysql
+    - postgresql
+    - media_stack

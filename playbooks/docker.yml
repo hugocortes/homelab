@@ -8,5 +8,5 @@
   gather_facts: false
   tags: docker
   roles:
-    - services/docker
-    - docker/metrics
+    - docker_engine
+    - docker_metrics

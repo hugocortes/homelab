@@ -1,7 +1,0 @@
----
-- name: centos | Install ansible postgresql dependencies
-  ansible.builtin.dnf:
-    name:
-      - postgresql-devel
-      - python3-psycopg2
-    state: latest

@@ -24,10 +24,6 @@ skip_list:
   # lines; the wrapped result is what trips this.
   - yaml[line-length]
 
-  # AI-33: roles live at nested paths (roles/docker/media,
-  # roles/services/ssh/setup), so every role reference looks like a path.
-  - role-name[path]
-
   # --- tracked elsewhere, unskip when the ticket lands -------------------
   # AI-33: roles reach into one top-level `homelab:` dict instead of having
   # prefixed role variables. The dict was called `global` until it was renamed
