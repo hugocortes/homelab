@@ -1,5 +1,5 @@
 ---
-- name: Set system facts
+- name: Set system facts # noqa: var-naming[no-role-prefix]
   ansible.builtin.set_fact:
     is_centos: "{{ ansible_os_family == 'RedHat' }}"
     is_debian: "{{ ansible_os_family == 'Debian' }}"
@@ -13,14 +13,14 @@
         getent passwd {{ ansible_become_user }} | awk -F: '{ print $6 }'
       args:
         executable: /bin/bash
-      register: home
+      register: _bootstrap_home
       changed_when: false
       check_mode: false
       ignore_errors: true
 
     - name: Set fact
       ansible.builtin.set_fact:
-        ansible_become_home: "{{ home.stdout }}"
+        ansible_become_home: "{{ _bootstrap_home.stdout }}"
 
 - name: Set ansible_user_home
   block:
@@ -30,13 +30,13 @@
         getent passwd {{ ansible_user }} | awk -F: '{ print $6 }'
       args:
         executable: /bin/bash
-      register: home
+      register: _bootstrap_home
       changed_when: false
       check_mode: false
 
     - name: Set fact
       ansible.builtin.set_fact:
-        ansible_user_home: "{{ home.stdout }}"
+        ansible_user_home: "{{ _bootstrap_home.stdout }}"
 
 - name: Set ansible_users for installing packages to multiple users
   ansible.builtin.set_fact:

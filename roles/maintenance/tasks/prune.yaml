@@ -9,7 +9,7 @@
     df -h / | awk 'NR==2 {print $3" used, "$4" avail ("$5")"}'
   args:
     executable: /bin/bash
-  register: _disk_before
+  register: _maintenance_disk_before
   changed_when: false
   check_mode: false
 
@@ -17,9 +17,9 @@
 - name: prune | Force a rotation now instead of waiting for the timer
   become: true
   ansible.builtin.command: logrotate --force /etc/logrotate.conf
-  register: _logrotate_run
-  changed_when: _logrotate_run.rc == 0
-  failed_when: _logrotate_run.rc not in [0, 1]
+  register: _maintenance_logrotate_run
+  changed_when: _maintenance_logrotate_run.rc == 0
+  failed_when: _maintenance_logrotate_run.rc not in [0, 1]
   when: maintenance_force_logrotate | bool
 
 - name: prune | Find orphaned rotations from the old dateext scheme
@@ -32,7 +32,7 @@
       - "*.log.[0-9]*"
     age: "{{ maintenance_orphan_log_age_days }}d"
     size: 1m
-  register: _orphan_logs
+  register: _maintenance_orphan_logs
   when: maintenance_remove_orphan_logs | bool
 
 - name: prune | Remove orphaned rotations
@@ -40,7 +40,7 @@
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
-  loop: "{{ _orphan_logs.files | default([]) }}"
+  loop: "{{ _maintenance_orphan_logs.files | default([]) }}"
   loop_control:
     label: "{{ item.path }} ({{ (item.size / 1048576) | round(1) }} MB)"
   when: maintenance_remove_orphan_logs | bool
@@ -55,7 +55,7 @@
       # which is where the bulk of the reclaimable space is
       dangling: false
       until: "{{ maintenance_docker_prune_until }}"
-  register: _docker_prune
+  register: _maintenance_docker_prune
   when:
     - maintenance_prune_docker | bool
     - is_docker | default(false) | bool
@@ -64,8 +64,8 @@
   ansible.builtin.debug:
     msg: >-
       {{ inventory_hostname }}: reclaimed
-      {{ ((_docker_prune.images_space_reclaimed | default(0)) / 1073741824) | round(2) }} GB
-      from {{ _docker_prune.images | default([]) | length }} images
+      {{ ((_maintenance_docker_prune.images_space_reclaimed | default(0)) / 1073741824) | round(2) }} GB
+      from {{ _maintenance_docker_prune.images | default([]) | length }} images
   when:
     - maintenance_prune_docker | bool
     - is_docker | default(false) | bool
@@ -78,7 +78,7 @@
     df -h / | awk 'NR==2 {print $3" used, "$4" avail ("$5")"}'
   args:
     executable: /bin/bash
-  register: _disk_after
+  register: _maintenance_disk_after
   changed_when: false
   check_mode: false
 
@@ -86,5 +86,5 @@
   ansible.builtin.debug:
     msg: >-
       {{ inventory_hostname }}:
-      before [{{ _disk_before.stdout }}] ->
-      after [{{ _disk_after.stdout }}]
+      before [{{ _maintenance_disk_before.stdout }}] ->
+      after [{{ _maintenance_disk_after.stdout }}]

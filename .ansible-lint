@@ -29,6 +29,3 @@ skip_list:
   # prefixed role variables. The dict was called `global` until it was renamed
   # -- `global` is a reserved Ansible variable name, so schema[vars] no longer
   # needs skipping.
-  - var-naming[no-role-prefix]
-  - var-naming[pattern]
-  - var-naming[no-keyword]

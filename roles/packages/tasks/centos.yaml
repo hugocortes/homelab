@@ -41,7 +41,7 @@
 - name: centos | Check whether the python symlinks still match their rpms # noqa: command-instead-of-module
   become: true
   ansible.builtin.command: rpm -V python3 python-unversioned-command
-  register: _python_rpm_verify
+  register: _packages_python_rpm_verify
   changed_when: false
   failed_when: false
   check_mode: false
@@ -49,9 +49,9 @@
 - name: centos | Restore rpm-owned python symlinks
   become: true
   ansible.builtin.command: dnf -y reinstall python3 python-unversioned-command
-  when: "'/usr/bin/python' in (_python_rpm_verify.stdout | default(''))"
-  register: _python_restore
-  changed_when: _python_restore.rc == 0
+  when: "'/usr/bin/python' in (_packages_python_rpm_verify.stdout | default(''))"
+  register: _packages_python_restore
+  changed_when: _packages_python_restore.rc == 0
   # Version-agnostic on purpose: reinstalling restores whatever the packages
   # record, so this keeps working on el10 without naming an interpreter.
 

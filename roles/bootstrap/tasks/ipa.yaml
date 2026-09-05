@@ -3,7 +3,7 @@
   ansible.builtin.ping:
   ignore_unreachable: true
   ignore_errors: true
-  register: ping
+  register: _bootstrap_ping
 
 # The probe above is *expected* to fail when the current ansible_user cannot
 # log in -- that failure is the signal to swap to the IPA user. ignore_errors
@@ -15,7 +15,7 @@
   ignore_errors: true
 
 - name: Swap ansible_user to ipa.user
-  when: (is_freeipa) and (ping.failed | d(ping.unreachable) | d(false))
+  when: (is_freeipa) and (_bootstrap_ping.failed | d(_bootstrap_ping.unreachable) | d(false))
   block:
     - name: "Set ansible_user ({{ ansible_user }}) to ipa.user ({{ homelab.ipa.user }})"
       ansible.builtin.set_fact:

@@ -13,18 +13,18 @@
 
 - name: Auto mount nfs share
   ansible.builtin.lineinfile:
-    dest: /etc/fstab
+    dest: /etc/_nfs_fstab
     regexp: "{{ homelab.nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
     line: "{{ homelab.nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
     state: present
     insertbefore: "exit 0"
   with_items:
     - "{{ homelab.nfs_mount_paths }}"
-  register: fstab
+  register: _nfs_fstab
 
-# Was a task gated on `when: fstab is changed`, which is precisely what a
+# Was a task gated on `when: _nfs_fstab is changed`, which is precisely what a
 # handler does -- and as a task it fired mid-role rather than at the end.
 - name: Reboot
   ansible.builtin.reboot:
     reboot_timeout: 60
-  when: fstab is changed # noqa: no-handler
+  when: _nfs_fstab is changed # noqa: no-handler

@@ -5,10 +5,10 @@
 - name: neovim | Check whether it is already installed
   ansible.builtin.stat:
     path: /usr/bin/nvim
-  register: _neovim
+  register: _packages_neovim
 
 - name: neovim | Install
-  when: not _neovim.stat.exists or (packages_upgrade_all | bool)
+  when: not _packages_neovim.stat.exists or (packages_upgrade_all | bool)
   block:
     - name: neovim | Download appimage
       become: false
