@@ -1,4 +1,9 @@
 ---
+# NOTE: this role is not referenced by any playbook, and homelab.nfs_mount_paths
+# is not defined anywhere in the inventory -- so it cannot run as written. The
+# docker roles mount NFS via docker_volume rather than host fstab entries, which
+# is probably why it fell out of use. Left in place rather than deleted; it needs
+# a decision, not a guess.
 - name: centos | Install packages
   ansible.builtin.import_tasks: centos.yaml
   when: is_centos
@@ -13,7 +18,7 @@
 
 - name: Auto mount nfs share
   ansible.builtin.lineinfile:
-    dest: /etc/_nfs_fstab
+    dest: /etc/fstab
     regexp: "{{ homelab.nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
     line: "{{ homelab.nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
     state: present

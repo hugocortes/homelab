@@ -15,12 +15,12 @@
   block:
     - name: Download oh-my-zsh install script
       ansible.builtin.get_url:
-        url: https://raw.github.com/_terminal_ohmyzsh/_terminal_ohmyzsh/master/tools/install.sh
-        dest: "/tmp/_terminal_ohmyzsh-install-{{ item.user }}.sh"
+        url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+        dest: "/tmp/ohmyzsh-install-{{ item.user }}.sh"
         mode: "0755"
 
     - name: Run oh-my-zsh install script
-      ansible.builtin.command: "/bin/sh /tmp/_terminal_ohmyzsh-install-{{ item.user }}.sh"
+      ansible.builtin.command: "/bin/sh /tmp/ohmyzsh-install-{{ item.user }}.sh"
       args:
         creates: "{{ item.home }}/.oh-my-zsh"
 
@@ -28,7 +28,7 @@
   become: "{{ item.become }}"
   become_user: "{{ item.user }}"
   ansible.builtin.git:
-    repo: https://github.com/_terminal_ohmyzsh/_terminal_ohmyzsh.git
+    repo: https://github.com/ohmyzsh/ohmyzsh.git
     dest: "{{ item.home }}/.oh-my-zsh"
     version: master
     update: true
