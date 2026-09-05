@@ -5,7 +5,6 @@
 # Both accept an optional `state:` (default "enabled") to remove a rule.
 firewalld_ports: []
 firewalld_services: []
-
 firewalld_zone: public
 
 # Deliberately false. Installing firewalld is never a side effect of opening a

@@ -2,9 +2,9 @@
 # Everything here is opt-in via `--tags prune` (the role tags this file
 # `never`, so it is skipped unless the tag is asked for explicitly).
 
-- name: prune | measure disk before
+- name: prune | Measure disk before
   become: true
-  shell: |
+  ansible.builtin.shell: |
     set -o pipefail
     df -h / | awk 'NR==2 {print $3" used, "$4" avail ("$5")"}'
   args:
@@ -14,17 +14,17 @@
   check_mode: false
 
 # --- logs ----------------------------------------------------------------
-- name: prune | force a rotation now instead of waiting for the timer
+- name: prune | Force a rotation now instead of waiting for the timer
   become: true
-  command: logrotate --force /etc/logrotate.conf
+  ansible.builtin.command: logrotate --force /etc/logrotate.conf
   register: _logrotate_run
   changed_when: _logrotate_run.rc == 0
   failed_when: _logrotate_run.rc not in [0, 1]
   when: maintenance_force_logrotate | bool
 
-- name: prune | find orphaned rotations from the old dateext scheme
+- name: prune | Find orphaned rotations from the old dateext scheme
   become: true
-  find:
+  ansible.builtin.find:
     paths: /var/log
     recurse: true
     patterns:
@@ -35,9 +35,9 @@
   register: _orphan_logs
   when: maintenance_remove_orphan_logs | bool
 
-- name: prune | remove orphaned rotations
+- name: prune | Remove orphaned rotations
   become: true
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   loop: "{{ _orphan_logs.files | default([]) }}"
@@ -46,9 +46,9 @@
   when: maintenance_remove_orphan_logs | bool
 
 # --- docker --------------------------------------------------------------
-- name: prune | remove unused docker images
+- name: prune | Remove unused docker images
   become: true
-  docker_prune:
+  community.docker.docker_prune:
     images: true
     images_filters:
       # false means "not only dangling" -- i.e. every image no container uses,
@@ -60,8 +60,8 @@
     - maintenance_prune_docker | bool
     - is_docker | default(false) | bool
 
-- name: prune | report docker reclaim
-  debug:
+- name: prune | Report docker reclaim
+  ansible.builtin.debug:
     msg: >-
       {{ inventory_hostname }}: reclaimed
       {{ ((_docker_prune.images_space_reclaimed | default(0)) / 1073741824) | round(2) }} GB
@@ -71,9 +71,9 @@
     - is_docker | default(false) | bool
 
 # --- result --------------------------------------------------------------
-- name: prune | measure disk after
+- name: prune | Measure disk after
   become: true
-  shell: |
+  ansible.builtin.shell: |
     set -o pipefail
     df -h / | awk 'NR==2 {print $3" used, "$4" avail ("$5")"}'
   args:
@@ -82,8 +82,8 @@
   changed_when: false
   check_mode: false
 
-- name: prune | before and after
-  debug:
+- name: prune | Before and after
+  ansible.builtin.debug:
     msg: >-
       {{ inventory_hostname }}:
       before [{{ _disk_before.stdout }}] ->

@@ -1,0 +1,22 @@
+---
+extends: default
+
+ignore: |
+  ansible-freeipa/
+  ansible-letsencrypt-cloudflare/
+  .git/
+  # ansible-vault ciphertext -- starts with $ANSIBLE_VAULT, not `---`
+  inventory/group_vars/*/vault.yml
+
+rules:
+  # ansible-lint's transformer wraps long lines itself; enforcing a limit on
+  # top of that just fights it.
+  line-length: disable
+  # `mode: "0644"` must stay quoted, which this rule would otherwise flag.
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: false
+  comments:
+    min-spaces-from-content: 1
+  truthy:
+    allowed-values: ["true", "false"]

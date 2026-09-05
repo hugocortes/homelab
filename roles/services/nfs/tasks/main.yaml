@@ -1,16 +1,18 @@
-- name: centos | install packages
-  import_tasks: centos.yaml
+---
+- name: centos | Install packages
+  ansible.builtin.import_tasks: centos.yaml
   when: is_centos
 
-- name: create nfs mount path dir
-  file:
+- name: Create nfs mount path dir
+  ansible.builtin.file:
     path: "{{ item.client }}"
     state: directory
+    mode: "0755"
   with_items:
     - "{{ global.nfs_mount_paths }}"
 
-- name: auto mount nfs share
-  lineinfile:
+- name: Auto mount nfs share
+  ansible.builtin.lineinfile:
     dest: /etc/fstab
     regexp: "{{ global.nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
     line: "{{ global.nfs.host }}:{{ item.host }} {{ item.client }} nfs4 defaults,proto=tcp,port=2049,rw 0 0"
@@ -20,7 +22,7 @@
     - "{{ global.nfs_mount_paths }}"
   register: fstab
 
-- name: reboot
-  reboot:
+- name: Reboot
+  ansible.builtin.reboot:
     reboot_timeout: 60
   when: fstab is changed

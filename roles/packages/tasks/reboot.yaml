@@ -2,9 +2,9 @@
 # Ask the OS whether a reboot is actually needed rather than rebooting on the
 # mere fact that packages changed. `needs-restarting -r` exits 0 for "no" and
 # 1 for "yes"; any other rc is a real error.
-- name: reboot | centos | check whether a reboot is required
+- name: reboot | centos | Check whether a reboot is required
   become: true
-  command: needs-restarting -r
+  ansible.builtin.command: needs-restarting -r
   register: _packages_needs_restarting
   changed_when: false
   # read-only probe: run it in check mode too, so --check reports the truth
@@ -12,28 +12,28 @@
   failed_when: _packages_needs_restarting.rc not in [0, 1]
   when: is_centos
 
-- name: reboot | debian | check whether a reboot is required
-  stat:
+- name: reboot | debian | Check whether a reboot is required
+  ansible.builtin.stat:
     path: /var/run/reboot-required
   register: _packages_reboot_required_file
   when: is_debian
 
-- name: reboot | record whether one is needed
-  set_fact:
+- name: reboot | Record whether one is needed
+  ansible.builtin.set_fact:
     packages_reboot_required: >-
       {{ (_packages_needs_restarting.rc | default(0)) == 1
          or (_packages_reboot_required_file.stat.exists | default(false)) }}
 
-- name: reboot | report
-  debug:
+- name: reboot | Report
+  ansible.builtin.debug:
     msg: >-
       {{ inventory_hostname }}:
       {{ 'reboot REQUIRED, rebooting now' if packages_reboot_required
          else 'no reboot required' }}
 
-- name: reboot | reboot to finish applying updates
+- name: reboot | Reboot to finish applying updates
   become: true
-  reboot:
+  ansible.builtin.reboot:
     msg: Rebooting to complete package updates queued by Ansible
     reboot_timeout: "{{ packages_reboot_timeout }}"
     post_reboot_delay: "{{ packages_post_reboot_delay }}"

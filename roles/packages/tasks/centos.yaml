@@ -1,7 +1,7 @@
 ---
-- name: centos | install python and kernel headers
+- name: centos | Install python and kernel headers
   become: true
-  dnf:
+  ansible.builtin.dnf:
     name:
       - dnf
       - kernel-devel
@@ -36,32 +36,32 @@
 # Functionally equivalent, so nothing broke, but the packages have been
 # flagged as modified for years. leapp inspects RPM state during an in-place
 # el9 -> el10 upgrade, so this is worth repairing before that.
-- name: centos | check whether the python symlinks still match their rpms
+- name: centos | Check whether the python symlinks still match their rpms
   become: true
-  command: rpm -V python3 python-unversioned-command
+  ansible.builtin.command: rpm -V python3 python-unversioned-command
   register: _python_rpm_verify
   changed_when: false
   failed_when: false
   check_mode: false
 
-- name: centos | restore rpm-owned python symlinks
+- name: centos | Restore rpm-owned python symlinks
   become: true
-  command: dnf -y reinstall python3 python-unversioned-command
+  ansible.builtin.command: dnf -y reinstall python3 python-unversioned-command
   when: "'/usr/bin/python' in (_python_rpm_verify.stdout | default(''))"
   register: _python_restore
   changed_when: _python_restore.rc == 0
   # Version-agnostic on purpose: reinstalling restores whatever the packages
   # record, so this keeps working on el10 without naming an interpreter.
 
-- name: centos | install epel-release
+- name: centos | Install epel-release
   become: true
-  dnf:
+  ansible.builtin.dnf:
     name: epel-release
     state: present
 
-- name: centos | install baseline packages
+- name: centos | Install baseline packages
   become: true
-  dnf:
+  ansible.builtin.dnf:
     name:
       - curl
       - git
@@ -77,23 +77,23 @@
       - zsh
     state: present
 
-- name: centos | remove packages we do not want
+- name: centos | Remove packages we do not want
   become: true
-  dnf:
+  ansible.builtin.dnf:
     name:
       - collectd-rrdtool
       - subscription-manager
     state: absent
 
-- name: centos | remove leftover collectd rrd data
+- name: centos | Remove leftover collectd rrd data
   become: true
-  file:
+  ansible.builtin.file:
     path: /var/lib/collectd/rrd
     state: absent
 
-- name: centos | upgrade every package on the host
+- name: centos | Upgrade every package on the host
   become: true
-  dnf:
+  ansible.builtin.dnf:
     name: "*"
     state: latest
   when: packages_upgrade_all | bool

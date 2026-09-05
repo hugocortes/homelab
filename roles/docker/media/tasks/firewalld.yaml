@@ -1,5 +1,6 @@
-- name: centos | open calibre services
-  include_role:
+---
+- name: centos | Open calibre services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: calibre
@@ -7,8 +8,8 @@
       - name: calibre
         port: 8083/tcp
 
-- name: centos | open gramps services
-  include_role:
+- name: centos | Open gramps services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: gramps
@@ -16,8 +17,8 @@
       - name: gramps
         port: 5000/tcp
 
-- name: centos | open miniflux services
-  include_role:
+- name: centos | Open miniflux services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: miniflux
@@ -25,8 +26,8 @@
       - name: miniflux
         port: 8080/tcp
 
-- name: centos | open ombi services
-  include_role:
+- name: centos | Open ombi services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: ombi
@@ -34,8 +35,8 @@
       - name: ombi
         port: 3579/tcp
 
-- name: centos | open plex services
-  include_role:
+- name: centos | Open plex services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: plex
@@ -43,8 +44,8 @@
       - name: plex
         port: 32400/tcp
 
-- name: centos | open tautulli services
-  include_role:
+- name: centos | Open tautulli services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: tautulli

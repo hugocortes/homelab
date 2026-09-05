@@ -1,5 +1,6 @@
-- name: centos | open bastion ports
-  include_role:
+---
+- name: centos | Open bastion ports
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: bastion
@@ -11,17 +12,13 @@
       - name: bastion sish https
         port: "{{ global.sish.forwardingPorts.https }}/tcp"
 
-- name: create tcp port var
-  set_fact:
-    tcpPorts: "{{ tcpPorts | default([]) +
-      [{
-      'name': 'tcp forwarding port',
-      'port': '{{ item }}/tcp'
-      }] }}"
+- name: Create tcp port var
+  ansible.builtin.set_fact:
+    tcpPorts: "{{ tcpPorts | default([]) + [{'name': 'tcp forwarding port', 'port': '{{ item }}/tcp'}] }}"
   with_items: "{{ global.sish.forwardingPorts.tcp }}"
 
-- name: centos | open bastion ports
-  include_role:
+- name: centos | Open bastion ports
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: bastion

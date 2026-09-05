@@ -1,0 +1,39 @@
+---
+# Declared dependencies. Previously the repo used short module names
+# (docker_container, firewalld, openssl_pkcs12) and simply relied on whatever
+# collections the installed ansible package happened to bundle. That worked,
+# but nothing pinned it -- and any tool with its own environment, ansible-lint
+# and CI included, could not resolve them at all.
+#
+# Install with:
+#   ansible-galaxy collection install -r requirements.yml
+#
+# Versions match what ansible 14.3.1 bundles today, so installing changes no
+# behaviour. Bump deliberately.
+collections:
+  # docker_container, docker_volume, docker_network, docker_login, docker_prune
+  - name: community.docker
+    version: "==5.2.2"
+
+  # firewalld
+  - name: ansible.posix
+    version: "==2.2.2"
+
+  # openssl_pkcs12 (roles/services/acme)
+  - name: community.crypto
+    version: "==3.3.0"
+
+  # general-purpose fallbacks
+  - name: community.general
+    version: "==13.3.0"
+
+# NOTE: freeipa is deliberately absent. The ipa* modules and the
+# ipaserver/ipareplica roles still come from the ansible-freeipa git submodule,
+# wired in via ansible.cfg `library`, `module_utils` and `roles_path`. Swapping
+# it for the freeipa.ansible_freeipa collection means renaming every ipa*
+# module call and both role references, all of which sit behind the opt-in
+# gates added in AI-24 and cannot be exercised against the live server. That is
+# its own change.
+#
+# ansible-letsencrypt-cloudflare likewise stays a submodule: the working copy
+# has uncommitted local modifications (AI-35) that must be reconciled first.

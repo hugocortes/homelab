@@ -1,16 +1,17 @@
-- name: install duo packages
-  dnf:
+---
+- name: Install duo packages
+  ansible.builtin.dnf:
     name:
       - duo_unix
     state: present
 
-- name: configure duo settings
-  lineinfile:
+- name: Configure duo settings
+  ansible.builtin.lineinfile:
     dest: /etc/duo/login_duo.conf
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: ^ikey =, line: "ikey = {{ global.bastion.duo.ikey }}" }
-    - { regexp: ^skey =, line: "skey = {{ global.bastion.duo.skey }}" }
-    - { regexp: ^host =, line: "host = {{ global.bastion.duo.host }}" }
+    - {regexp: ^ikey =, line: "ikey = {{ global.bastion.duo.ikey }}"}
+    - {regexp: ^skey =, line: "skey = {{ global.bastion.duo.skey }}"}
+    - {regexp: ^host =, line: "host = {{ global.bastion.duo.host }}"}

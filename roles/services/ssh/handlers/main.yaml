@@ -1,35 +1,36 @@
-- name: restart ssh | force lookup ipa user id
-  command: "id {{ global.ipa.user }}"
+---
+- name: restart ssh | Force lookup ipa user id
+  ansible.builtin.command: "id {{ global.ipa.user }}"
   when: is_freeipa_client
   listen: restart ssh
 
-- name: restart ssh | reboot to sync freeipa login
-  include_tasks: ../roles/global/tasks/reboot.yaml # include required to read vars
+- name: restart ssh | Reboot to sync freeipa login
+  ansible.builtin.include_tasks: ../roles/global/tasks/reboot.yaml # include required to read vars
   when: is_freeipa_client and (ansible_user != global.ipa.user)
   listen: restart ssh
 
-- name: restart ssh
-  service:
+- name: Restart ssh
+  ansible.builtin.service:
     name: sshd
     state: restarted
   listen: restart ssh
 
-- name: swap ansible_user to ipa.user
-  include_tasks: ../roles/global/tasks/ipa.yaml # include required to read vars
+- name: Swap ansible_user to ipa.user
+  ansible.builtin.include_tasks: ../roles/global/tasks/ipa.yaml # include required to read vars
   when: is_freeipa_client
   listen:
     - enable fail2ban
     - restart fail2ban
 
-- name: enable fail2ban
-  service:
+- name: Enable fail2ban
+  ansible.builtin.service:
     name: fail2ban
     state: started
-    enabled: yes
+    enabled: true
   listen: enable fail2ban
 
-- name: restart fail2ban
-  service:
+- name: Restart fail2ban
+  ansible.builtin.service:
     name: fail2ban
     state: restarted
   listen: restart fail2ban

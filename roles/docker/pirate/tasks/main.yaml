@@ -1,6 +1,7 @@
-- name: create nfs volumes
+---
+- name: Create nfs volumes
   become: true
-  docker_volume:
+  community.docker.docker_volume:
     name: "{{ item.name }}"
     driver_options:
       type: nfs
@@ -16,8 +17,8 @@
     - name: tv
       mount: "{{ global.pirate.nfs.tv }}"
 
-- name: create service dirs
-  file:
+- name: Create service dirs
+  ansible.builtin.file:
     path: "{{ item.path }}"
     owner: nobody
     group: nobody
@@ -35,9 +36,9 @@
     - path: /opt/sonarr
     - path: /opt/transmission
 
-- name: start calibre server container
+- name: Start calibre server container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: linuxserver/calibre:{{ global.version.calibre }}
@@ -51,9 +52,9 @@
       - /opt/calibre-server:/config
       - ebooks:/books
 
-- name: start flaresolverr container
+- name: Start flaresolverr container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: ghcr.io/flaresolverr/flaresolverr:{{ global.version.flaresolverr }}
@@ -62,9 +63,9 @@
       - 8191:8191
     restart_policy: always
 
-- name: start jackett container
+- name: Start jackett container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: linuxserver/jackett:{{ global.version.jackett }}
@@ -76,9 +77,9 @@
       - /opt/jackett/config:/config
       - /opt/jackett/downloads:/downloads
 
-- name: start radarr container
+- name: Start radarr container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: linuxserver/radarr:{{ global.version.radarr }}
@@ -106,9 +107,9 @@
 #       - downloads:/downloads
 #       - ebooks:/books
 
-- name: start sabnzbd container
+- name: Start sabnzbd container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: linuxserver/sabnzbd:{{ global.version.sabnzbd }}
@@ -120,9 +121,9 @@
       - /opt/sabnzbd:/config
       - downloads:/downloads
 
-- name: start sonarr container
+- name: Start sonarr container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: linuxserver/sonarr:{{ global.version.sonarr }}
@@ -135,9 +136,9 @@
       - downloads:/downloads
       - tv:/tv
 
-- name: start transmission container
+- name: Start transmission container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: linuxserver/transmission:{{ global.version.transmission }}
@@ -151,5 +152,5 @@
       - /opt/transmission:/config
       - downloads:/downloads
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml

@@ -1,19 +1,19 @@
 ---
-- name: centos | manage packages
-  import_tasks: centos.yaml
+- name: centos | Manage packages
+  ansible.builtin.import_tasks: centos.yaml
   when: is_centos
 
-- name: debian | manage packages
-  import_tasks: debian.yaml
+- name: debian | Manage packages
+  ansible.builtin.import_tasks: debian.yaml
   when: is_debian
 
-- name: python | manage pip packages
-  import_tasks: pip.yaml
+- name: python | Manage pip packages
+  ansible.builtin.import_tasks: pip.yaml
 
-- name: neovim | install
-  import_tasks: neovim.yaml
+- name: neovim | Install
+  ansible.builtin.import_tasks: neovim.yaml
 
 # Must run last: everything above may have pulled in a new kernel or glibc.
-- name: reboot if the os reports one is required
-  import_tasks: reboot.yaml
+- name: Reboot if the os reports one is required
+  ansible.builtin.import_tasks: reboot.yaml
   when: packages_reboot_if_required | bool

@@ -2,39 +2,39 @@
 # The appimage tracks `nightly`, so re-downloading always produces a different
 # build. Install when nvim is absent, refresh only on an explicit upgrade run,
 # so an ordinary converge run stays idempotent.
-- name: neovim | check whether it is already installed
-  stat:
+- name: neovim | Check whether it is already installed
+  ansible.builtin.stat:
     path: /usr/bin/nvim
   register: _neovim
 
-- name: neovim | install
+- name: neovim | Install
   when: not _neovim.stat.exists or (packages_upgrade_all | bool)
   block:
-    - name: neovim | download appimage
+    - name: neovim | Download appimage
       become: false
-      get_url:
+      ansible.builtin.get_url:
         url: "{{ packages_neovim_url }}"
         dest: /tmp/nvim.appimage
         mode: "0755"
         force: true
 
-    - name: neovim | extract appimage
+    - name: neovim | Extract appimage
       become: false
-      command: /tmp/nvim.appimage --appimage-extract
+      ansible.builtin.command: /tmp/nvim.appimage --appimage-extract
       args:
         chdir: /tmp
       changed_when: true
 
-    - name: neovim | move into /opt
+    - name: neovim | Move into /opt
       become: true
-      command: mv /tmp/squashfs-root /opt/squashfs-root
+      ansible.builtin.command: mv /tmp/squashfs-root /opt/squashfs-root
       args:
         removes: /tmp/squashfs-root
       changed_when: true
 
-    - name: neovim | link into path
+    - name: neovim | Link into path
       become: true
-      file:
+      ansible.builtin.file:
         src: /opt/squashfs-root/AppRun
         dest: /usr/bin/nvim
         state: link

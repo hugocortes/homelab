@@ -12,7 +12,7 @@
 #
 - import_playbook: bootstrap.yml
 
-- name: manage packages
+- name: Manage packages
   hosts: all
   become: false
   gather_facts: false
@@ -26,7 +26,7 @@
         # upgrade off the tag actually requested rather than hardcoding it.
         packages_upgrade_all: "{{ 'update' in ansible_run_tags }}"
 
-- name: configure sssd on freeipa-joined hosts
+- name: Configure sssd on freeipa-joined hosts
   hosts: all
   become: false
   gather_facts: false
@@ -35,7 +35,7 @@
     - role: services/sssd
       when: is_freeipa | default(false) | bool
 
-- name: host maintenance
+- name: Host maintenance
   hosts: all
   become: false
   gather_facts: false
@@ -45,7 +45,7 @@
   roles:
     - maintenance
 
-- name: baseline host firewall
+- name: Baseline host firewall
   hosts: all
   become: false
   gather_facts: false
@@ -62,7 +62,7 @@
         firewalld_services: "{{ firewalld_baseline_services }}"
         firewalld_ports: "{{ firewalld_baseline_ports }}"
 
-- name: configure terminal
+- name: Configure terminal
   hosts: all
   become: false
   gather_facts: false

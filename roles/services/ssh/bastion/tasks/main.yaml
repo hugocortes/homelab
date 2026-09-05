@@ -1,20 +1,18 @@
-- name: configure tunnel
-  lineinfile:
+---
+- name: Configure tunnel
+  ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: "^PermitTunnel", line: "PermitTunnel no" }
-    - { regexp: "^AllowTcpForwarding", line: "AllowTcpForwarding no" }
-    - {
-        regexp: "^ChallengeResponseAuthentication no",
-        line: "ChallengeResponseAuthentication yes",
-      }
+    - {regexp: "^PermitTunnel", line: "PermitTunnel no"}
+    - {regexp: "^AllowTcpForwarding", line: "AllowTcpForwarding no"}
+    - {regexp: "^ChallengeResponseAuthentication no", line: "ChallengeResponseAuthentication yes"}
   notify: restart ssh
 
-- name: allow access from internal addresses
-  blockinfile:
+- name: Allow access from internal addresses
+  ansible.builtin.blockinfile:
     dest: /etc/ssh/sshd_config
     marker: "# {mark}-bastion-internal-allow"
     block: |
@@ -22,8 +20,8 @@
         AllowTcpForwarding yes
   notify: restart ssh
 
-- name: require duo authentication for bastion user from gateway
-  blockinfile:
+- name: Require duo authentication for bastion user from gateway
+  ansible.builtin.blockinfile:
     dest: /etc/ssh/sshd_config
     marker: "# {mark}-bastion-gateway-auth"
     block: |
@@ -32,8 +30,8 @@
         AllowTcpForwarding yes
   notify: restart ssh
 
-- name: block access to non bastion users from gateway
-  blockinfile:
+- name: Block access to non bastion users from gateway
+  ansible.builtin.blockinfile:
     dest: /etc/ssh/sshd_config
     marker: "# {mark}-bastion-gateway-block"
     block: |

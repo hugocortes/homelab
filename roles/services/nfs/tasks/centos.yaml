@@ -1,4 +1,5 @@
-- name: centos | install nfs packages
-  dnf:
+---
+- name: centos | Install nfs packages
+  ansible.builtin.dnf:
     name: nfs-utils
     state: latest

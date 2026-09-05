@@ -1,9 +1,10 @@
-- name: create network
-  docker_network:
+---
+- name: Create network
+  community.docker.docker_network:
     name: mysql
 
-- name: create service dirs
-  file:
+- name: Create service dirs
+  ansible.builtin.file:
     group: nobody
     mode: "0777"
     owner: nobody
@@ -12,9 +13,9 @@
   with_items:
     - path: /opt/mysql
 
-- name: start mysql container
+- name: Start mysql container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       MYSQL_ROOT_PASSWORD: "{{ global.mysql.password }}"
     image: mysql:8.4.8
@@ -31,9 +32,9 @@
     volumes:
       - /opt/mysql:/var/lib/mysql
 
-- name: start exporter container
+- name: Start exporter container
   become: true
-  docker_container:
+  community.docker.docker_container:
     command:
       - "--mysqld.username=root:{{ global.mysql.password }}"
       - "--mysqld.address=mysql:3306"
@@ -45,6 +46,6 @@
       - 9104:9104
     restart_policy: always
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos

@@ -1,18 +1,18 @@
 ---
 # A conf.d drop-in rather than editing /etc/sssd/sssd.conf, which is generated
 # by ipa-client-install and would be overwritten by a re-enrolment.
-- name: sssd | ensure conf.d exists
+- name: sssd | Ensure conf.d exists
   become: true
-  file:
+  ansible.builtin.file:
     path: /etc/sssd/conf.d
     state: directory
     owner: "{{ sssd_conf_owner }}"
     group: "{{ sssd_conf_group }}"
     mode: "0711"
 
-- name: sssd | restrict lookups to ipv4
+- name: sssd | Restrict lookups to ipv4
   become: true
-  copy:
+  ansible.builtin.copy:
     dest: /etc/sssd/conf.d/10-lookup-family-order.conf
     owner: "{{ sssd_conf_owner }}"
     group: "{{ sssd_conf_group }}"

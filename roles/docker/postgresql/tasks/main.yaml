@@ -1,9 +1,10 @@
-- name: create network
-  docker_network:
+---
+- name: Create network
+  community.docker.docker_network:
     name: postgres
 
-- name: create service dirs
-  file:
+- name: Create service dirs
+  ansible.builtin.file:
     group: nobody
     mode: "0777"
     owner: nobody
@@ -12,9 +13,9 @@
   with_items:
     - path: /opt/postgres
 
-- name: start container
+- name: Start container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       POSTGRES_USER: "{{ global.postgresql.username }}"
       POSTGRES_PASSWORD: "{{ global.postgresql.password }}"
@@ -34,9 +35,9 @@
     volumes:
       - /opt/postgres:/var/lib/postgresql/data
 
-- name: start exporter container
+- name: Start exporter container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       DATA_SOURCE_URI: "postgres:5432/?sslmode=disable"
       DATA_SOURCE_USER: "{{ global.postgresql.username }}"
@@ -49,6 +50,6 @@
       - 9187:9187
     restart_policy: unless-stopped
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos

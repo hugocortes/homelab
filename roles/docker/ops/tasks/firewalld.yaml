@@ -1,5 +1,6 @@
-- name: centos | open grafana services
-  include_role:
+---
+- name: centos | Open grafana services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: grafana
@@ -7,8 +8,8 @@
       - name: grafana
         port: 3000/tcp
 
-- name: centos | open prometheus services
-  include_role:
+- name: centos | Open prometheus services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: prometheus
@@ -16,8 +17,8 @@
       - name: prometheus
         port: 9090/tcp
 
-- name: centos | open speedtest services
-  include_role:
+- name: centos | Open speedtest services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: speedtest
@@ -25,8 +26,8 @@
       - name: speedtest
         port: 9469/tcp
 
-- name: centos | open influxdb services
-  include_role:
+- name: centos | Open influxdb services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: influxdb
@@ -38,8 +39,8 @@
       - name: collectd
         port: 8089/udp
 
-- name: centos | open powerwall services
-  include_role:
+- name: centos | Open powerwall services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: powerwall

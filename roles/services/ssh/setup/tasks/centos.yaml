@@ -1,5 +1,6 @@
-- name: centos | install fail2ban packages
-  dnf:
+---
+- name: centos | Install fail2ban packages
+  ansible.builtin.dnf:
     name:
       - fail2ban
       - fail2ban-systemd

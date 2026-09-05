@@ -1,13 +1,14 @@
-- name: configure terminal for multiple users
-  include_tasks: multiple_users.yaml
+---
+- name: Configure terminal for multiple users
+  ansible.builtin.include_tasks: multiple_users.yaml
   loop: "{{ ansible_users }}"
 
-- name: set zsh as default shell for ansible user
+- name: Set zsh as default shell for ansible user
   become: true
-  command: "chsh -s /bin/zsh {{ ansible_user }}"
+  ansible.builtin.command: "chsh -s /bin/zsh {{ ansible_user }}"
   when: not is_freeipa
 
-- name: set zsh as default shell for {{ ansible_become_user }}
+- name: Set zsh as default shell for {{ ansible_become_user }}
   become: true
-  command: "chsh -s /bin/zsh {{ ansible_become_user }}"
+  ansible.builtin.command: "chsh -s /bin/zsh {{ ansible_become_user }}"
   when: ansible_become_user is defined

@@ -1,34 +1,35 @@
-- name: ensure default config is set
+---
+- name: Ensure default config is set
   ipaconfig:
     ipaadmin_password: "{{ ipaadmin_password }}"
     maxusername: 32
     defaultshell: /bin/zsh
     emaildomain: "{{ ipa_default_emaildomain }}"
 
-- name: remove default `allow_all` host access
+- name: Remove default `allow_all` host access
   ipahbacrule:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: allow_all
     state: absent
 
-- name: add /usr/bin/su sudo cmd
+- name: Add /usr/bin/su sudo cmd
   ipasudocmd:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: /usr/bin/su
     state: present
 
-- name: add /usr/bin/sudo sudo cmd
+- name: Add /usr/bin/sudo sudo cmd
   ipasudocmd:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: /usr/bin/sudo
     state: present
 
-- name: add `super user` sudo command group
+- name: Add `super user` sudo command group
   ipasudocmdgroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: super user
 
-- name: assign sudocmds to `super user` sudo command group
+- name: Assign sudocmds to `super user` sudo command group
   ipasudocmdgroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: super user
@@ -37,7 +38,7 @@
       - /usr/bin/sudo
     action: member
 
-- name: add `admins` sudo rule
+- name: Add `admins` sudo rule
   ipasudorule:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: admins
@@ -51,7 +52,7 @@
     runasgroupcategory: "all"
     state: present
 
-- name: add `allow_admins` hbac rule
+- name: Add `allow_admins` hbac rule
   ipahbacrule:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: admins
@@ -61,28 +62,28 @@
     hostcategory: "all"
     servicecategory: "all"
 
-- name: set default pw policy
+- name: Set default pw policy
   ipapwpolicy:
     ipaadmin_password: "{{ ipaadmin_password }}"
     maxlife: 180
 
-- name: include users.json
-  include_vars:
+- name: Include users.json
+  ansible.builtin.include_vars:
     file: files/users.json
 
-- name: add users
+- name: Add users
   ipauser:
     ipaadmin_password: "{{ ipaadmin_password }}"
     users: "{{ users }}"
 
-- name: add admin users to `admins`
+- name: Add admin users to `admins`
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: admins
     action: member
     user: "{{ ipaadminusers }}"
 
-- name: create posix authorization groups
+- name: Create posix authorization groups
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: "{{ item.name }}"
@@ -94,32 +95,32 @@
     - name: posixsso
       gid: 10004
 
-- name: create nonposix authorization groups
+- name: Create nonposix authorization groups
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: "{{ item }}"
     description: "{{ item }} authorized users"
-    nonposix: yes
+    nonposix: true
   with_items:
     # pfsense config: https://gist.github.com/lucasgrelaud/092f296600a5b41ee36c314cb0205c0a
     - adminsso
     - sso
 
-- name: create `adminusers` group
+- name: Create `adminusers` group
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: adminusers
     description: admin users authorized for sensitive services
-    nonposix: yes
+    nonposix: true
 
-- name: create `users` group
+- name: Create `users` group
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: users
     description: users authorized for non-sensitive services
-    nonposix: yes
+    nonposix: true
 
-- name: add `users` as group member to valid groups
+- name: Add `users` as group member to valid groups
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: "{{ item }}"
@@ -129,7 +130,7 @@
     - sso
     - posixsso
 
-- name: add `adminusers` as group member to valid groups
+- name: Add `adminusers` as group member to valid groups
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: "{{ item }}"
@@ -140,28 +141,28 @@
     - posixadminsso
     - users
 
-- name: add users to `users` group
+- name: Add users to `users` group
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: users
     action: member
     user: "{{ ipausersmembers }}"
 
-- name: add adminusers to `adminusers` group
+- name: Add adminusers to `adminusers` group
   ipagroup:
     ipaadmin_password: "{{ ipaadmin_password }}"
     name: adminusers
     action: member
     user: "{{ ipaadminusers }}"
 
-- name: add keycloak tree group mappings
+- name: Add keycloak tree group mappings
   block:
-    - name: create tree node groups
+    - name: Create tree node groups
       ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: "{{ item.name }}"
         description: "{{ item.description }}"
-        nonposix: yes
+        nonposix: true
       with_items:
         - name: ipa
           description: /ipa
@@ -188,7 +189,7 @@
         - name: tvshows
           description: /ipa/media/tvshows
 
-    - name: assign child nodes to /ipa
+    - name: Assign child nodes to /ipa
       ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: ipa
@@ -196,7 +197,7 @@
           - eng
           - media
 
-    - name: assign child nodes to /ipa/eng
+    - name: Assign child nodes to /ipa/eng
       ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: eng
@@ -205,7 +206,7 @@
           - sre
           - swe
 
-    - name: assign child nodes to /ipa/media
+    - name: Assign child nodes to /ipa/media
       ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: media
@@ -217,7 +218,7 @@
           - random
           - tvshows
 
-    - name: add ipamembers to `ipa` group
+    - name: Add ipamembers to `ipa` group
       ipagroup:
         ipaadmin_password: "{{ ipaadmin_password }}"
         name: ipa

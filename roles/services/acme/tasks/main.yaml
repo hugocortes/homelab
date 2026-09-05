@@ -1,40 +1,47 @@
-- name: copy root crt
-  copy:
-    force: yes
+---
+- name: Copy root crt
+  ansible.builtin.copy:
+    force: true
+    mode: "0644"
     src: "root.crt"
     dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt
 
-- name: copy intermediate-2 crt
-  copy:
-    force: yes
+- name: Copy intermediate-2 crt
+  ansible.builtin.copy:
+    force: true
+    mode: "0644"
     src: "intermediate-2.crt"
     dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt
 
-- name: copy intermediate crt
-  copy:
-    force: yes
+- name: Copy intermediate crt
+  ansible.builtin.copy:
+    force: true
+    mode: "0644"
     src: "intermediate.crt"
     dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt
 
-- name: create file
-  command: touch /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
+- name: Create file
+  ansible.builtin.command: touch /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
 
-- name: concatenate full chain
-  shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt > /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
+- name: Concatenate full chain
+  ansible.builtin.shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt /etc/ssl/{{ certificate_common_name }}/{{
+    certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt /etc/ssl/{{
+    certificate_common_name }}/{{ certificate_common_name }}.root.crt > /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
 
-- name: copy ca
-  shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt /etc/ipa/ca.crt
+- name: Copy ca
+  ansible.builtin.shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{
+    certificate_common_name }}.intermediate-2.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt /etc/ipa/ca.crt
   when: is_freeipa
 
 # needs to be root for openssl location
-- name: pip | install cryptography
+- name: pip | Install cryptography
   become: true
-  pip:
+  ansible.builtin.pip:
     name: cryptography
     state: latest
 
-- name: create pk12
-  openssl_pkcs12:
+- name: Create pk12
+  community.crypto.openssl_pkcs12:
     action: export
     friendly_name: "{{ certificate_common_name }}"
     path: "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.pk12"

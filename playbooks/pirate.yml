@@ -2,7 +2,7 @@
 # Sonarr / Radarr / Jackett / SABnzbd / Transmission / Calibre.
 - import_playbook: bootstrap.yml
 
-- name: configure pirate
+- name: Configure pirate
   hosts: pirate
   become: true
   gather_facts: false

@@ -1,15 +1,17 @@
-- name: set sish docker ports
-  set_fact:
-    ports: "['{{ global.sish.sshPort }}:{{ global.sish.sshPort }}', '{{ global.sish.forwardingPorts.http }}:{{ global.sish.forwardingPorts.http }}', '{{ global.sish.forwardingPorts.https }}:{{ global.sish.forwardingPorts.https }}']"
+---
+- name: Set sish docker ports
+  ansible.builtin.set_fact:
+    ports: "['{{ global.sish.sshPort }}:{{ global.sish.sshPort }}', '{{ global.sish.forwardingPorts.http }}:{{ global.sish.forwardingPorts.http }}', '{{ global.sish.forwardingPorts.https
+      }}:{{ global.sish.forwardingPorts.https }}']"
 
-- name: append tcp ports
-  set_fact:
+- name: Append tcp ports
+  ansible.builtin.set_fact:
     ports: "{{ ports }} + ['{{ item }}:{{ item }}']"
   with_items: "{{ global.sish.forwardingPorts.tcp }}"
 
-- name: launch sish container
+- name: Launch sish container
   become: true
-  docker_container:
+  community.docker.docker_container:
     name: sish
     image: "antoniomika/sish:{{ global.sish.tag }}"
     restart_policy: unless-stopped
@@ -36,6 +38,6 @@
       - "~/sish/keys:/keys"
       - "~/sish/pubkeys:/pubkeys"
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos

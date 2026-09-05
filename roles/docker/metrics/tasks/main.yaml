@@ -1,6 +1,7 @@
-- name: launch node-exporter container
+---
+- name: Launch node-exporter container
   become: true
-  docker_container:
+  community.docker.docker_container:
     name: node-exporter
     image: prom/node-exporter:v1.8.2
     restart_policy: unless-stopped
@@ -11,9 +12,9 @@
     volumes:
       - /:/hostfs
 
-- name: launch cadvisor container
+- name: Launch cadvisor container
   become: true
-  docker_container:
+  community.docker.docker_container:
     name: cadvisor
     image: gcr.io/cadvisor/cadvisor:v0.50.0
     restart_policy: unless-stopped
@@ -27,6 +28,6 @@
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos

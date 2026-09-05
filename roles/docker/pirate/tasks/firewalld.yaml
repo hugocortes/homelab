@@ -1,5 +1,6 @@
-- name: centos | open flaresolverr services
-  include_role:
+---
+- name: centos | Open flaresolverr services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: flaresolverr
@@ -7,8 +8,8 @@
       - name: flaresolverr
         port: 8191/tcp
 
-- name: centos | open jackett services
-  include_role:
+- name: centos | Open jackett services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: jackett
@@ -16,8 +17,8 @@
       - name: jackett
         port: 9117/tcp
 
-- name: centos | open transmission services
-  include_role:
+- name: centos | Open transmission services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: transmission
@@ -29,8 +30,8 @@
       - name: transmission-vpn-udp
         port: 54949/tcp
 
-- name: centos | open sabnzbd services
-  include_role:
+- name: centos | Open sabnzbd services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: sabnzbd
@@ -38,8 +39,8 @@
       - name: sabnzbd
         port: 8080/tcp
 
-- name: centos | open radarr services
-  include_role:
+- name: centos | Open radarr services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: radarr
@@ -47,8 +48,8 @@
       - name: radarr
         port: 7878/tcp
 
-- name: centos | open sonarr services
-  include_role:
+- name: centos | Open sonarr services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: sonarr
@@ -56,8 +57,8 @@
       - name: sonarr
         port: 8989/tcp
 
-- name: centos | open readarr services
-  include_role:
+- name: centos | Open readarr services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: readarr
@@ -65,8 +66,8 @@
       - name: readarr
         port: 8787/tcp
 
-- name: centos | open calibre-server services
-  include_role:
+- name: centos | Open calibre-server services
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: calibre-server

@@ -1,20 +1,21 @@
-- name: ping to verify current user
-  action: ping
+---
+- name: Ping to verify current user
+  ansible.builtin.ping:
   ignore_unreachable: true
   ignore_errors: true
   register: ping
 
-- name: clear host errors
-  meta: clear_host_errors
+- name: Clear host errors
+  ansible.builtin.meta: clear_host_errors
   ignore_unreachable: true
   ignore_errors: true
 
-- name: swap ansible_user to ipa.user
+- name: Swap ansible_user to ipa.user
+  when: (is_freeipa) and (ping.failed | d(ping.unreachable) | d(false))
   block:
-    - name: "set ansible_user ({{ ansible_user }}) to ipa.user ({{ global.ipa.user }})"
-      set_fact:
+    - name: "Set ansible_user ({{ ansible_user }}) to ipa.user ({{ global.ipa.user }})"
+      ansible.builtin.set_fact:
         ansible_user: "{{ global.ipa.user }}"
 
-    - name: ping to verify current user
-      action: ping
-  when: (is_freeipa) and (ping.failed | d(ping.unreachable) | d(false))
+    - name: Ping to verify current user
+      ansible.builtin.ping:

@@ -1,6 +1,7 @@
-- name: create nfs volumes
+---
+- name: Create nfs volumes
   become: true
-  docker_volume:
+  community.docker.docker_volume:
     name: "{{ item.name }}"
     driver_options:
       type: nfs
@@ -20,18 +21,18 @@
     - name: prometheus_config
       mount: "{{ global.server.nfs.prometheus_config }}"
 
-- name: create grafana network
+- name: Create grafana network
   become: true
-  docker_network:
+  community.docker.docker_network:
     name: grafana
-- name: create influxdb network
+- name: Create influxdb network
   become: true
-  docker_network:
+  community.docker.docker_network:
     name: powerwall
 
-- name: start grafana-image-renderer
+- name: Start grafana-image-renderer
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       HTTP_HOST: "0.0.0.0"
       RENDERING_ARGS: --no-sandbox,--disable-gpu,--window-size=1280x758
@@ -43,9 +44,9 @@
       - 8081:8081
     restart_policy: always
 
-- name: start grafana container
+- name: Start grafana container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       GF_ANALYTICS_CHECK_FOR_UPDATES: "true"
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
@@ -60,7 +61,8 @@
       GF_AUTH_GENERIC_OAUTH_ROLE_ATTRIBUTE_PATH: contains(roles[*], 'Admin') && 'Admin' || contains(roles[*], 'Editor') && 'Editor' || 'Viewer'
       GF_FEATURE_TOGGLES_ENABLE: tempoSearch tempoBackendSearch tempoApmTable traceqlEditor traceToMetrics
       GF_GRAFANA_NET_URL: https://grafana.net
-      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,savantly-heatmap-panel,grafana-worldmap-panel,grafana-image-renderer,redis-datasource,fetzerch-sunandmoon-datasource,yesoreyeram-boomtable-panel
+      GF_INSTALL_PLUGINS:
+        grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,savantly-heatmap-panel,grafana-worldmap-panel,grafana-image-renderer,redis-datasource,fetzerch-sunandmoon-datasource,yesoreyeram-boomtable-panel
       GF_LOG_MODEL: console
       GF_RENDERING_SERVER_URL: http://grafana-image-renderer:8081/render
       GF_RENDERING_CALLBACK_URL: http://grafana:3000/
@@ -82,9 +84,9 @@
     volumes:
       - grafana:/var/lib/grafana
 
-- name: start influxdb
+- name: Start influxdb
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       INFLUXDB_ADMIN_USER: "{{ global.influxdb.username }}"
       INFLUXDB_ADMIN_PASSWORD: "{{ global.influxdb.password }}"
@@ -102,9 +104,9 @@
       - influxdb_config:/etc/influxdb
       - influxdb_startup:/docker-entrypoint-initdb.d
 
-- name: start prometheus
+- name: Start prometheus
   become: true
-  docker_container:
+  community.docker.docker_container:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --web.enable-lifecycle
@@ -120,9 +122,9 @@
       - prometheus_config:/etc/prometheus
       - prometheus:/prometheus
 
-- name: start pypowerwall
+- name: Start pypowerwall
   become: true
-  docker_container:
+  community.docker.docker_container:
     env_file: /opt/powerwall/pypowerwall.env
     image: jasonacox/pypowerwall:0.14.10t88
     name: pypowerwall
@@ -132,18 +134,18 @@
       - 8675:8675
     restart_policy: always
 
-- name: start speedtest
+- name: Start speedtest
   become: true
-  docker_container:
+  community.docker.docker_container:
     image: billimek/prometheus-speedtest-exporter:latest
     name: speedtest
     ports:
       - 9469:9469
     restart_policy: always
 
-- name: start weather411
+- name: Start weather411
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       WEATHERCONF: /var/lib/weather/weather411.conf
     image: jasonacox/weather411:0.2.3
@@ -156,9 +158,9 @@
     volumes:
       - /opt/powerwall/weather411.conf:/var/lib/weather/weather411.conf
 
-- name: start telegraf
+- name: Start telegraf
   become: true
-  docker_container:
+  community.docker.docker_container:
     command:
       - telegraf
       - --config
@@ -174,6 +176,6 @@
       - /opt/powerwall/telegraf.conf:/etc/telegraf/telegraf.conf
       - /opt/powerwall/telegraf.local:/etc/telegraf/telegraf.d/local.conf
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos

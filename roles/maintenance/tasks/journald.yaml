@@ -1,10 +1,10 @@
 ---
-- name: journald | cap on-disk journal size
+- name: journald | Cap on-disk journal size
   become: true
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/systemd/journald.conf
-    regexp: '^#?\s*SystemMaxUse='
+    regexp: "^#?\\s*SystemMaxUse="
     line: "SystemMaxUse={{ maintenance_journal_max_use }}"
-    insertafter: '^\[Journal\]'
-    validate: null
+    insertafter: "^\\[Journal\\]"
+    validate:
   notify: restart journald

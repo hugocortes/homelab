@@ -14,3 +14,6 @@ inventory/host_vars/**/*yaml*
 # (the stat guard checks a control-node path from the managed node). Its 53
 # lines need review before this ignore can be removed.
 roles/**/tasks/private.yaml
+
+# ansible-lint / ansible-galaxy local cache
+.ansible/

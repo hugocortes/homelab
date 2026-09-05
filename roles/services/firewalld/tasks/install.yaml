@@ -1,7 +1,7 @@
 ---
-- name: firewalld | install package
+- name: firewalld | Install package
   become: true
-  package:
+  ansible.builtin.package:
     name:
       - firewalld
       # the ansible firewalld module imports this python binding; it arrives as
@@ -10,9 +10,9 @@
     state: present
   register: _firewalld_package
 
-- name: firewalld | enable and start
+- name: firewalld | Enable and start
   become: true
-  service:
+  ansible.builtin.service:
     name: firewalld
     enabled: true
     state: started
@@ -25,9 +25,9 @@
 # flushes when it starts for the first time -- published container ports stop
 # answering until the daemon re-inserts them. Gated on the package having just
 # been installed so this does not bounce docker on every converge.
-- name: firewalld | restart docker so it re-inserts its chains
+- name: firewalld | Restart docker so it re-inserts its chains
   become: true
-  service:
+  ansible.builtin.service:
     name: docker
     state: restarted
   when:

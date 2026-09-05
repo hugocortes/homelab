@@ -1,13 +1,14 @@
-- name: create transcode dir
-  file:
+---
+- name: Create transcode dir
+  ansible.builtin.file:
     path: /dev/shm/plex
     owner: nobody
     group: nobody
     state: directory
     mode: "0777"
 
-- name: create service dirs
-  file:
+- name: Create service dirs
+  ansible.builtin.file:
     group: nobody
     mode: "0777"
     owner: nobody
@@ -28,9 +29,9 @@
     - path: /opt/plex
     - path: /opt/tautulli
 
-- name: create plex nfs volumes
+- name: Create plex nfs volumes
   become: true
-  docker_volume:
+  community.docker.docker_volume:
     name: "{{ item.name }}"
     driver_options:
       type: nfs
@@ -46,16 +47,16 @@
     - name: tvshows
       mount: "{{ global.media.nfs.tvshows }}"
 
-- name: allow plex ssl cert to be readable
-  file:
+- name: Allow plex ssl cert to be readable
+  ansible.builtin.file:
     dest: "/etc/ssl/{{ ansible_host }}/{{ ansible_host }}.pk12"
     owner: root
     group: root
     mode: "0644"
 
-- name: start calibre container
+- name: Start calibre container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: linuxserver/calibre-web:{{ global.version.calibre_web }}
@@ -67,9 +68,9 @@
       - /opt/calibre:/config
       - ebooks:/books
 
-- name: start gramps container
+- name: Start gramps container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       GRAMPSWEB_BASE_URL: https://tree.corteshq.net/
 
@@ -104,8 +105,10 @@
       # GRAMPSWEB_POSTGRES_USER: "{{ global.postgresql.gramps.username }}"
       # GRAMPSWEB_DB_URI: postgresql://{{ global.postgresql.gramps.username }}:{{ global.postgresql.gramps.password }}@postgres:5432/{{ global.postgresql.gramps.database.search }}
 
-      GRAMPSWEB_SEARCH_INDEX_DB_URI: "postgresql://{{ global.postgresql.gramps.username }}:{{ global.postgresql.gramps.password }}@postgres:5432/{{ global.postgresql.gramps.database.search }}"
-      GRAMPSWEB_USER_DB_URI: "postgresql://{{ global.postgresql.gramps.username }}:{{ global.postgresql.gramps.password }}@postgres:5432/{{ global.postgresql.gramps.database.user }}"
+      GRAMPSWEB_SEARCH_INDEX_DB_URI: "postgresql://{{ global.postgresql.gramps.username }}:{{ global.postgresql.gramps.password }}@postgres:5432/{{ global.postgresql.gramps.database.search
+        }}"
+      GRAMPSWEB_USER_DB_URI: "postgresql://{{ global.postgresql.gramps.username }}:{{ global.postgresql.gramps.password }}@postgres:5432/{{ global.postgresql.gramps.database.user
+        }}"
     image: ghcr.io/gramps-project/grampsweb:{{ global.version.gramps }}
     name: gramps
     networks:
@@ -123,15 +126,16 @@
       - /opt/gramps/users:/app/users
       - /opt/gramps/index:/app/indexdir
 
-- name: start miniflux container
+- name: Start miniflux container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       RUN_MIGRATIONS: "1"
       CREATE_ADMIN: "0"
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: "{{ global.miniflux.admin_password }}"
-      DATABASE_URL: "postgres://{{ global.postgresql.miniflux.username }}:{{ global.postgresql.miniflux.password }}@postgres:5432/{{ global.postgresql.miniflux.database }}?sslmode=disable"
+      DATABASE_URL: "postgres://{{ global.postgresql.miniflux.username }}:{{ global.postgresql.miniflux.password }}@postgres:5432/{{ global.postgresql.miniflux.database
+        }}?sslmode=disable"
       OAUTH2_PROVIDER: oidc
       OAUTH2_CLIENT_ID: miniflux
       OAUTH2_CLIENT_SECRET: "{{ global.miniflux.oidc_client_secret }}"
@@ -146,9 +150,9 @@
       - 8080:8080
     restart_policy: always
 
-- name: start ombi container
+- name: Start ombi container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       MYSQL_DATABASE: "{{ global.mysql.ombi.database }}"
       MYSQL_PASSWORD: "{{ global.mysql.ombi.password }}"
@@ -164,9 +168,9 @@
     volumes:
       - /opt/ombi:/config
 
-- name: start plex container
+- name: Start plex container
   become: true
-  docker_container:
+  community.docker.docker_container:
     name: plex
     image: plexinc/pms-docker:plexpass
     network_mode: host
@@ -192,9 +196,9 @@
       - plexlogs:/config/Library/Application Support/Plex Media Server/Logs
       - tvshows:/data/tv-shows
 
-- name: start tautulli container
+- name: Start tautulli container
   become: true
-  docker_container:
+  community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
     image: tautulli/tautulli:{{ global.version.tautulli }}
@@ -206,15 +210,15 @@
       - /opt/tautulli:/config
       - plexlogs:/tautulli_logs:ro
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos
 
-- name: check for private tasks
-  stat:
+- name: Check for private tasks
+  ansible.builtin.stat:
     path: "{{ role_path }}/tasks/private.yaml"
   register: _private_tasks
 
-- name: include private tasks
-  include_tasks: private.yaml
+- name: Include private tasks
+  ansible.builtin.include_tasks: private.yaml
   when: _private_tasks.stat.exists

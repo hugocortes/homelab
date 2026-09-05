@@ -2,7 +2,7 @@
 # Docker engine and the host-level metrics exporters.
 - import_playbook: bootstrap.yml
 
-- name: configure docker group
+- name: Configure docker group
   hosts: docker
   become: true
   gather_facts: false

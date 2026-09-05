@@ -1,5 +1,6 @@
-- name: debian | install
-  apt:
+---
+- name: debian | Install
+  ansible.builtin.apt:
     name:
       - fail2ban
     state: latest

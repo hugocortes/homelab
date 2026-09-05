@@ -1,12 +1,12 @@
 ---
-- name: set inventory facts
-  import_tasks: facts/inventory.yaml
+- name: Set inventory facts
+  ansible.builtin.import_tasks: facts/inventory.yaml
 
-- name: "verify ansible_user ({{ ansible_user }}) user"
-  import_tasks: ipa.yaml
+- name: "Verify ansible_user ({{ ansible_user }}) user"
+  ansible.builtin.import_tasks: ipa.yaml
 
-- name: gather facts from all hosts in play
-  setup:
+- name: Gather facts from all hosts in play
+  ansible.builtin.setup:
 
-- name: set system facts
-  import_tasks: facts/system.yaml
+- name: Set system facts
+  ansible.builtin.import_tasks: facts/system.yaml

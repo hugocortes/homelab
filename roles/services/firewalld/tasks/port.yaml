@@ -4,7 +4,7 @@
 # task while service.yaml notified from both; normalised here.
 - name: "{{ firewalld_rule_name }} | enable firewalld port (permanent)"
   become: true
-  firewalld:
+  ansible.posix.firewalld:
     zone: "{{ firewalld_zone }}"
     state: "{{ item.state | default('enabled') }}"
     port: "{{ item.port }}"
@@ -14,7 +14,7 @@
 
 - name: "{{ firewalld_rule_name }} | enable firewalld port (runtime)"
   become: true
-  firewalld:
+  ansible.posix.firewalld:
     zone: "{{ firewalld_zone }}"
     state: "{{ item.state | default('enabled') }}"
     port: "{{ item.port }}"

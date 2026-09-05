@@ -2,7 +2,7 @@
 # Keycloak / Pomerium and their postgres backend.
 - import_playbook: bootstrap.yml
 
-- name: configure auth
+- name: Configure auth
   hosts: auth
   become: true
   gather_facts: false

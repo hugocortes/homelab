@@ -1,5 +1,6 @@
-- name: debian | install docker dependencies
-  apt:
+---
+- name: debian | Install docker dependencies
+  ansible.builtin.apt:
     name:
       - apt-transport-https
       - ca-certificates
@@ -8,29 +9,29 @@
       - software-properties-common
     state: latest
 
-- name: debian | add gpg key
-  apt_key:
+- name: debian | Add gpg key
+  ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
-- name: debian | add docker repo
-  apt_repository:
+- name: debian | Add docker repo
+  ansible.builtin.apt_repository:
     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable
     state: present
 
-- name: debian | install docker packages
-  apt:
+- name: debian | Install docker packages
+  ansible.builtin.apt:
     name:
       - docker-ce
       - docker-ce-cli
       - containerd.io
     state: latest
 
-- name: debian | create docker group
-  group:
+- name: debian | Create docker group
+  ansible.builtin.group:
     name: docker
     state: present
 
-- name: "debian | add user {{ ansible_user }} to docker group"
+- name: "debian | Add user {{ ansible_user }} to docker group"
   become: true
-  command: "usermod -aG docker {{ ansible_user }}"
+  ansible.builtin.command: "usermod -aG docker {{ ansible_user }}"

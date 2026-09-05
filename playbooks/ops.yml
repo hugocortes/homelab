@@ -4,7 +4,7 @@
 # until it is re-added (see inventory/hosts.yml).
 - import_playbook: bootstrap.yml
 
-- name: configure ops
+- name: Configure ops
   hosts: ops
   become: true
   gather_facts: false

@@ -1,13 +1,13 @@
 ---
-- name: logrotate | ensure rotation actually runs
-  import_tasks: logrotate.yaml
+- name: logrotate | Ensure rotation actually runs
+  ansible.builtin.import_tasks: logrotate.yaml
   when: maintenance_manage_logrotate | bool
 
-- name: journald | cap journal size
-  import_tasks: journald.yaml
+- name: journald | Cap journal size
+  ansible.builtin.import_tasks: journald.yaml
   when: maintenance_manage_journald | bool
 
-- name: prune | reclaim disk
-  import_tasks: prune.yaml
+- name: prune | Reclaim disk
+  ansible.builtin.import_tasks: prune.yaml
   when: maintenance_prune | bool
   tags: prune

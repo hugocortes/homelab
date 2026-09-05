@@ -1,3 +1,4 @@
+---
 global:
   reboot:
     min_wait_time: 15
@@ -153,7 +154,6 @@ firewalld_baseline_services:
   - name: ssh
     service: ssh
 firewalld_baseline_ports: []
-
 # Pin the interpreter instead of mutating the target to suit discovery. This is
 # stable across el9 (3.9) and el10 (3.12) -- /usr/bin/python3 is the distro's
 # own symlink in both. Also silences the interpreter-discovery warning.

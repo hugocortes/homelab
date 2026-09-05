@@ -1,42 +1,42 @@
-- name: disable root login
-  lineinfile:
+---
+- name: Disable root login
+  ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+    - {regexp: "^PermitRootLogin", line: "PermitRootLogin no"}
   notify: restart ssh
 
-- name: disable password authentication
-  lineinfile:
+- name: Disable password authentication
+  ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
+    - {regexp: "^PasswordAuthentication", line: "PasswordAuthentication no"}
   when: is_freeipa
   notify: restart ssh
 
-- name: disable challenge response authentication
-  lineinfile:
+- name: Disable challenge response authentication
+  ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
-    - {
-        regexp: "^ChallengeResponseAuthentication yes",
-        line: "ChallengeResponseAuthentication no",
-      }
+    - {regexp: "^ChallengeResponseAuthentication yes", line: "ChallengeResponseAuthentication no"}
   when: is_freeipa and not is_bastion
   notify: restart ssh
 
-- name: configure bastion host access
+- name: Configure bastion host access
+  when: (global.bastion is defined) and not is_bastion
+
   block:
-    - name: block access to non bastion user from bastion host
-      blockinfile:
+    - name: Block access to non bastion user from bastion host
+      ansible.builtin.blockinfile:
         dest: /etc/ssh/sshd_config
         marker: "# {mark}-block-bastion"
         block: |
@@ -45,8 +45,8 @@
       when: is_freeipa and (global.bastion.user and global.bastion.host)
       notify: restart ssh
 
-    - name: block access from bastion host if not registered on freeipa
-      blockinfile:
+    - name: Block access from bastion host if not registered on freeipa
+      ansible.builtin.blockinfile:
         dest: /etc/ssh/sshd_config
         marker: "# {mark}-block-bastion"
         block: |
@@ -54,18 +54,16 @@
             ForceCommand /bin/false
       when: not is_freeipa and global.bastion.host
       notify: restart ssh
-  when: (global.bastion is defined) and not is_bastion
-
-- name: centos | install fail2ban
-  import_tasks: centos.yaml
+- name: centos | Install fail2ban
+  ansible.builtin.import_tasks: centos.yaml
   when: is_centos
 
-- name: debian | install fail2ban
-  import_tasks: debian.yaml
+- name: debian | Install fail2ban
+  ansible.builtin.import_tasks: debian.yaml
   when: is_debian
 
-- name: configure fail2ban jail
-  blockinfile:
+- name: Configure fail2ban jail
+  ansible.builtin.blockinfile:
     dest: /etc/fail2ban/jail.conf
     marker: "# {mark} ANSIBLE MANAGED BLOCK #"
     block: |

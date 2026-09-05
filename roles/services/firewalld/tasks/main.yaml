@@ -1,27 +1,27 @@
 ---
-- name: firewalld | check whether it is installed
-  stat:
+- name: firewalld | Check whether it is installed
+  ansible.builtin.stat:
     path: /usr/sbin/firewalld
   register: _firewalld_binary
   changed_when: false
   check_mode: false
 
-- name: firewalld | install and start
-  import_tasks: install.yaml
+- name: firewalld | Install and start
+  ansible.builtin.import_tasks: install.yaml
   when: firewalld_manage_package | bool
 
 # In check mode the package was never really installed, so neither the unit nor
 # the python3-firewall binding the module needs exist yet. Applying rules would
 # fail spuriously and mask real problems, so --check reports the install and
 # stops there.
-- name: firewalld | decide whether rules can be applied
-  set_fact:
+- name: firewalld | Decide whether rules can be applied
+  ansible.builtin.set_fact:
     _firewalld_usable: >-
       {{ _firewalld_binary.stat.exists
          or (firewalld_manage_package | bool and not ansible_check_mode) }}
 
-- name: firewalld | explain why rules are being skipped
-  debug:
+- name: firewalld | Explain why rules are being skipped
+  ansible.builtin.debug:
     msg: >-
       {{ inventory_hostname }}: not applying "{{ firewalld_rule_name }}" rules --
       {{ 'firewalld would be installed by this run; re-run without --check to apply'
@@ -30,13 +30,13 @@
   when: not (_firewalld_usable | bool)
 
 - name: "{{ firewalld_rule_name }} | open ports"
-  import_tasks: port.yaml
+  ansible.builtin.import_tasks: port.yaml
   when:
     - firewalld_ports | length > 0
     - _firewalld_usable | bool
 
 - name: "{{ firewalld_rule_name }} | open services"
-  import_tasks: service.yaml
+  ansible.builtin.import_tasks: service.yaml
   when:
     - firewalld_services | length > 0
     - _firewalld_usable | bool

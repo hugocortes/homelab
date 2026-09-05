@@ -4,7 +4,7 @@
 # ansible_users. Imported at the head of each playbook so that any playbook
 # can be run on its own -- the facts are set_fact, so they do not survive
 # into a separate ansible-playbook invocation.
-- name: bootstrap facts and verify connectivity
+- name: Bootstrap facts and verify connectivity
   hosts: all
   become: false
   gather_facts: false

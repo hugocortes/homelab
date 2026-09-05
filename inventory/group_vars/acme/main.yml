@@ -1,3 +1,4 @@
+---
 letsencrypt_email: admin@homelabops.dev
 cloudflare_email: contact@hugocortes.dev
 cloudflare_api_key: "{{ vault_cloudflare_api_key }}"

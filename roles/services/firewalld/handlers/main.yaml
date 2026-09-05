@@ -7,9 +7,9 @@
 # `firewall-cmd --runtime-to-permanent` shell-out (redundant, since permanent
 # is set explicitly, and it had no changed_when), and a full restart (which
 # would have discarded runtime-only rules).
-- name: enable firewalld service
+- name: Enable firewalld service
   become: true
-  service:
+  ansible.builtin.service:
     name: firewalld
     state: started
     enabled: true

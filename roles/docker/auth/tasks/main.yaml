@@ -1,5 +1,6 @@
-- name: create service dirs
-  file:
+---
+- name: Create service dirs
+  ansible.builtin.file:
     group: nobody
     mode: "0777"
     owner: nobody
@@ -10,16 +11,16 @@
     - path: /opt/keycloak
     - path: /opt/keycloak/providers
 
-- name: download keycloakify theme
-  get_url:
+- name: Download keycloakify theme
+  ansible.builtin.get_url:
     url: https://storage.googleapis.com/homelabops-public/keycloakify.jar
     dest: /opt/keycloak/providers/keycloakify.jar
     force: true
     mode: "0644"
 
-- name: start pomerium container
+- name: Start pomerium container
   become: true
-  docker_container:
+  community.docker.docker_container:
     image: pomerium/pomerium:{{ global.version.pomerium }}
     name: pomerium
     ports:
@@ -28,9 +29,9 @@
     volumes:
       - /opt/pomerium/config.yaml:/pomerium/config.yaml:ro
 
-- name: start keycloak container
+- name: Start keycloak container
   become: true
-  docker_container:
+  community.docker.docker_container:
     command: start --db=postgres --hostname-strict=false --proxy-headers=xforwarded
     # entrypoint:
     #   - /bin/bash
@@ -52,7 +53,8 @@
       KC_DB_USERNAME: "{{ global.postgresql.keycloak.username }}"
       KC_DB_PASSWORD: "{{ global.postgresql.keycloak.password }}"
 
-      X509_CA_BUNDLE: /etc/x509/https/ipa-0.homelabops.dev.intermediate.crt /etc/x509/https/ipa-0.homelabops.dev.intermediate-2.crt /etc/x509/https/ipa-0.homelabops.dev.root.crt
+      X509_CA_BUNDLE: /etc/x509/https/ipa-0.homelabops.dev.intermediate.crt /etc/x509/https/ipa-0.homelabops.dev.intermediate-2.crt
+        /etc/x509/https/ipa-0.homelabops.dev.root.crt
     image: quay.io/keycloak/keycloak:{{ global.version.keycloak }}
     name: keycloak
     networks:
@@ -65,6 +67,6 @@
       - /opt/keycloak/secrets:/secrets/auth
       - /opt/keycloak/x509:/etc/x509/https
 
-- name: centos | open firewalld ports
-  import_tasks: firewalld.yaml
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
   when: is_centos

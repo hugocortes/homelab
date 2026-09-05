@@ -1,29 +1,30 @@
-- name: centos | install packages
-  import_tasks: centos.yaml
+---
+- name: centos | Install packages
+  ansible.builtin.import_tasks: centos.yaml
   when: is_centos
 
-- name: debian | install packages
-  import_tasks: debian.yaml
+- name: debian | Install packages
+  ansible.builtin.import_tasks: debian.yaml
   when: is_debian
 
-- name: enable service
-  service:
+- name: Enable service
+  ansible.builtin.service:
     name: docker
-    enabled: yes
+    enabled: true
 
-- name: start service
-  service:
+- name: Start service
+  ansible.builtin.service:
     name: docker
     state: started
 
-- name: install docker pip using python3
+- name: Install docker pip using python3
   become: false
-  pip:
+  ansible.builtin.pip:
     name:
       - docker
 
-- name: log into docker
+- name: Log into docker
   become: true
-  docker_login:
+  community.docker.docker_login:
     username: "{{ global.docker.username }}"
     password: "{{ global.docker.password }}"

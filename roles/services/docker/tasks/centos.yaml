@@ -1,18 +1,20 @@
-- name: centos | add docker repo
-  get_url:
+---
+- name: centos | Add docker repo
+  ansible.builtin.get_url:
     url: https://download.docker.com/linux/centos/docker-ce.repo
     dest: /etc/yum.repos.d/docker-ce.repo
+    mode: "0644"
 
-- name: centos | install docker dependencies
-  dnf:
+- name: centos | Install docker dependencies
+  ansible.builtin.dnf:
     name:
       - yum-utils
       - device-mapper-persistent-data
       - lvm2
     state: latest
 
-- name: centos | install docker packages
-  dnf:
+- name: centos | Install docker packages
+  ansible.builtin.dnf:
     name:
       - docker-ce
       - docker-ce-cli

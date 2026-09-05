@@ -1,5 +1,6 @@
-- name: centos | open docker metrics ports
-  include_role:
+---
+- name: centos | Open docker metrics ports
+  ansible.builtin.include_role:
     name: services/firewalld
   vars:
     firewalld_rule_name: docker

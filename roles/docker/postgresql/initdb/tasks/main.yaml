@@ -1,15 +1,16 @@
-- name: centos | install packages
-  import_tasks: centos.yaml
+---
+- name: centos | Install packages
+  ansible.builtin.import_tasks: centos.yaml
   when: is_centos
 
-- name: create database
+- name: Create database
   postgresql_db:
     login_host: "{{ global.postgresql_host }}"
     login_user: "{{ global.postgresql_user }}"
     login_password: "{{ global.postgresql_pass }}"
     name: "{{ database_name }}"
 
-- name: create database user
+- name: Create database user
   postgresql_user:
     login_host: "{{ global.postgresql_host }}"
     login_user: "{{ global.postgresql_user }}"
@@ -18,7 +19,7 @@
     name: "{{ database_user }}"
     password: "{{ database_pass }}"
 
-- name: grant all database privileges to user
+- name: Grant all database privileges to user
   postgresql_privs:
     login_host: "{{ global.postgresql_host }}"
     login_user: "{{ global.postgresql_user }}"
@@ -29,7 +30,7 @@
     obj: "{{ database_name }}"
     role: "{{ database_user }}"
 
-- name: grant all ALL_IN_SCHEMA privileges to user
+- name: Grant all ALL_IN_SCHEMA privileges to user
   postgresql_privs:
     login_host: "{{ global.postgresql_host }}"
     login_user: "{{ global.postgresql_user }}"

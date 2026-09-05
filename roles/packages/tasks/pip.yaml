@@ -3,9 +3,9 @@
 # `pip install packaging` via `command`, both unconditionally and both always
 # reporting changed. python3-pip comes from the distro package list above, so
 # ensurepip is redundant; the pip module covers the rest idempotently.
-- name: python | install build prerequisites
+- name: python | Install build prerequisites
   become: false
-  pip:
+  ansible.builtin.pip:
     name:
       - packaging
       - setuptools
@@ -16,9 +16,9 @@
   # setuptools_rust needs a rust toolchain that is not present on every host
   ignore_errors: true
 
-- name: python | install user pip packages
+- name: python | Install user pip packages
   become: false
-  pip:
+  ansible.builtin.pip:
     name: "{{ packages_pip }}"
     state: "{{ 'latest' if packages_upgrade_all | bool else 'present' }}"
     extra_args: --user

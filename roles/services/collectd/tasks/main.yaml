@@ -1,23 +1,24 @@
-- name: centos | install collectd
-  dnf:
+---
+- name: centos | Install collectd
+  ansible.builtin.dnf:
     name:
       - collectd
     state: present
   when: is_centos
 
-- name: debian | install collectd
-  apt:
+- name: debian | Install collectd
+  ansible.builtin.apt:
     name:
       - collectd
     state: present
   when: is_debian
 
-- name: set collectd conf file path
-  set_fact:
+- name: Set collectd conf file path
+  ansible.builtin.set_fact:
     collectd_conf: "{{ '/etc/collectd/collectd.conf' if is_debian else '/etc/collectd.conf' }}"
 
-- name: configure settings
-  lineinfile:
+- name: Configure settings
+  ansible.builtin.lineinfile:
     dest: "{{ collectd_conf }}"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -36,8 +37,8 @@
     - regexp: ^[#]?Interval\s
       line: Interval 60
 
-- name: load plugins
-  lineinfile:
+- name: Load plugins
+  ansible.builtin.lineinfile:
     dest: "{{ collectd_conf }}"
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -51,8 +52,8 @@
     - regexp: ^LoadPlugin fhcount$
       line: LoadPlugin fhcount
 
-- name: configure network plugin with influxdb
-  blockinfile:
+- name: Configure network plugin with influxdb
+  ansible.builtin.blockinfile:
     dest: "{{ collectd_conf }}"
     marker: "# {mark}-network ANSIBLE MANAGED BLOCK #"
     block: |
@@ -60,8 +61,8 @@
         Server "{{ global.collectd.host }}" "{{ global.collectd.port }}"
       </Plugin>
 
-- name: configure df plugin
-  blockinfile:
+- name: Configure df plugin
+  ansible.builtin.blockinfile:
     dest: "{{ collectd_conf }}"
     marker: "# {mark}-df ANSIBLE MANAGED BLOCK #"
     block: |
@@ -69,12 +70,12 @@
         ReportInodes true
       </Plugin>
 
-- name: enable collectd
-  service:
+- name: Enable collectd
+  ansible.builtin.service:
     name: collectd
-    enabled: yes
+    enabled: true
 
-- name: restart collectd
-  service:
+- name: Restart collectd
+  ansible.builtin.service:
     name: collectd
     state: restarted
