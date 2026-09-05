@@ -10,4 +10,4 @@
   gather_facts: false
   tags: always
   roles:
-    - global
+    - bootstrap

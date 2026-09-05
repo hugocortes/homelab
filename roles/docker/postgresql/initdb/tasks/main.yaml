@@ -5,25 +5,25 @@
 
 - name: Create database
   postgresql_db:
-    login_host: "{{ global.postgresql_host }}"
-    login_user: "{{ global.postgresql_user }}"
-    login_password: "{{ global.postgresql_pass }}"
+    login_host: "{{ homelab.postgresql_host }}"
+    login_user: "{{ homelab.postgresql_user }}"
+    login_password: "{{ homelab.postgresql_pass }}"
     name: "{{ database_name }}"
 
 - name: Create database user
   postgresql_user:
-    login_host: "{{ global.postgresql_host }}"
-    login_user: "{{ global.postgresql_user }}"
-    login_password: "{{ global.postgresql_pass }}"
+    login_host: "{{ homelab.postgresql_host }}"
+    login_user: "{{ homelab.postgresql_user }}"
+    login_password: "{{ homelab.postgresql_pass }}"
     db: "{{ database_name }}"
     name: "{{ database_user }}"
     password: "{{ database_pass }}"
 
 - name: Grant all database privileges to user
   postgresql_privs:
-    login_host: "{{ global.postgresql_host }}"
-    login_user: "{{ global.postgresql_user }}"
-    login_password: "{{ global.postgresql_pass }}"
+    login_host: "{{ homelab.postgresql_host }}"
+    login_user: "{{ homelab.postgresql_user }}"
+    login_password: "{{ homelab.postgresql_pass }}"
     db: "{{ database_name }}"
     privs: ALL
     type: database
@@ -32,9 +32,9 @@
 
 - name: Grant all ALL_IN_SCHEMA privileges to user
   postgresql_privs:
-    login_host: "{{ global.postgresql_host }}"
-    login_user: "{{ global.postgresql_user }}"
-    login_password: "{{ global.postgresql_pass }}"
+    login_host: "{{ homelab.postgresql_host }}"
+    login_user: "{{ homelab.postgresql_user }}"
+    login_password: "{{ homelab.postgresql_pass }}"
     db: "{{ database_name }}"
     privs: ALL
     objs: ALL_IN_SCHEMA

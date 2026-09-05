@@ -13,9 +13,9 @@
 - name: Swap ansible_user to ipa.user
   when: (is_freeipa) and (ping.failed | d(ping.unreachable) | d(false))
   block:
-    - name: "Set ansible_user ({{ ansible_user }}) to ipa.user ({{ global.ipa.user }})"
+    - name: "Set ansible_user ({{ ansible_user }}) to ipa.user ({{ homelab.ipa.user }})"
       ansible.builtin.set_fact:
-        ansible_user: "{{ global.ipa.user }}"
+        ansible_user: "{{ homelab.ipa.user }}"
 
     - name: Ping to verify current user
       ansible.builtin.ping:

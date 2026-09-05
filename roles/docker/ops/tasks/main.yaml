@@ -6,20 +6,20 @@
     driver_options:
       type: nfs
       device: ":/{{ item.mount }}"
-      o: "addr={{ global.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+      o: "addr={{ homelab.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
   with_items:
     - name: grafana
-      mount: "{{ global.server.nfs.grafana }}"
+      mount: "{{ homelab.server.nfs.grafana }}"
     - name: influxdb
-      mount: "{{ global.server.nfs.influxdb }}"
+      mount: "{{ homelab.server.nfs.influxdb }}"
     - name: influxdb_config
-      mount: "{{ global.server.nfs.influxdb_config }}"
+      mount: "{{ homelab.server.nfs.influxdb_config }}"
     - name: influxdb_startup
-      mount: "{{ global.server.nfs.influxdb_startup }}"
+      mount: "{{ homelab.server.nfs.influxdb_startup }}"
     - name: prometheus
-      mount: "{{ global.server.nfs.prometheus }}"
+      mount: "{{ homelab.server.nfs.prometheus }}"
     - name: prometheus_config
-      mount: "{{ global.server.nfs.prometheus_config }}"
+      mount: "{{ homelab.server.nfs.prometheus_config }}"
 
 - name: Create grafana network
   become: true
@@ -53,7 +53,7 @@
       GF_AUTH_GENERIC_OAUTH_ENABLED: "true"
       GF_AUTH_GENERIC_OAUTH_ALLOW_SIGN_UP: "true"
       GF_AUTH_GENERIC_OAUTH_CLIENT_ID: grafana
-      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "{{ global.grafana.oidc_client_secret }}"
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: "{{ homelab.grafana.oidc_client_secret }}"
       GF_AUTH_GENERIC_OAUTH_AUTH_URL: https://auth.homelabops.dev/realms/master/protocol/openid-connect/auth
       GF_AUTH_GENERIC_OAUTH_TOKEN_URL: https://auth.homelabops.dev/realms/master/protocol/openid-connect/token
       GF_AUTH_GENERIC_OAUTH_API_URL: https://auth.homelabops.dev/realms/master/protocol/openid-connect/userinfo
@@ -73,7 +73,7 @@
       GF_SMTP_FROM_ADDRESS: no-reply@homelabops.dev
       GF_SMTP_FROM_NAME: Grafana
       GF_SMTP_USER: no-reply@homelabops.dev
-      GF_SMTP_PASSWORD: "{{ global.grafana.smtp_password }}"
+      GF_SMTP_PASSWORD: "{{ homelab.grafana.smtp_password }}"
     image: grafana/grafana:10.0.1
     name: grafana
     networks:
@@ -88,8 +88,8 @@
   become: true
   community.docker.docker_container:
     env:
-      INFLUXDB_ADMIN_USER: "{{ global.influxdb.username }}"
-      INFLUXDB_ADMIN_PASSWORD: "{{ global.influxdb.password }}"
+      INFLUXDB_ADMIN_USER: "{{ homelab.influxdb.username }}"
+      INFLUXDB_ADMIN_PASSWORD: "{{ homelab.influxdb.password }}"
     image: influxdb:1.7.11
     name: influxdb
     networks:

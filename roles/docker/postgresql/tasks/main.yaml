@@ -17,8 +17,8 @@
   become: true
   community.docker.docker_container:
     env:
-      POSTGRES_USER: "{{ global.postgresql.username }}"
-      POSTGRES_PASSWORD: "{{ global.postgresql.password }}"
+      POSTGRES_USER: "{{ homelab.postgresql.username }}"
+      POSTGRES_PASSWORD: "{{ homelab.postgresql.password }}"
       PGDATA: /var/lib/postgresql/data/data
       PGUSER: postgres
     image: public.ecr.aws/bitnami/postgresql:15.8.0
@@ -40,8 +40,8 @@
   community.docker.docker_container:
     env:
       DATA_SOURCE_URI: "postgres:5432/?sslmode=disable"
-      DATA_SOURCE_USER: "{{ global.postgresql.username }}"
-      DATA_SOURCE_PASS: "{{ global.postgresql.password }}"
+      DATA_SOURCE_USER: "{{ homelab.postgresql.username }}"
+      DATA_SOURCE_PASS: "{{ homelab.postgresql.password }}"
     image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
     name: postgresql-metrics
     networks:

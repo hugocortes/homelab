@@ -1,26 +1,26 @@
 ---
 - name: Set sish docker ports
   ansible.builtin.set_fact:
-    ports: "['{{ global.sish.sshPort }}:{{ global.sish.sshPort }}', '{{ global.sish.forwardingPorts.http }}:{{ global.sish.forwardingPorts.http }}', '{{ global.sish.forwardingPorts.https
-      }}:{{ global.sish.forwardingPorts.https }}']"
+    ports: "['{{ homelab.sish.sshPort }}:{{ homelab.sish.sshPort }}', '{{ homelab.sish.forwardingPorts.http }}:{{ homelab.sish.forwardingPorts.http }}', '{{ homelab.sish.forwardingPorts.https
+      }}:{{ homelab.sish.forwardingPorts.https }}']"
 
 - name: Append tcp ports
   ansible.builtin.set_fact:
     ports: "{{ ports }} + ['{{ item }}:{{ item }}']"
-  with_items: "{{ global.sish.forwardingPorts.tcp }}"
+  with_items: "{{ homelab.sish.forwardingPorts.tcp }}"
 
 - name: Launch sish container
   become: true
   community.docker.docker_container:
     name: sish
-    image: "antoniomika/sish:{{ global.sish.tag }}"
+    image: "antoniomika/sish:{{ homelab.sish.tag }}"
     restart_policy: unless-stopped
     hostname: "{{ inventory_hostname }}"
     ports: "{{ ports }}"
     command: >-
-      --ssh-address=:{{ global.sish.sshPort }}
-      --http-address=:{{ global.sish.forwardingPorts.http }}
-      --https-address=:{{ global.sish.forwardingPorts.https }}
+      --ssh-address=:{{ homelab.sish.sshPort }}
+      --http-address=:{{ homelab.sish.forwardingPorts.http }}
+      --https-address=:{{ homelab.sish.forwardingPorts.https }}
       --https=true
       --https-certificate-directory=/ssl
       --https-ondemand-certificate=true
@@ -28,10 +28,10 @@
       --authentication-password=""
       --authentication-keys-directory=/pubkeys
       --private-key-location=/keys/ssh_key
-      --private-key-passphrase={{ global.sish.privateKeyPassphrase }}
+      --private-key-passphrase={{ homelab.sish.privateKeyPassphrase }}
       --bind-random-ports=false
       --bind-random-subdomains=false
-      --domain={{ global.sish.domain }}
+      --domain={{ homelab.sish.domain }}
       --idle-connection-timeout=600s
     volumes:
       - "~/sish/ssl:/ssl"

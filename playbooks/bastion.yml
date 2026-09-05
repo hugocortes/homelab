@@ -13,9 +13,9 @@
       ansible.builtin.fail:
         msg: bastion host and duo settings required
       when: >-
-        global.bastion is undefined or not global.bastion.host
-        or not global.bastion.duo or not global.bastion.duo.ikey
-        or not global.bastion.duo.skey or not global.bastion.duo.host
+        homelab.bastion is undefined or not homelab.bastion.host
+        or not homelab.bastion.duo or not homelab.bastion.duo.ikey
+        or not homelab.bastion.duo.skey or not homelab.bastion.duo.host
   roles:
     - services/duo
     - services/ssh/bastion

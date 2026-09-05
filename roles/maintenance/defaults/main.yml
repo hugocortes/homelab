@@ -19,7 +19,7 @@ maintenance_prune: "{{ 'prune' in ansible_run_tags }}"
 maintenance_force_logrotate: "{{ maintenance_prune }}"
 
 # Remove unused docker images. Not just dangling ones -- every bump of
-# global.version leaves a full previous image behind. `until` keeps anything
+# homelab.version leaves a full previous image behind. `until` keeps anything
 # recent so a rollback still has its image locally.
 maintenance_prune_docker: "{{ maintenance_prune }}"
 maintenance_docker_prune_until: 168h

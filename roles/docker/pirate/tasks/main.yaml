@@ -6,16 +6,16 @@
     driver_options:
       type: nfs
       device: ":/{{ item.mount }}"
-      o: "addr={{ global.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+      o: "addr={{ homelab.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
   with_items:
     - name: downloads
-      mount: "{{ global.pirate.nfs.downloads }}"
+      mount: "{{ homelab.pirate.nfs.downloads }}"
     - name: ebooks
-      mount: "{{ global.pirate.nfs.ebooks }}"
+      mount: "{{ homelab.pirate.nfs.ebooks }}"
     - name: movies
-      mount: "{{ global.pirate.nfs.movies }}"
+      mount: "{{ homelab.pirate.nfs.movies }}"
     - name: tv
-      mount: "{{ global.pirate.nfs.tv }}"
+      mount: "{{ homelab.pirate.nfs.tv }}"
 
 - name: Create service dirs
   ansible.builtin.file:
@@ -41,7 +41,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/calibre:{{ global.version.calibre }}
+    image: linuxserver/calibre:{{ homelab.version.calibre }}
     name: calibre-server
     ports:
       - 6060:8080
@@ -57,7 +57,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: ghcr.io/flaresolverr/flaresolverr:{{ global.version.flaresolverr }}
+    image: ghcr.io/flaresolverr/flaresolverr:{{ homelab.version.flaresolverr }}
     name: flaresolverr
     ports:
       - 8191:8191
@@ -68,7 +68,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/jackett:{{ global.version.jackett }}
+    image: linuxserver/jackett:{{ homelab.version.jackett }}
     name: jackett
     ports:
       - 9117:9117
@@ -82,7 +82,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/radarr:{{ global.version.radarr }}
+    image: linuxserver/radarr:{{ homelab.version.radarr }}
     name: radarr
     ports:
       - 7878:7878
@@ -97,7 +97,7 @@
 #   docker_container:
 #     env:
 #       TZ: America/Los_Angeles
-#     image: linuxserver/readarr:{{ global.version.readarr }}
+#     image: linuxserver/readarr:{{ homelab.version.readarr }}
 #     name: readarr
 #     ports:
 #       - 8787:8787
@@ -112,7 +112,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/sabnzbd:{{ global.version.sabnzbd }}
+    image: linuxserver/sabnzbd:{{ homelab.version.sabnzbd }}
     name: sabnzbd
     ports:
       - 8080:8080
@@ -126,7 +126,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/sonarr:{{ global.version.sonarr }}
+    image: linuxserver/sonarr:{{ homelab.version.sonarr }}
     name: sonarr
     ports:
       - 8989:8989
@@ -141,7 +141,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/transmission:{{ global.version.transmission }}
+    image: linuxserver/transmission:{{ homelab.version.transmission }}
     name: transmission
     ports:
       - 9091:9091

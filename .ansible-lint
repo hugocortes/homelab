@@ -29,13 +29,13 @@ skip_list:
   - role-name[path]
 
   # --- tracked elsewhere, unskip when the ticket lands -------------------
-  # AI-33: roles reach into one top-level `global:` dict instead of having
-  # prefixed role variables. Note ansible-lint also flags `global` itself as a
-  # reserved variable name (schema[vars]) -- a real argument for that ticket.
+  # AI-33: roles reach into one top-level `homelab:` dict instead of having
+  # prefixed role variables. The dict was called `global` until it was renamed
+  # -- `global` is a reserved Ansible variable name, so schema[vars] no longer
+  # needs skipping.
   - var-naming[no-role-prefix]
   - var-naming[pattern]
   - var-naming[no-keyword]
-  - schema[vars]
   # AI-34: command/shell tasks without changed_when, shell without pipefail,
   # systemctl where the systemd module would do. Note some are intentional
   # read-only probes that already carry changed_when: false.

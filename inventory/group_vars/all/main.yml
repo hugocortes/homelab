@@ -1,5 +1,5 @@
 ---
-global:
+homelab:
   reboot:
     min_wait_time: 15
     max_wait_time: 30
