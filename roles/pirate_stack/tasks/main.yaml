@@ -142,13 +142,13 @@
   become: true
   ansible.builtin.slurp:
     src: /opt/transmission/settings.json
-  register: _transmission_settings_raw
+  register: _pirate_stack_transmission_raw
   failed_when: false
 
 - name: Transmission | Parse the current settings
   ansible.builtin.set_fact:
-    _transmission_settings: >-
-      {{ (_transmission_settings_raw.content | default('e30=')) | b64decode | from_json }}
+    _pirate_stack_transmission: >-
+      {{ (_pirate_stack_transmission_raw.content | default('e30=')) | b64decode | from_json }}
 
 - name: Transmission | Stop before editing settings.json
   become: true
@@ -156,9 +156,9 @@
     name: transmission
     state: stopped
   when:
-    - _transmission_settings_raw.content is defined
-    - _transmission_settings.get('blocklist-enabled') != true
-      or _transmission_settings.get('lpd-enabled') != false
+    - _pirate_stack_transmission_raw.content is defined
+    - not _pirate_stack_transmission.get('blocklist-enabled', false)
+      or _pirate_stack_transmission.get('lpd-enabled', false)
 
 - name: Transmission | Blocklist on, local peer discovery off
   become: true
@@ -167,9 +167,11 @@
     regexp: "{{ item.regexp }}"
     replace: "{{ item.replace }}"
   loop:
-    - { regexp: '"blocklist-enabled": false', replace: '"blocklist-enabled": true' }
-    - { regexp: '"lpd-enabled": true', replace: '"lpd-enabled": false' }
-  when: _transmission_settings_raw.content is defined
+    - regexp: '"blocklist-enabled": false'
+      replace: '"blocklist-enabled": true'
+    - regexp: '"lpd-enabled": true'
+      replace: '"lpd-enabled": false'
+  when: _pirate_stack_transmission_raw.content is defined
 
 - name: Transmission | Blocklist directory (the container runs as 911)
   become: true
