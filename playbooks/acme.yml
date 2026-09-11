@@ -12,7 +12,7 @@
   tasks:
     - name: Obtain certificates
       ansible.builtin.include_role:
-        name: ansible-letsencrypt-cloudflare
+        name: letsencrypt_cloudflare
 
     - name: Install certificates
       ansible.builtin.include_role:

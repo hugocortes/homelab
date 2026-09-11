@@ -2,7 +2,7 @@
 # Vendored upstream code -- not ours to lint or fix.
 exclude_paths:
   - ansible-freeipa/
-  - ansible-letsencrypt-cloudflare/
+  - roles/letsencrypt_cloudflare/
   - .git/
 
 # Everything below is a deliberate exception, not a blanket mute. The intent is

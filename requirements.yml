@@ -35,5 +35,7 @@ collections:
 # gates added in AI-24 and cannot be exercised against the live server. That is
 # its own change.
 #
-# ansible-letsencrypt-cloudflare likewise stays a submodule: the working copy
-# has uncommitted local modifications (AI-35) that must be reconciled first.
+# ansible-letsencrypt-cloudflare is no longer a submodule. It carried local
+# modifications that could not be pushed anywhere, so it is vendored at
+# roles/letsencrypt_cloudflare -- see that directory's VENDORED.md for its
+# provenance and the three fixes carried against upstream.

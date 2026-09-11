@@ -3,7 +3,7 @@ extends: default
 
 ignore: |
   ansible-freeipa/
-  ansible-letsencrypt-cloudflare/
+  roles/letsencrypt_cloudflare/
   .git/
   # ansible-vault ciphertext -- starts with $ANSIBLE_VAULT, not `---`
   inventory/group_vars/*/vault.yml
