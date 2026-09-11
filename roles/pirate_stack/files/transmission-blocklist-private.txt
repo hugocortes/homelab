@@ -1,0 +1,10 @@
+# Transmission blocklist, P2P plaintext format (description:first-last).
+# Peers that announce private, carrier-NAT, link-local or loopback addresses
+# cannot be reached from here and only produce refused connections at the
+# firewall. Loaded from /config/blocklists at start when blocklist-enabled is true.
+Private RFC1918 10/8:10.0.0.0-10.255.255.255
+Private RFC1918 172.16/12:172.16.0.0-172.31.255.255
+Private RFC1918 192.168/16:192.168.0.0-192.168.255.255
+Carrier NAT 100.64/10:100.64.0.0-100.127.255.255
+Link-local 169.254/16:169.254.0.0-169.254.255.255
+Loopback 127/8:127.0.0.0-127.255.255.255

@@ -1,0 +1,13 @@
+---
+# Plex, Gramps, Miniflux, Ombi, Calibre-Web, Tautulli and their databases.
+- import_playbook: bootstrap.yml
+
+- name: Configure media
+  hosts: media
+  become: true
+  gather_facts: false
+  tags: media
+  roles:
+    - mysql
+    - postgresql
+    - media_stack

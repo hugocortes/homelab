@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+# certbot dns-cloudflare credentials. Mode 0600; certbot warns loudly otherwise.
+{% if certbot_cloudflare_api_token | length > 0 %}
+dns_cloudflare_api_token = {{ certbot_cloudflare_api_token }}
+{% else %}
+# Legacy global API key. Prefer a scoped token -- see AI-43.
+dns_cloudflare_email = {{ certbot_cloudflare_email }}
+dns_cloudflare_api_key = {{ certbot_cloudflare_api_key }}
+{% endif %}

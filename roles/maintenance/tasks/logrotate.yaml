@@ -1,0 +1,26 @@
+---
+# The root cause of the multi-GB logs: /etc/logrotate.d rules are present and
+# correct, but the timer that invokes them is disabled, so nothing has rotated
+# since 2024 (some entries in logrotate.status date to 2021).
+- name: logrotate | Install
+  become: true
+  ansible.builtin.package:
+    name: logrotate
+    state: present
+
+- name: logrotate | Enable and start the timer
+  become: true
+  ansible.builtin.systemd:
+    name: logrotate.timer
+    enabled: true
+    state: started
+
+- name: logrotate | Gather service state
+  become: true
+  ansible.builtin.service_facts:
+
+- name: logrotate | Show state
+  ansible.builtin.debug:
+    msg: >-
+      {{ inventory_hostname }}: logrotate.timer is
+      {{ ansible_facts.services['logrotate.timer'].state | default('unknown') }}"

@@ -1,0 +1,31 @@
+---
+# Vendored upstream code -- not ours to lint or fix.
+exclude_paths:
+  - ansible-freeipa/
+  - roles/letsencrypt_cloudflare/
+  - .git/
+
+# Everything below is a deliberate exception, not a blanket mute. The intent is
+# that `ansible-lint` exits clean, so any NEW finding is a real regression
+# rather than noise on top of a permanent backlog.
+skip_list:
+  # --- deliberate conventions -------------------------------------------
+  # Task names are prefixed `centos | ` / `debian | ` to show which OS branch
+  # they belong to. That convention is worth more than a leading capital.
+  - name[casing]
+  - name[play]
+  # Several task names interpolate the thing being acted on, e.g.
+  # "{{ firewalld_rule_name }} | enable firewalld port".
+  - name[template]
+  # The upgrade path uses state=latest on purpose -- see packages_upgrade_all
+  # in roles/packages/defaults. The baseline install is state=present.
+  - package-latest
+  # ansible-lint's own YAML reformatter folds long Jinja expressions across
+  # lines; the wrapped result is what trips this.
+  - yaml[line-length]
+
+  # --- tracked elsewhere, unskip when the ticket lands -------------------
+  # AI-33: roles reach into one top-level `homelab:` dict instead of having
+  # prefixed role variables. The dict was called `global` until it was renamed
+  # -- `global` is a reserved Ansible variable name, so schema[vars] no longer
+  # needs skipping.

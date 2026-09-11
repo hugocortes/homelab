@@ -1,0 +1,51 @@
+---
+- name: Set system facts # noqa: var-naming[no-role-prefix]
+  ansible.builtin.set_fact:
+    is_centos: "{{ ansible_os_family == 'RedHat' }}"
+    is_debian: "{{ ansible_os_family == 'Debian' }}"
+    is_darwin: "{{ ansible_os_family == 'Darwin' }}"
+
+- name: Set ansible_become_home
+  block:
+    - name: Get directory
+      ansible.builtin.shell: |
+        set -o pipefail
+        getent passwd {{ ansible_become_user }} | awk -F: '{ print $6 }'
+      args:
+        executable: /bin/bash
+      register: _bootstrap_home
+      changed_when: false
+      check_mode: false
+      ignore_errors: true
+
+    - name: Set fact
+      ansible.builtin.set_fact:
+        ansible_become_home: "{{ _bootstrap_home.stdout }}"
+
+- name: Set ansible_user_home
+  block:
+    - name: Get directory
+      ansible.builtin.shell: |
+        set -o pipefail
+        getent passwd {{ ansible_user }} | awk -F: '{ print $6 }'
+      args:
+        executable: /bin/bash
+      register: _bootstrap_home
+      changed_when: false
+      check_mode: false
+
+    - name: Set fact
+      ansible.builtin.set_fact:
+        ansible_user_home: "{{ _bootstrap_home.stdout }}"
+
+- name: Set ansible_users for installing packages to multiple users
+  ansible.builtin.set_fact:
+    ansible_users:
+      - home: "{{ ansible_user_home }}"
+        user: "{{ ansible_user }}"
+        become: false
+
+- name: Append become user to ansible_users
+  ansible.builtin.set_fact:
+    ansible_users: "{{ ansible_users + [{'home': ansible_become_home, 'user': ansible_become_user, 'become': true}] }}"
+  when: ansible_user != ansible_become_user

@@ -1,0 +1,229 @@
+---
+- name: Create transcode dir
+  ansible.builtin.file:
+    path: /dev/shm/plex
+    owner: nobody
+    group: nobody
+    state: directory
+    mode: "0777"
+
+- name: Create service dirs
+  ansible.builtin.file:
+    group: nobody
+    mode: "0777"
+    owner: nobody
+    path: "{{ item.path }}"
+    state: directory
+  with_items:
+    - path: /opt/calibre
+    - path: /opt/gramps
+    - path: /opt/gramps/cache
+    - path: /opt/gramps/db
+    - path: /opt/gramps/index
+    - path: /opt/gramps/media
+    - path: /opt/gramps/secret
+    - path: /opt/gramps/thumbnail
+    - path: /opt/gramps/tmp
+    - path: /opt/gramps/users
+    - path: /opt/ombi
+    - path: /opt/plex
+    - path: /opt/tautulli
+
+- name: Create plex nfs volumes
+  become: true
+  community.docker.docker_volume:
+    name: "{{ item.name }}"
+    driver_options:
+      type: nfs
+      device: ":/{{ item.mount }}"
+      o: "addr={{ nfs_host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+    # Default is `never`: editing nfs_host or the mount options used to
+    # report changed=0 and leave the volume pointing at the old export forever.
+    recreate: options-changed
+  with_items:
+    - name: ebooks
+      mount: "{{ pirate_nfs_ebooks }}"
+    - name: movies
+      mount: "{{ media_nfs_movies }}"
+    - name: tvshows
+      mount: "{{ media_nfs_tvshows }}"
+
+- name: Start calibre container
+  become: true
+  community.docker.docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: linuxserver/calibre-web:{{ version_calibre_web }}
+    name: calibre
+    ports:
+      - 8083:8083
+    restart_policy: always
+    volumes:
+      - /opt/calibre:/config
+      - ebooks:/books
+
+- name: Start gramps container
+  become: true
+  community.docker.docker_container:
+    env:
+      GRAMPSWEB_BASE_URL: https://tree.corteshq.net/
+
+      GRAMPSWEB_EMAIL_HOST: smtp.zoho.com
+      GRAMPSWEB_EMAIL_PORT: "465"
+      GRAMPSWEB_EMAIL_HOST_USER: no-reply@homelabops.dev
+      GRAMPSWEB_EMAIL_HOST_PASSWORD: "{{ gramps_smtp_password }}"
+      GRAMPSWEB_EMAIL_USE_SSL: "False"
+      GRAMPSWEB_EMAIL_USE_STARTTLS: "False"
+      GRAMPSWEB_DEFAULT_FROM_EMAIL: no-reply@corteshq.net
+
+      GRAMPSWEB_OIDC_AUTO_REDIRECT: "True"
+      GRAMPSWEB_OIDC_CLIENT_ID: tree
+      GRAMPSWEB_OIDC_CLIENT_SECRET: "{{ gramps_oidc_client_secret }}"
+      GRAMPSWEB_OIDC_DISABLE_LOCAL_AUTH: "True"
+      GRAMPSWEB_OIDC_ENABLED: "True"
+      GRAMPSWEB_OIDC_GROUP_ADMIN: admin
+      GRAMPSWEB_OIDC_GROUP_CONTRIBUTOR: contributor
+      GRAMPSWEB_OIDC_GROUP_EDITOR: editor
+      GRAMPSWEB_OIDC_GROUP_MEMBER: member
+      GRAMPSWEB_OIDC_ISSUER: https://auth.corteshq.net/realms/apps
+      GRAMPSWEB_OIDC_NAME: CortesHQ
+      GRAMPSWEB_OIDC_SCOPES: openid email profile
+      GRAMPSWEB_OIDC_ROLE_CLAIM: roles
+
+      GRAMPSWEB_REGISTRATION_DISABLED: "True"
+
+      GRAMPSWEB_TREE: gramps
+      # doesn't work :(
+      # GRAMPSWEB_POSTGRES_HOST: postgres
+      # GRAMPSWEB_POSTGRES_PASSWORD: "{{ postgresql_gramps_password }}"
+      # GRAMPSWEB_POSTGRES_USER: "{{ postgresql_gramps_username }}"
+      # GRAMPSWEB_DB_URI: postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_search }}
+
+      GRAMPSWEB_SEARCH_INDEX_DB_URI: "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_search
+        }}"
+      GRAMPSWEB_USER_DB_URI: "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_user
+        }}"
+    image: ghcr.io/gramps-project/grampsweb:{{ version_gramps }}
+    name: gramps
+    networks:
+      - name: postgres
+    ports:
+      - 5000:5000
+    restart_policy: always
+    volumes:
+      - /opt/gramps/thumbnail:/app/thumbnail_cache
+      - /opt/gramps/cache:/app/cache
+      - /opt/gramps/secret:/app/secret
+      - /opt/gramps/db:/root/.gramps
+      - /opt/gramps/media:/app/media
+      - /opt/gramps/tmp:/tmp
+      - /opt/gramps/users:/app/users
+      - /opt/gramps/index:/app/indexdir
+
+- name: Start miniflux container
+  become: true
+  community.docker.docker_container:
+    env:
+      RUN_MIGRATIONS: "1"
+      CREATE_ADMIN: "0"
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: "{{ miniflux_admin_password }}"
+      DATABASE_URL: "postgres://{{ postgresql_miniflux_username }}:{{ postgresql_miniflux_password }}@postgres:5432/{{ postgresql_miniflux_database
+        }}?sslmode=disable"
+      OAUTH2_PROVIDER: oidc
+      OAUTH2_CLIENT_ID: miniflux
+      OAUTH2_CLIENT_SECRET: "{{ miniflux_oidc_client_secret }}"
+      OAUTH2_REDIRECT_URL: https://miniflux.corteshq.net/oauth2/oidc/callback
+      OAUTH2_OIDC_DISCOVERY_ENDPOINT: https://auth.corteshq.net/realms/master
+      OAUTH2_USER_CREATION: "1"
+    image: miniflux/miniflux:{{ version_miniflux }}
+    name: miniflux
+    networks:
+      - name: postgres
+    ports:
+      - 8080:8080
+    restart_policy: always
+
+- name: Start ombi container
+  become: true
+  community.docker.docker_container:
+    env:
+      MYSQL_DATABASE: "{{ mysql_ombi_database }}"
+      MYSQL_PASSWORD: "{{ mysql_ombi_password }}"
+      MYSQL_USER: "{{ mysql_ombi_username }}"
+      TZ: America/Los_Angeles
+    image: linuxserver/ombi:{{ version_ombi }}
+    name: ombi
+    networks:
+      - name: mysql
+    ports:
+      - 3579:3579
+    restart_policy: always
+    volumes:
+      - /opt/ombi:/config
+
+- name: Start plex container
+  become: true
+  community.docker.docker_container:
+    name: plex
+    image: plexinc/pms-docker:plexpass
+    network_mode: host
+    restart_policy: always
+    env:
+      ADVERTISE_IP: "http://{{ ansible_host }}:32400"
+      CHANGE_CONFIG_DIR_OWNERSHIP: "false"
+      PLEX_CLAIM: "{{ plex_claim }}"
+      # `| string` is load-bearing: a bare "{{ int_var }}" templates back to an
+      # int under native types, and docker_container rejects non-string env.
+      PLEX_GID: "{{ media_stack_plex_gid | string }}"
+      PLEX_UID: "{{ media_stack_plex_uid | string }}"
+      # Was `TV`, which pms-docker ignores -- the server ran on UTC.
+      TZ: America/Los_Angeles
+    devices:
+      # tv tuner
+      # need to look into how to fix this
+      # - /dev/dvb:/dev/dvb
+      #
+      # This host is an i3-8100 / UHD 630. There is no nvidia GPU and no
+      # container toolkit, so the NVIDIA_VISIBLE_DEVICES and
+      # NVIDIA_DRIVER_CAPABILITIES that used to sit above were inert.
+      # QSV uses the render node only; card0 is the legacy DRM node and is
+      # 0660 root:video on the host, which uid 1000 could never open.
+      - /dev/dri/renderD128:/dev/dri/renderD128
+    volumes:
+      - /dev/shm/plex:/transcode
+      - /opt/plex:/config
+      # Sonarr/Radarr on the pirate host own these; Plex only reads them.
+      - movies:/data/movies:ro
+      - tvshows:/data/tv-shows:ro
+
+- name: Start tautulli container
+  become: true
+  community.docker.docker_container:
+    env:
+      TZ: America/Los_Angeles
+    image: tautulli/tautulli:{{ version_tautulli }}
+    name: tautulli
+    ports:
+      - 8181:8181
+    restart_policy: always
+    volumes:
+      - /opt/tautulli:/config
+      # Plex's own log dir on local disk. Tautulli gets everything else from
+      # the Plex API; this mount is only for its log viewer.
+      - /opt/plex/Library/Application Support/Plex Media Server/Logs:/tautulli_logs:ro
+
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
+  when: is_centos
+
+# private.yaml is deliberately gitignored and lives only on the control node.
+# The guard used to be an ansible.builtin.stat, which runs on the MANAGED node
+# against `role_path` -- a control-node path that does not exist there. It was
+# therefore always false and the include never fired (AI-42).
+#
+# `is exists` is a Jinja test, evaluated during templating on the control node,
+# which is where the file actually is.
+- name: Include private tasks
+  ansible.builtin.include_tasks: private.yaml
+  when: (role_path ~ '/tasks/private.yaml') is exists

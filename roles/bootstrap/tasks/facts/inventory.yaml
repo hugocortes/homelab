@@ -1,0 +1,17 @@
+---
+# noqa reasoning: these are a cross-role contract describing the HOST, not
+# variables private to this role. Prefixing them bootstrap_* would imply
+# ownership that does not match how they are used -- is_centos is read by 17
+# sites across a dozen roles. Scoped here so the rule stays enforced elsewhere.
+- name: Set server usage facts # noqa: var-naming[no-role-prefix]
+  ansible.builtin.set_fact:
+    is_bastion: "{{ inventory_hostname == 'bastion' }}"
+    is_docker: "{{ 'docker' in group_names }}"
+    is_freeipa_server: "{{ 'ipaservers' in group_names }}"
+    is_freeipa_replica: "{{ 'ipareplicas' in group_names }}"
+    is_freeipa_client: "{{ 'ipaclients' in group_names }}"
+    is_server: "{{ 'servers' in group_names }}"
+
+- name: Set is_freeipa fact # noqa: var-naming[no-role-prefix]
+  ansible.builtin.set_fact:
+    is_freeipa: "{{ is_freeipa_server or is_freeipa_replica or is_freeipa_client }}"

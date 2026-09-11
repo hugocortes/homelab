@@ -1,0 +1,16 @@
+---
+# Every rule is written to both the runtime and permanent configurations by the
+# tasks themselves, so nothing needs reloading -- this only guarantees the
+# daemon is up.
+#
+# Replaces three handlers that all listened on the same name: a start, a
+# `firewall-cmd --runtime-to-permanent` shell-out (redundant, since permanent
+# is set explicitly, and it had no changed_when), and a full restart (which
+# would have discarded runtime-only rules).
+- name: Enable firewalld service
+  become: true
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: true
+  listen: enable firewalld

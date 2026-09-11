@@ -1,0 +1,9 @@
+---
+ipareplica_domain: ipa.homelabops.dev
+ipareplica_realm: IPA.HOMELABOPS.DEV
+ipareplica_dirsrv_cert_files: /etc/ssl/{{ ansible_host }}/{{ ansible_host }}.fullchain,/etc/ssl/{{ ansible_host }}/{{ ansible_host }}.key
+ipareplica_http_cert_files: /etc/ssl/{{ ansible_host }}/{{ ansible_host }}.fullchain,/etc/ssl/{{ ansible_host }}/{{ ansible_host }}.key
+ipareplica_dirsrv_pin: "{{ vault_ipareplica_dirsrv_pin }}"
+ipareplica_http_pin: "{{ vault_ipareplica_http_pin }}"
+ipareplica_pkinit_pin: "{{ vault_ipareplica_pkinit_pin }}"
+ipareplica_no_pkinit: true

@@ -1,0 +1,24 @@
+---
+# Rules to apply. Each entry is a dict:
+#   firewalld_ports:    [{ name: plex, port: 32400/tcp }]
+#   firewalld_services: [{ name: freeipa http, service: http }]
+# Both accept an optional `state:` (default "enabled") to remove a rule.
+firewalld_ports: []
+firewalld_services: []
+firewalld_zone: public
+
+# Deliberately false. Installing firewalld is never a side effect of opening a
+# port, because starting it applies the default `public` zone -- which permits
+# only cockpit, dhcpv6-client and ssh.
+#
+# ipa-0 has no firewalld and is a member of the `docker` group, so a default of
+# true would let playbooks/docker.yml enable it there while the FreeIPA service
+# rules (ldap, ldaps, kerberos, kpasswd, http, https) live in
+# services/freeipa/server -- a role that never runs, because playbooks/ipa.yml
+# targets `ipaservers` and the inventory group is `ipaserver` (AI-24). The
+# result would be sssd on media and pirate losing the directory: fleet-wide
+# authentication failure.
+#
+# Enabling firewalld on a host is therefore an explicit, deliberate act with
+# its full rule set applied in the same change. See AI-23.
+firewalld_manage_package: false

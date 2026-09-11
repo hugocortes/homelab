@@ -1,0 +1,23 @@
+---
+# Applied to both configurations: permanent so it survives a reload, runtime so
+# it takes effect now. The old role notified the handler only from the runtime
+# task while service.yaml notified from both; normalised here.
+- name: "{{ firewalld_rule_name }} | enable firewalld port (permanent)"
+  become: true
+  ansible.posix.firewalld:
+    zone: "{{ firewalld_zone }}"
+    state: "{{ item.state | default('enabled') }}"
+    port: "{{ item.port }}"
+    permanent: true
+  loop: "{{ firewalld_ports }}"
+  notify: enable firewalld
+
+- name: "{{ firewalld_rule_name }} | enable firewalld port (runtime)"
+  become: true
+  ansible.posix.firewalld:
+    zone: "{{ firewalld_zone }}"
+    state: "{{ item.state | default('enabled') }}"
+    port: "{{ item.port }}"
+    permanent: false
+  loop: "{{ firewalld_ports }}"
+  notify: enable firewalld

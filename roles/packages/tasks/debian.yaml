@@ -1,0 +1,30 @@
+---
+- name: debian | Update apt cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: debian | Install baseline packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - nfs-common
+      - python3
+      - python3-pip
+      - sshpass
+      - tar
+      - tmux
+      - tree # display directory tree
+      - vim
+      - zsh
+    state: present
+
+- name: debian | Upgrade every package on the host
+  become: true
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: true
+  when: packages_upgrade_all | bool

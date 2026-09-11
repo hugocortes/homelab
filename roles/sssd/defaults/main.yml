@@ -1,0 +1,23 @@
+---
+# sssd resolves a server by querying A then AAAA. If the AAAA query returns
+# NOERROR with no data -- which is exactly what happens when a host simply has
+# no IPv6 address -- sssd treats the WHOLE resolution as failed, marks the
+# server 'not working', and drops the domain offline:
+#
+#   Trying to resolve AAAA record of 'ipa-0.homelabops.dev' in DNS
+#   No more address families to retry
+#   Failed to resolve server: DNS server returned answer with no data
+#   No available servers for service 'IPA'
+#   Marking server 'ipa-0.homelabops.dev' as 'not working'
+#
+# The A record resolved correctly the whole time. None of these hosts has a
+# global IPv6 address, so asking for AAAA at all is pure cost.
+sssd_lookup_family_order: ipv4_only
+
+# Domain stanza to write into. group_vars/ipacluster supplies ipaserver_domain.
+sssd_domain: "{{ ipaserver_domain }}"
+
+# sssd refuses to load config it does not consider secure; match sssd.conf.
+sssd_conf_owner: root
+sssd_conf_group: root
+sssd_conf_mode: "0600"

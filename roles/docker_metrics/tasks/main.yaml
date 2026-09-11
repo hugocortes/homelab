@@ -1,0 +1,33 @@
+---
+- name: Launch node-exporter container
+  become: true
+  community.docker.docker_container:
+    name: node-exporter
+    image: prom/node-exporter:v1.8.2
+    restart_policy: unless-stopped
+    command: --path.rootfs=/hostfs
+    hostname: "{{ inventory_hostname }}"
+    ports:
+      - 9100:9100
+    volumes:
+      - /:/hostfs
+
+- name: Launch cadvisor container
+  become: true
+  community.docker.docker_container:
+    name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.50.0
+    restart_policy: unless-stopped
+    hostname: "{{ inventory_hostname }}"
+    ports:
+      - 9080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
+  when: is_centos

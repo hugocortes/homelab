@@ -1,4 +1,0 @@
-- name: centos | install nfs packages
-  dnf:
-    name: nfs-utils
-    state: latest

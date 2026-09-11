@@ -1,0 +1,20 @@
+---
+- name: "{{ firewalld_rule_name }} | enable firewalld service (permanent)"
+  become: true
+  ansible.posix.firewalld:
+    zone: "{{ firewalld_zone }}"
+    state: "{{ item.state | default('enabled') }}"
+    service: "{{ item.service }}"
+    permanent: true
+  loop: "{{ firewalld_services }}"
+  notify: enable firewalld
+
+- name: "{{ firewalld_rule_name }} | enable firewalld service (runtime)"
+  become: true
+  ansible.posix.firewalld:
+    zone: "{{ firewalld_zone }}"
+    state: "{{ item.state | default('enabled') }}"
+    service: "{{ item.service }}"
+    permanent: false
+  loop: "{{ firewalld_services }}"
+  notify: enable firewalld

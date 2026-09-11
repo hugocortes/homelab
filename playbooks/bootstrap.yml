@@ -1,0 +1,13 @@
+---
+# Establishes the facts every other play depends on: is_centos / is_debian,
+# the is_freeipa family, ansible_user_home / ansible_become_home and
+# ansible_users. Imported at the head of each playbook so that any playbook
+# can be run on its own -- the facts are set_fact, so they do not survive
+# into a separate ansible-playbook invocation.
+- name: Bootstrap facts and verify connectivity
+  hosts: all
+  become: false
+  gather_facts: false
+  tags: always
+  roles:
+    - bootstrap

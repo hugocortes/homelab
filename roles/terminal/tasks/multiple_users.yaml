@@ -1,63 +1,115 @@
-- name: installing packages for user {{ item.user }}
-  debug:
+---
+# oh-my-zsh is owned by this role, not by `packages`. It is a shell framework
+# and the dotfiles below depend on it already being present.
+- name: Check if oh-my-zsh is installed
+  become: "{{ item.become }}"
+  become_user: "{{ item.user }}"
+  ansible.builtin.stat:
+    path: "{{ item.home }}/.oh-my-zsh"
+  register: _terminal_ohmyzsh
 
-- name: configure vim
+- name: Install oh-my-zsh
+  become: "{{ item.become }}"
+  become_user: "{{ item.user }}"
+  when: not _terminal_ohmyzsh.stat.exists
+  block:
+    - name: Download oh-my-zsh install script
+      ansible.builtin.get_url:
+        url: https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+        dest: "/tmp/ohmyzsh-install-{{ item.user }}.sh"
+        mode: "0755"
+
+    - name: Run oh-my-zsh install script
+      ansible.builtin.command: "/bin/sh /tmp/ohmyzsh-install-{{ item.user }}.sh"
+      args:
+        creates: "{{ item.home }}/.oh-my-zsh"
+
+- name: Update oh-my-zsh
+  become: "{{ item.become }}"
+  become_user: "{{ item.user }}"
+  ansible.builtin.git:
+    repo: https://github.com/ohmyzsh/ohmyzsh.git
+    dest: "{{ item.home }}/.oh-my-zsh"
+    version: master
+    update: true
+  when:
+    - _terminal_ohmyzsh.stat.exists
+    - terminal_upgrade | bool
+
+- name: Configure vim
   become: "{{ item.become }}"
   become_user: "{{ item.user }}"
   block:
-    - name: create vim-plug dir
-      file:
+    - name: Create vim-plug dir
+      ansible.builtin.file:
         path: "{{ item.home }}/.local/share/nvim/site/autoload"
         state: directory
+        mode: "0755"
 
-    - name: download vim-plug
-      get_url:
+    - name: Download vim-plug
+      ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
         dest: "{{ item.home }}/.local/share/nvim/site/autoload/plug.vim"
+        mode: "0644"
 
-    - name: create .vim cache dir
-      file:
+    - name: Create .vim cache dir
+      ansible.builtin.file:
         path: "{{ item.home }}/.cache"
         state: directory
+        # 0700, not 0755: root's .cache is already 0700 and a cache
+        # directory is private to its owner. Declaring 0755 here would
+        # have loosened it.
+        mode: "0700"
 
-    - name: create .vimrc config
-      template:
+    - name: Create .vimrc config
+      ansible.builtin.template:
         src: .vimrc.j2
         dest: "{{ item.home }}/.vimrc"
-        force: yes
+        force: true
+        mode: "0644"
 
-    - name: create init.vim config dir
-      file:
+    - name: Create init.vim config dir
+      ansible.builtin.file:
         path: "{{ item.home }}/.config/nvim"
         state: directory
+        mode: "0755"
 
-    - name: create init.vim config
-      template:
+    - name: Create init.vim config
+      ansible.builtin.template:
         src: init.vim.j2
         dest: "{{ item.home }}/.config/nvim/init.vim"
-        force: yes
+        force: true
+        mode: "0644"
 
-    - name: create .zshrc config
-      template:
+    - name: Create .zshrc config
+      ansible.builtin.template:
         src: .zshrc.j2
         dest: "{{ item.home }}/.zshrc"
-        force: yes
+        force: true
+        mode: "0644"
 
-    - name: install plug plugins
-      command: nvim --headless +PlugInstall +qa
+    - name: Install plug plugins
+      ansible.builtin.command: nvim --headless +PlugInstall +qa
+      args:
+        creates: "{{ item.home }}/.vim/plugged"
 
-- name: configure oh my zsh
+- name: Configure oh my zsh
   become: "{{ item.become }}"
   become_user: "{{ item.user }}"
   block:
-    - name: copy minimal plugin to custom
-      command: >
-        cp
-        {{ item.home }}/.oh-my-zsh/themes/minimal.zsh-theme
-        {{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme
+    - name: Copy minimal plugin to custom
+      ansible.builtin.copy:
+        src: "{{ item.home }}/.oh-my-zsh/themes/minimal.zsh-theme"
+        dest: "{{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme"
+        remote_src: true
+        mode: "0644"
+        # Seed once. The task below edits this copy to set PROMPT, so copying
+        # unconditionally would overwrite that edit on every run -- which is
+        # what the old `cp` did.
+        force: false
 
-    - name: add user@host to minimal theme
-      lineinfile:
+    - name: Add user@host to minimal theme
+      ansible.builtin.lineinfile:
         dest: "{{ item.home }}/.oh-my-zsh/custom/themes/minimal.zsh-theme"
         regexp: "^PROMPT='"
         line: PROMPT='$USER@%{% raw %}{%{% endraw %}}%m:%2~ $(vcs_status)»%b '

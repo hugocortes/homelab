@@ -1,0 +1,7 @@
+---
+# pms-docker builds its internal `plex` user from these and runs PMS under it
+# (PID 1 stays root; the server itself does not). They are the image's own
+# defaults, pinned here so the uid that owns /opt/plex is declared rather than
+# inherited. Neither id exists as a named user/group on the host.
+media_stack_plex_uid: 1000
+media_stack_plex_gid: 1000

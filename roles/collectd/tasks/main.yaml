@@ -1,0 +1,81 @@
+---
+- name: centos | Install collectd
+  ansible.builtin.dnf:
+    name:
+      - collectd
+    state: present
+  when: is_centos
+
+- name: debian | Install collectd
+  ansible.builtin.apt:
+    name:
+      - collectd
+    state: present
+  when: is_debian
+
+- name: Set collectd conf file path
+  ansible.builtin.set_fact:
+    collectd_conf: "{{ '/etc/collectd/collectd.conf' if is_debian else '/etc/collectd.conf' }}"
+
+- name: Configure settings
+  ansible.builtin.lineinfile:
+    dest: "{{ collectd_conf }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: FQDNLookup\s
+      line: FQDNLookup true
+    - regexp: Hostname\s
+      line: Hostname "{{ inventory_hostname }}"
+    - regexp: TypesDB\s
+      line: TypesDB "/usr/share/collectd/types.db"
+    - regexp: ^[#]?BaseDir\s
+      line: BaseDir "/var/lib/collectd"
+    - regexp: ^[#]?PluginDir\s
+      line: '{{ ''PluginDir "/usr/lib/collectd/"'' if is_debian else ''PluginDir "/usr/lib64/collectd"'' }}'
+    - regexp: ^[#]?Interval\s
+      line: Interval 60
+
+- name: Load plugins
+  ansible.builtin.lineinfile:
+    dest: "{{ collectd_conf }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: ^TypesDB\s
+    state: present
+  with_items:
+    - regexp: ^LoadPlugin network$
+      line: LoadPlugin network
+    - regexp: ^LoadPlugin df$
+      line: LoadPlugin df
+    - regexp: ^LoadPlugin fhcount$
+      line: LoadPlugin fhcount
+
+- name: Configure network plugin with influxdb
+  ansible.builtin.blockinfile:
+    dest: "{{ collectd_conf }}"
+    marker: "# {mark}-network ANSIBLE MANAGED BLOCK #"
+    block: |
+      <Plugin network>
+        Server "{{ collectd_host }}" "{{ collectd_port }}"
+      </Plugin>
+
+- name: Configure df plugin
+  ansible.builtin.blockinfile:
+    dest: "{{ collectd_conf }}"
+    marker: "# {mark}-df ANSIBLE MANAGED BLOCK #"
+    block: |
+      <Plugin df>
+        ReportInodes true
+      </Plugin>
+
+- name: Enable collectd
+  ansible.builtin.service:
+    name: collectd
+    enabled: true
+
+- name: Restart collectd
+  ansible.builtin.service:
+    name: collectd
+    state: restarted

@@ -1,0 +1,95 @@
+---
+- name: certbot | Install certbot and the cloudflare dns plugin
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - certbot
+      - python3-certbot-dns-cloudflare
+    state: present
+
+- name: certbot | Create the config directory
+  become: true
+  ansible.builtin.file:
+    path: /etc/letsencrypt
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: certbot | Write the cloudflare credentials
+  become: true
+  ansible.builtin.template:
+    src: cloudflare.ini.j2
+    dest: /etc/letsencrypt/cloudflare.ini
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: certbot | Install the deploy hook
+  become: true
+  ansible.builtin.template:
+    src: deploy-hook.sh.j2
+    dest: /etc/letsencrypt/renewal-hooks/deploy/publish-and-reload.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: certbot | Ensure the publish directory exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ certbot_deploy_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: certbot | Obtain the certificate
+  become: true
+  ansible.builtin.command:
+    argv:
+      - certbot
+      - certonly
+      - --non-interactive
+      - --agree-tos
+      - --email={{ certbot_email }}
+      - --dns-cloudflare
+      - --dns-cloudflare-credentials=/etc/letsencrypt/cloudflare.ini
+      - --dns-cloudflare-propagation-seconds={{ certbot_dns_propagation_seconds }}
+      - --cert-name={{ certbot_common_name }}
+      - "{{ '--staging' if certbot_staging | bool else '--no-eff-email' }}"
+      - --deploy-hook=/etc/letsencrypt/renewal-hooks/deploy/publish-and-reload.sh
+      - "{{ certbot_domains | map('regex_replace', '^', '-d') | join(' ') }}"
+    creates: /etc/letsencrypt/live/{{ certbot_common_name }}/fullchain.pem
+
+# The package ships certbot-renew.timer, which runs `certbot renew` twice
+# daily. Renewal only acts inside the last 30 days of validity, so this is the
+# whole of the automation -- no playbook run is involved.
+- name: certbot | Check whether the renewal timer unit exists yet
+  ansible.builtin.stat:
+    path: /usr/lib/systemd/system/certbot-renew.timer
+  register: _certbot_timer_unit
+  changed_when: false
+  check_mode: false
+
+- name: certbot | Enable the renewal timer
+  become: true
+  ansible.builtin.systemd:
+    name: certbot-renew.timer
+    enabled: true
+    state: started
+  # Under --check the package above was not really installed, so the unit does
+  # not exist yet and enabling it would fail spuriously.
+  when: _certbot_timer_unit.stat.exists or not ansible_check_mode
+
+- name: certbot | Report renewal status
+  become: true
+  ansible.builtin.command: certbot certificates --cert-name={{ certbot_common_name }}
+  register: _certbot_status
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: certbot | Show what is managed
+  ansible.builtin.debug:
+    msg: "{{ _certbot_status.stdout_lines | default(['(not yet issued)']) }}"

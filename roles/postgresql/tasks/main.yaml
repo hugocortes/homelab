@@ -1,0 +1,55 @@
+---
+- name: Create network
+  community.docker.docker_network:
+    name: postgres
+
+- name: Create service dirs
+  ansible.builtin.file:
+    group: nobody
+    mode: "0777"
+    owner: nobody
+    path: "{{ item.path }}"
+    state: directory
+  with_items:
+    - path: /opt/postgres
+
+- name: Start container
+  become: true
+  community.docker.docker_container:
+    env:
+      POSTGRES_USER: "{{ postgresql_username }}"
+      POSTGRES_PASSWORD: "{{ postgresql_password }}"
+      PGDATA: /var/lib/postgresql/data/data
+      PGUSER: postgres
+    image: public.ecr.aws/bitnami/postgresql:15.8.0
+    name: postgres
+    networks:
+      - name: postgres
+    # not published: consumers reach postgres over the 'postgres' network by name.
+    # published_ports defaults to allow_more_present, so an empty list alone will
+    # NOT unpublish an already-running container -- strict is required.
+    ports: []
+    comparisons:
+      published_ports: strict
+    restart_policy: always
+    volumes:
+      - /opt/postgres:/var/lib/postgresql/data
+
+- name: Start exporter container
+  become: true
+  community.docker.docker_container:
+    env:
+      DATA_SOURCE_URI: "postgres:5432/?sslmode=disable"
+      DATA_SOURCE_USER: "{{ postgresql_username }}"
+      DATA_SOURCE_PASS: "{{ postgresql_password }}"
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+    name: postgresql-metrics
+    networks:
+      - name: postgres
+    ports:
+      - 9187:9187
+    restart_policy: unless-stopped
+
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
+  when: is_centos

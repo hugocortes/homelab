@@ -1,0 +1,28 @@
+---
+# The old role shelled out to `python -m ensurepip --upgrade` and
+# `pip install packaging` via `command`, both unconditionally and both always
+# reporting changed. python3-pip comes from the distro package list above, so
+# ensurepip is redundant; the pip module covers the rest idempotently.
+- name: python | Install build prerequisites
+  become: false
+  ansible.builtin.pip:
+    name:
+      - packaging
+      - setuptools
+      - setuptools_rust
+      - wheel
+    state: "{{ 'latest' if packages_upgrade_all | bool else 'present' }}"
+    extra_args: --user
+  # setuptools_rust needs a rust toolchain that is not present on every host.
+  # Tolerate that specific failure rather than blanket-ignoring everything.
+  register: _packages_pip_prereqs
+  failed_when:
+    - _packages_pip_prereqs is failed
+    - "'setuptools_rust' not in (_packages_pip_prereqs.msg | default(''))"
+
+- name: python | Install user pip packages
+  become: false
+  ansible.builtin.pip:
+    name: "{{ packages_pip }}"
+    state: "{{ 'latest' if packages_upgrade_all | bool else 'present' }}"
+    extra_args: --user

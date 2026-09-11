@@ -1,13 +1,22 @@
-- name: configure terminal for multiple users
-  include_tasks: multiple_users.yaml
-  with_items: "{{ ansible_users }}"
+---
+- name: Configure terminal for multiple users
+  ansible.builtin.include_tasks: multiple_users.yaml
+  loop: "{{ ansible_users }}"
 
-- name: set zsh as default shell for ansible user
+# The user module is idempotent where `chsh` reported changed on every run.
+# Still gated on not is_freeipa for ansible_user: on an IPA-joined host that
+# account comes from the directory, not /etc/passwd, so there is no local user
+# to modify. ansible_become_user (root) is always local.
+- name: Set zsh as default shell for ansible user
   become: true
-  command: "chsh -s /bin/zsh {{ ansible_user }}"
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    shell: /bin/zsh
   when: not is_freeipa
 
-- name: set zsh as default shell for {{ ansible_become_user }}
+- name: Set zsh as default shell for {{ ansible_become_user }}
   become: true
-  command: "chsh -s /bin/zsh {{ ansible_become_user }}"
+  ansible.builtin.user:
+    name: "{{ ansible_become_user }}"
+    shell: /bin/zsh
   when: ansible_become_user is defined

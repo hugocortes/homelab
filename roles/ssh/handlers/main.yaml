@@ -1,0 +1,44 @@
+---
+- name: restart ssh | Force lookup ipa user id
+  ansible.builtin.command: "id {{ ipa_user }}"
+  changed_when: false
+  when: is_freeipa_client
+  listen: restart ssh
+
+# AI-27 removed roles/global/tasks/reboot.yaml, which this used to include --
+# a dangling reference that would have failed had this handler ever fired.
+# The reboot module waits for the host to come back on its own.
+- name: restart ssh | Reboot to sync freeipa login
+  become: true
+  ansible.builtin.reboot:
+    msg: Rebooting to pick up the FreeIPA login
+    reboot_timeout: 600
+    post_reboot_delay: 15
+  when: is_freeipa_client and (ansible_user != ipa_user)
+  listen: restart ssh
+
+- name: Restart ssh
+  ansible.builtin.service:
+    name: sshd
+    state: restarted
+  listen: restart ssh
+
+- name: Swap ansible_user to ipa.user
+  ansible.builtin.include_tasks: ../roles/bootstrap/tasks/ipa.yaml # include required to read vars
+  when: is_freeipa_client
+  listen:
+    - enable fail2ban
+    - restart fail2ban
+
+- name: Enable fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
+  listen: enable fail2ban
+
+- name: Restart fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted
+  listen: restart fail2ban

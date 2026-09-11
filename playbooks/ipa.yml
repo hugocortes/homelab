@@ -1,0 +1,91 @@
+---
+# FreeIPA server, replicas and client enrolment.
+#
+# The inventory group is `ipaservers` (AI-24), so these plays now match a live,
+# healthy FreeIPA server. Everything that mutates the directory is therefore
+# OPT-IN: a bare `ansible-playbook playbooks/ipa.yml` applies only the
+# non-destructive firewall/hostname convergence.
+#
+# To actually act, ask explicitly:
+#
+#   -e freeipa_install_server=true    run the ansible-freeipa ipaserver role
+#                                     against ipaservers
+#   -e freeipa_install_replica=true   run the ipareplica role against ipareplicas
+#   -e freeipa_configure=true         apply directory config, sudo rules, HBAC,
+#                                     users and groups
+#   -e freeipa_enroll_clients=true    (re)enrol the hosts in ipaclients
+#
+# PREREQUISITE for freeipa_configure: the role reads
+# roles/services/freeipa/server/configure/files/users.json, which does not
+# exist -- only users.example.json is present. `include_vars` will fail until
+# it is created, and the role also defines ipaadminusers / ipausersmembers /
+# ipaipamembers from it.
+#
+# WARNING for freeipa_configure: it removes the default `allow_all` HBAC rule.
+# If the `admins` rule it creates is not correct for your access pattern, host
+# access is denied fleet-wide. Verify with `ipa hbacrule-find` first.
+- import_playbook: bootstrap.yml
+
+# FreeIPA's firewall rules are now inventory data in
+# group_vars/ipaservers/main.yml, applied by playbooks/base.yml --tags firewall.
+- name: Converge freeipa server/replica host settings
+  hosts: ipaservers,ipareplicas
+  become: true
+  gather_facts: false
+  tags: freeipa
+  tasks:
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: "{{ ansible_host }}"
+
+- name: Install freeipa server
+  hosts: ipaservers
+  become: true
+  gather_facts: false
+  tags: freeipa-server
+  tasks:
+    - name: Run the ipaserver role
+      ansible.builtin.include_role:
+        name: ipaserver
+      when: freeipa_install_server | default(false) | bool
+
+    - name: Report that the install was skipped
+      ansible.builtin.debug:
+        msg: >-
+          Skipped the ipaserver role. Pass -e freeipa_install_server=true to
+          run it against a live FreeIPA server.
+      when: not (freeipa_install_server | default(false) | bool)
+
+# Manually append the ISRG Root X1 Let's Encrypt cert and re-run
+# ipa-certupdate if using Let's Encrypt:
+# https://yyhh.org/blog/2021/01/fix-freeipa-httpd-lets-encrypt-certificate-update/
+- name: Install freeipa replica
+  hosts: ipareplicas
+  become: true
+  gather_facts: false
+  tags: freeipa-replicas
+  tasks:
+    - name: Run the ipareplica role
+      ansible.builtin.include_role:
+        name: ipareplica
+      when: freeipa_install_replica | default(false) | bool
+
+# Disable anonymous binds:
+# https://stomp.colorado.edu/blog/blog/2011/12/19/on-increasing-the-security-of-a-freeipa-server/
+#   sudo service ipa stop
+#   sudo vi /etc/dirsrv/slapd-DOMAIN-COM/dse.ldif
+#   set nsslapd-allow-anonymous-access from `on` to `rootdse`
+#   sudo service ipa start
+- name: Configure freeipa directory contents
+  hosts: ipaservers,ipareplicas
+  become: true
+  gather_facts: false
+  tags: freeipa-configure
+  roles:
+    - role: freeipa_configure
+      when: freeipa_configure | default(false) | bool
+
+- name: Register freeipa clients
+  import_playbook: ../ansible-freeipa/playbooks/install-client.yml
+  when: freeipa_enroll_clients | default(false) | bool
+  tags: freeipa-client

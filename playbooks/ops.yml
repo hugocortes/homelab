@@ -1,0 +1,13 @@
+---
+# Grafana / InfluxDB / Prometheus / pypowerwall.
+# `ops` is currently absent from the inventory; this playbook matches no hosts
+# until it is re-added (see inventory/hosts.yml).
+- import_playbook: bootstrap.yml
+
+- name: Configure ops
+  hosts: ops
+  become: true
+  gather_facts: false
+  tags: ops
+  roles:
+    - ops_stack

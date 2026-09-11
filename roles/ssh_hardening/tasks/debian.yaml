@@ -1,0 +1,7 @@
+---
+- name: debian | Install
+  ansible.builtin.apt:
+    name:
+      - fail2ban
+    state: latest
+  notify: enable fail2ban

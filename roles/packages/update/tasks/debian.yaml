@@ -1,9 +1,0 @@
-- name: debian | update apt packages
-  apt:
-    name: "*"
-    state: latest
-
-- name: debian | upgrade apt packages
-  apt:
-    upgrade: "yes"
-    update_cache: yes

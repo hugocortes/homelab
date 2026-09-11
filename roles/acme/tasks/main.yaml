@@ -1,0 +1,63 @@
+---
+- name: Copy root crt
+  ansible.builtin.copy:
+    force: true
+    mode: "0644"
+    src: "root.crt"
+    dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt
+
+- name: Copy intermediate-2 crt
+  ansible.builtin.copy:
+    force: true
+    mode: "0644"
+    src: "intermediate-2.crt"
+    dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt
+
+- name: Copy intermediate crt
+  ansible.builtin.copy:
+    force: true
+    mode: "0644"
+    src: "intermediate.crt"
+    dest: /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt
+
+# The `touch` that used to be here was redundant: the `>` redirect below
+# creates the file.
+- name: Concatenate full chain
+  changed_when: true
+  ansible.builtin.shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt /etc/ssl/{{ certificate_common_name }}/{{
+    certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt /etc/ssl/{{
+    certificate_common_name }}/{{ certificate_common_name }}.root.crt > /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.fullchain.pem
+
+# TODO: this task does nothing. It `cat`s four files with no redirect, so the
+# output goes to stdout and is discarded -- despite being named "Copy ca".
+# The last argument is /etc/ipa/ca.crt, so the missing redirect was probably
+# `> /etc/ipa/ca.crt`, but that would overwrite FreeIPA's own CA bundle with a
+# concatenation that includes itself. Deliberately NOT guessing; marked
+# changed_when: false because it is accurate today. Needs someone who knows
+# the original intent.
+- name: Copy ca # noqa: command-instead-of-shell
+  changed_when: false
+  ansible.builtin.shell: cat /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt /etc/ssl/{{ certificate_common_name }}/{{
+    certificate_common_name }}.intermediate-2.crt /etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt /etc/ipa/ca.crt
+  when: is_freeipa
+
+# needs to be root for openssl location
+- name: pip | Install cryptography
+  become: true
+  ansible.builtin.pip:
+    name: cryptography
+    state: latest
+
+- name: Create pk12
+  community.crypto.openssl_pkcs12:
+    action: export
+    friendly_name: "{{ certificate_common_name }}"
+    path: "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.pk12"
+    privatekey_path: "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.key"
+    certificate_path: "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.crt"
+    other_certificates:
+      - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate.crt"
+      - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.intermediate-2.crt"
+      - "/etc/ssl/{{ certificate_common_name }}/{{ certificate_common_name }}.root.crt"
+    state: present
+    passphrase: password

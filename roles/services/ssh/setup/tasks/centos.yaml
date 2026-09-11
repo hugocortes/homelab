@@ -1,7 +1,0 @@
-- name: centos | install fail2ban packages
-  dnf:
-    name:
-      - fail2ban
-      - fail2ban-systemd
-    state: latest
-  notify: enable fail2ban

@@ -1,9 +1,3 @@
 [submodule "ansible-freeipa"]
 	path = ansible-freeipa
 	url = git@github.com:freeipa/ansible-freeipa.git
-[submodule "kube"]
-	path = kubespray
-	url = git@github.com:kubernetes-sigs/kubespray.git
-[submodule "ansible-letsencrypt-cloudflare"]
-	path = ansible-letsencrypt-cloudflare
-	url = git@github.com:bendews/ansible-letsencrypt-cloudflare.git

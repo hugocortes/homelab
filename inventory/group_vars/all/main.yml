@@ -1,0 +1,143 @@
+---
+# Flat by design. These were a single `homelab:` dict until AI-33; nesting them
+# meant every role reached into one shared bag, and `global` (the original name)
+# is a reserved Ansible variable. Names read <domain>_<thing>.
+
+# --- reboot pacing, consumed by the packages role ---
+reboot_max_wait_time: 30
+reboot_min_wait_time: 15
+
+# --- FreeIPA ---
+ipa_user: hugo
+
+# --- shared NFS server ---
+nfs_host: nas.internal.corteshq.net
+
+# --- collectd target ---
+collectd_host: ops.internal.corteshq.net
+collectd_port: '25826'
+
+# --- docker hub login ---
+docker_email: ''
+docker_password: '{{ vault_docker_password }}'
+docker_username: ''
+
+# --- container image pins ---
+version_calibre: 8.0.0
+version_calibre_web: 0.6.26
+version_flaresolverr: v3.4.6
+version_ghost: 6.21.0
+version_gramps: 26.2.0
+version_jackett: 0.24.1287
+version_keycloak: 26.5.0
+version_miniflux: 2.2.17
+version_ombi: 4.55.7-development
+version_pomerium: v0.32.0
+version_radarr: 6.0.4
+version_readarr: 0.4.18-develop
+version_sabnzbd: 4.5.5
+version_sonarr: 4.0.16
+version_tautulli: v2.16.1
+version_transmission: 4.1.1
+
+# --- postgresql + per-app credentials ---
+postgresql_gramps_database_search: gramps_cortes
+postgresql_gramps_database_user: gramps_user
+postgresql_gramps_password: '{{ vault_postgresql_gramps_password }}'
+postgresql_gramps_username: gramps
+postgresql_keycloak_database: keycloak
+postgresql_keycloak_password: '{{ vault_postgresql_keycloak_password }}'
+postgresql_keycloak_username: keycloak
+postgresql_miniflux_database: miniflux
+postgresql_miniflux_password: '{{ vault_postgresql_miniflux_password }}'
+postgresql_miniflux_username: miniflux
+postgresql_password: '{{ vault_postgresql_password }}'
+postgresql_username: postgres
+
+# --- mysql + per-app credentials ---
+mysql_ombi_database: ombi
+mysql_ombi_password: '{{ vault_mysql_ombi_password }}'
+mysql_ombi_username: ombi
+mysql_password: '{{ vault_mysql_password }}'
+
+# --- media NFS exports ---
+media_nfs_movies: /volume1/media/movies
+media_nfs_tvshows: /volume1/media/tv-shows
+media_nfs_xxx: /volume1/media/x
+
+# --- pirate NFS exports ---
+pirate_nfs_downloads: /volume1/media/downloads
+pirate_nfs_ebooks: /volume1/media/ebooks
+pirate_nfs_movies: /volume1/media/movies
+pirate_nfs_tv: /volume1/media/tv-shows
+
+# --- ops NFS exports ---
+server_nfs_grafana: /volume1/services/docker/grafana
+server_nfs_influxdb: /volume1/services/docker/influxdb
+server_nfs_influxdb_config: /volume1/services/docker/influxdb-config
+server_nfs_influxdb_startup: /volume1/services/docker/influxdb-startup
+server_nfs_loki: /volume1/services/docker/loki
+server_nfs_prometheus: /volume1/services/docker/prometheus
+server_nfs_prometheus_config: /volume1/services/docker/prometheus-config
+
+# --- plex (media) ---
+plex_claim: '{{ vault_plex_claim }}'
+
+# --- gramps (media) ---
+gramps_oidc_client_secret: '{{ vault_gramps_oidc_client_secret }}'
+gramps_smtp_password: '{{ vault_gramps_smtp_password }}'
+
+# --- miniflux (media) ---
+miniflux_admin_password: '{{ vault_miniflux_admin_password }}'
+miniflux_oidc_client_secret: '{{ vault_miniflux_oidc_client_secret }}'
+
+# --- grafana (ops) ---
+grafana_oidc_client_secret: '{{ vault_grafana_oidc_client_secret }}'
+grafana_smtp_password: '{{ vault_grafana_smtp_password }}'
+
+# --- influxdb (ops) ---
+influxdb_password: '{{ vault_influxdb_password }}'
+influxdb_username: root
+
+# --- bastion host + Duo (no bastion is currently defined) ---
+bastion_duo_host: ''
+bastion_duo_ikey: '{{ vault_bastion_duo_ikey }}'
+bastion_duo_skey: '{{ vault_bastion_duo_skey }}'
+bastion_host: ''
+bastion_user: ''
+
+# --- sish (bastion) ---
+sish_domain: ''
+sish_forwarding_ports_http: '80'
+sish_forwarding_ports_https: '443'
+sish_forwarding_ports_tcp: []
+sish_private_key_passphrase: '{{ vault_sish_private_key_passphrase }}'
+sish_ssh_port: '8022'
+sish_tag: ''
+
+# --- spinnaker cli (unused) ---
+spin_cli_auth_enabled: true
+spin_cli_auth_oauth2_auth_url: https://auth.domain/token
+spin_cli_auth_oauth2_client_id: ''
+spin_cli_auth_oauth2_client_secret: '{{ vault_spin_cli_oauth2_client_secret }}'
+spin_cli_auth_oauth2_scopes:
+  - openid
+  - email
+  - profile
+spin_cli_auth_oauth2_token_url: https://auth.domain/auth
+spin_cli_gate_endpoint: https://spinnaker-api.domain
+
+# Baseline host firewall, applied by playbooks/base.yml. Each host declares the
+# ingress it genuinely needs; per-service ports are added on top by the docker
+# roles. Overridden per group -- see group_vars/ipaservers/main.yml.
+#
+# `ssh` is also in firewalld's stock public zone, but declaring it here means
+# the baseline is self-describing rather than relying on a distro default.
+firewalld_baseline_services:
+  - name: ssh
+    service: ssh
+firewalld_baseline_ports: []
+# Pin the interpreter instead of mutating the target to suit discovery. This is
+# stable across el9 (3.9) and el10 (3.12) -- /usr/bin/python3 is the distro's
+# own symlink in both. Also silences the interpreter-discovery warning.
+ansible_python_interpreter: /usr/bin/python3
