@@ -26,5 +26,5 @@
 - name: Log into docker
   become: true
   community.docker.docker_login:
-    username: "{{ homelab.docker.username }}"
-    password: "{{ homelab.docker.password }}"
+    username: "{{ docker_username }}"
+    password: "{{ docker_password }}"

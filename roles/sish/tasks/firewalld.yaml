@@ -6,18 +6,18 @@
     firewalld_rule_name: bastion
     firewalld_ports:
       - name: bastion sish ssh server
-        port: "{{ homelab.sish.sshPort }}/tcp"
+        port: "{{ sish_ssh_port }}/tcp"
       - name: bastion sish http
-        port: "{{ homelab.sish.forwardingPorts.http }}/tcp"
+        port: "{{ sish_forwarding_ports_http }}/tcp"
       - name: bastion sish https
-        port: "{{ homelab.sish.forwardingPorts.https }}/tcp"
+        port: "{{ sish_forwarding_ports_https }}/tcp"
 
 # Was: tcpPorts, with a nested '{{ item }}/tcp' inside an expression that was
 # already Jinja. Renamed for the pattern rule and the interpolation corrected.
 - name: Create tcp port var
   ansible.builtin.set_fact:
     sish_tcp_ports: "{{ sish_tcp_ports | default([]) + [{'name': 'tcp forwarding port', 'port': item ~ '/tcp'}] }}"
-  loop: "{{ homelab.sish.forwardingPorts.tcp }}"
+  loop: "{{ sish_forwarding_ports_tcp }}"
 
 - name: centos | Open bastion ports
   ansible.builtin.include_role:

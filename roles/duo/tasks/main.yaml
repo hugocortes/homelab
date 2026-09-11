@@ -12,6 +12,6 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-    - {regexp: ^ikey =, line: "ikey = {{ homelab.bastion.duo.ikey }}"}
-    - {regexp: ^skey =, line: "skey = {{ homelab.bastion.duo.skey }}"}
-    - {regexp: ^host =, line: "host = {{ homelab.bastion.duo.host }}"}
+    - {regexp: ^ikey =, line: "ikey = {{ bastion_duo_ikey }}"}
+    - {regexp: ^skey =, line: "skey = {{ bastion_duo_skey }}"}
+    - {regexp: ^host =, line: "host = {{ bastion_duo_host }}"}

@@ -36,24 +36,24 @@
     driver_options:
       type: nfs
       device: ":/{{ item.mount }}"
-      o: "addr={{ homelab.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
-    # Default is `never`: editing homelab.nfs.host or the mount options used to
+      o: "addr={{ nfs_host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+    # Default is `never`: editing nfs_host or the mount options used to
     # report changed=0 and leave the volume pointing at the old export forever.
     recreate: options-changed
   with_items:
     - name: ebooks
-      mount: "{{ homelab.pirate.nfs.ebooks }}"
+      mount: "{{ pirate_nfs_ebooks }}"
     - name: movies
-      mount: "{{ homelab.media.nfs.movies }}"
+      mount: "{{ media_nfs_movies }}"
     - name: tvshows
-      mount: "{{ homelab.media.nfs.tvshows }}"
+      mount: "{{ media_nfs_tvshows }}"
 
 - name: Start calibre container
   become: true
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: linuxserver/calibre-web:{{ homelab.version.calibre_web }}
+    image: linuxserver/calibre-web:{{ version_calibre_web }}
     name: calibre
     ports:
       - 8083:8083
@@ -71,14 +71,14 @@
       GRAMPSWEB_EMAIL_HOST: smtp.zoho.com
       GRAMPSWEB_EMAIL_PORT: "465"
       GRAMPSWEB_EMAIL_HOST_USER: no-reply@homelabops.dev
-      GRAMPSWEB_EMAIL_HOST_PASSWORD: "{{ homelab.gramps.smtp_password }}"
+      GRAMPSWEB_EMAIL_HOST_PASSWORD: "{{ gramps_smtp_password }}"
       GRAMPSWEB_EMAIL_USE_SSL: "False"
       GRAMPSWEB_EMAIL_USE_STARTTLS: "False"
       GRAMPSWEB_DEFAULT_FROM_EMAIL: no-reply@corteshq.net
 
       GRAMPSWEB_OIDC_AUTO_REDIRECT: "True"
       GRAMPSWEB_OIDC_CLIENT_ID: tree
-      GRAMPSWEB_OIDC_CLIENT_SECRET: "{{ homelab.gramps.oidc_client_secret }}"
+      GRAMPSWEB_OIDC_CLIENT_SECRET: "{{ gramps_oidc_client_secret }}"
       GRAMPSWEB_OIDC_DISABLE_LOCAL_AUTH: "True"
       GRAMPSWEB_OIDC_ENABLED: "True"
       GRAMPSWEB_OIDC_GROUP_ADMIN: admin
@@ -95,15 +95,15 @@
       GRAMPSWEB_TREE: gramps
       # doesn't work :(
       # GRAMPSWEB_POSTGRES_HOST: postgres
-      # GRAMPSWEB_POSTGRES_PASSWORD: "{{ homelab.postgresql.gramps.password }}"
-      # GRAMPSWEB_POSTGRES_USER: "{{ homelab.postgresql.gramps.username }}"
-      # GRAMPSWEB_DB_URI: postgresql://{{ homelab.postgresql.gramps.username }}:{{ homelab.postgresql.gramps.password }}@postgres:5432/{{ homelab.postgresql.gramps.database.search }}
+      # GRAMPSWEB_POSTGRES_PASSWORD: "{{ postgresql_gramps_password }}"
+      # GRAMPSWEB_POSTGRES_USER: "{{ postgresql_gramps_username }}"
+      # GRAMPSWEB_DB_URI: postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_search }}
 
-      GRAMPSWEB_SEARCH_INDEX_DB_URI: "postgresql://{{ homelab.postgresql.gramps.username }}:{{ homelab.postgresql.gramps.password }}@postgres:5432/{{ homelab.postgresql.gramps.database.search
+      GRAMPSWEB_SEARCH_INDEX_DB_URI: "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_search
         }}"
-      GRAMPSWEB_USER_DB_URI: "postgresql://{{ homelab.postgresql.gramps.username }}:{{ homelab.postgresql.gramps.password }}@postgres:5432/{{ homelab.postgresql.gramps.database.user
+      GRAMPSWEB_USER_DB_URI: "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_user
         }}"
-    image: ghcr.io/gramps-project/grampsweb:{{ homelab.version.gramps }}
+    image: ghcr.io/gramps-project/grampsweb:{{ version_gramps }}
     name: gramps
     networks:
       - name: postgres
@@ -127,16 +127,16 @@
       RUN_MIGRATIONS: "1"
       CREATE_ADMIN: "0"
       ADMIN_USERNAME: admin
-      ADMIN_PASSWORD: "{{ homelab.miniflux.admin_password }}"
-      DATABASE_URL: "postgres://{{ homelab.postgresql.miniflux.username }}:{{ homelab.postgresql.miniflux.password }}@postgres:5432/{{ homelab.postgresql.miniflux.database
+      ADMIN_PASSWORD: "{{ miniflux_admin_password }}"
+      DATABASE_URL: "postgres://{{ postgresql_miniflux_username }}:{{ postgresql_miniflux_password }}@postgres:5432/{{ postgresql_miniflux_database
         }}?sslmode=disable"
       OAUTH2_PROVIDER: oidc
       OAUTH2_CLIENT_ID: miniflux
-      OAUTH2_CLIENT_SECRET: "{{ homelab.miniflux.oidc_client_secret }}"
+      OAUTH2_CLIENT_SECRET: "{{ miniflux_oidc_client_secret }}"
       OAUTH2_REDIRECT_URL: https://miniflux.corteshq.net/oauth2/oidc/callback
       OAUTH2_OIDC_DISCOVERY_ENDPOINT: https://auth.corteshq.net/realms/master
       OAUTH2_USER_CREATION: "1"
-    image: miniflux/miniflux:{{ homelab.version.miniflux }}
+    image: miniflux/miniflux:{{ version_miniflux }}
     name: miniflux
     networks:
       - name: postgres
@@ -148,11 +148,11 @@
   become: true
   community.docker.docker_container:
     env:
-      MYSQL_DATABASE: "{{ homelab.mysql.ombi.database }}"
-      MYSQL_PASSWORD: "{{ homelab.mysql.ombi.password }}"
-      MYSQL_USER: "{{ homelab.mysql.ombi.username }}"
+      MYSQL_DATABASE: "{{ mysql_ombi_database }}"
+      MYSQL_PASSWORD: "{{ mysql_ombi_password }}"
+      MYSQL_USER: "{{ mysql_ombi_username }}"
       TZ: America/Los_Angeles
-    image: linuxserver/ombi:{{ homelab.version.ombi }}
+    image: linuxserver/ombi:{{ version_ombi }}
     name: ombi
     networks:
       - name: mysql
@@ -172,7 +172,7 @@
     env:
       ADVERTISE_IP: "http://{{ ansible_host }}:32400"
       CHANGE_CONFIG_DIR_OWNERSHIP: "false"
-      PLEX_CLAIM: "{{ homelab.plex.claim }}"
+      PLEX_CLAIM: "{{ plex_claim }}"
       # `| string` is load-bearing: a bare "{{ int_var }}" templates back to an
       # int under native types, and docker_container rejects non-string env.
       PLEX_GID: "{{ media_stack_plex_gid | string }}"
@@ -202,7 +202,7 @@
   community.docker.docker_container:
     env:
       TZ: America/Los_Angeles
-    image: tautulli/tautulli:{{ homelab.version.tautulli }}
+    image: tautulli/tautulli:{{ version_tautulli }}
     name: tautulli
     ports:
       - 8181:8181

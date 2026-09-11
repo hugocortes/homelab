@@ -21,7 +21,7 @@
 - name: Start pomerium container
   become: true
   community.docker.docker_container:
-    image: pomerium/pomerium:{{ homelab.version.pomerium }}
+    image: pomerium/pomerium:{{ version_pomerium }}
     name: pomerium
     ports:
       - 8080:8080
@@ -48,14 +48,14 @@
       KC_DB: postgres
       KC_DB_URL_HOST: postgres
       KC_DB_URL_PORT: "5432"
-      KC_DB_URL_DATABASE: "{{ homelab.postgresql.keycloak.database }}"
+      KC_DB_URL_DATABASE: "{{ postgresql_keycloak_database }}"
       KC_DB_SCHEMA: public
-      KC_DB_USERNAME: "{{ homelab.postgresql.keycloak.username }}"
-      KC_DB_PASSWORD: "{{ homelab.postgresql.keycloak.password }}"
+      KC_DB_USERNAME: "{{ postgresql_keycloak_username }}"
+      KC_DB_PASSWORD: "{{ postgresql_keycloak_password }}"
 
       X509_CA_BUNDLE: /etc/x509/https/ipa-0.homelabops.dev.intermediate.crt /etc/x509/https/ipa-0.homelabops.dev.intermediate-2.crt
         /etc/x509/https/ipa-0.homelabops.dev.root.crt
-    image: quay.io/keycloak/keycloak:{{ homelab.version.keycloak }}
+    image: quay.io/keycloak/keycloak:{{ version_keycloak }}
     name: keycloak
     networks:
       - name: postgres

@@ -58,7 +58,7 @@
     marker: "# {mark}-network ANSIBLE MANAGED BLOCK #"
     block: |
       <Plugin network>
-        Server "{{ homelab.collectd.host }}" "{{ homelab.collectd.port }}"
+        Server "{{ collectd_host }}" "{{ collectd_port }}"
       </Plugin>
 
 - name: Configure df plugin

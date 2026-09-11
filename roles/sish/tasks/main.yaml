@@ -2,29 +2,29 @@
 - name: Set sish docker ports
   ansible.builtin.set_fact:
     sish_ports:
-      - "{{ homelab.sish.sshPort }}:{{ homelab.sish.sshPort }}"
-      - "{{ homelab.sish.forwardingPorts.http }}:{{ homelab.sish.forwardingPorts.http }}"
-      - "{{ homelab.sish.forwardingPorts.https }}:{{ homelab.sish.forwardingPorts.https }}"
+      - "{{ sish_ssh_port }}:{{ sish_ssh_port }}"
+      - "{{ sish_forwarding_ports_http }}:{{ sish_forwarding_ports_http }}"
+      - "{{ sish_forwarding_ports_https }}:{{ sish_forwarding_ports_https }}"
 
 # Was: ports: "{{ ports }} + ['{{ item }}:{{ item }}']" -- the `+` sat OUTSIDE
 # the Jinja expression, so this built a string rather than appending to a list.
 - name: Append tcp ports
   ansible.builtin.set_fact:
     sish_ports: "{{ sish_ports + [item ~ ':' ~ item] }}"
-  loop: "{{ homelab.sish.forwardingPorts.tcp }}"
+  loop: "{{ sish_forwarding_ports_tcp }}"
 
 - name: Launch sish container
   become: true
   community.docker.docker_container:
     name: sish
-    image: "antoniomika/sish:{{ homelab.sish.tag }}"
+    image: "antoniomika/sish:{{ sish_tag }}"
     restart_policy: unless-stopped
     hostname: "{{ inventory_hostname }}"
     ports: "{{ sish_ports }}"
     command: >-
-      --ssh-address=:{{ homelab.sish.sshPort }}
-      --http-address=:{{ homelab.sish.forwardingPorts.http }}
-      --https-address=:{{ homelab.sish.forwardingPorts.https }}
+      --ssh-address=:{{ sish_ssh_port }}
+      --http-address=:{{ sish_forwarding_ports_http }}
+      --https-address=:{{ sish_forwarding_ports_https }}
       --https=true
       --https-certificate-directory=/ssl
       --https-ondemand-certificate=true
@@ -32,10 +32,10 @@
       --authentication-password=""
       --authentication-keys-directory=/pubkeys
       --private-key-location=/keys/ssh_key
-      --private-key-passphrase={{ homelab.sish.privateKeyPassphrase }}
+      --private-key-passphrase={{ sish_private_key_passphrase }}
       --bind-random-ports=false
       --bind-random-subdomains=false
-      --domain={{ homelab.sish.domain }}
+      --domain={{ sish_domain }}
       --idle-connection-timeout=600s
     volumes:
       - "~/sish/ssl:/ssl"
