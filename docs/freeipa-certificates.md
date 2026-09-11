@@ -10,7 +10,14 @@ purpose.
 | | how often | who does it |
 |---|---|---|
 | issue, publish, install into dirsrv | ~60 days | `certbot-renew.timer` + the deploy hook |
-| teach IPA to trust a new Let's Encrypt chain | ~yearly, unpredictable | a human, using this document |
+| teach IPA to trust a new Let's Encrypt intermediate | **most renewals** | a human, using this document — for now |
+
+> **Corrected 2026-09-11.** This document originally said chain rotation was a
+> roughly yearly event. It is not. Let's Encrypt round-robins issuance across a
+> pool of intermediates: two certificates requested forty minutes apart came
+> back signed by `YR1` and then `YR2`. The `R11`/`R12`/`R13` entries already in
+> the trust store are the same thing, installed by hand over previous years.
+> Expect a new intermediate on most renewals, not on an annual schedule.
 
 ## What actually reads the certificate
 
@@ -68,14 +75,35 @@ IPA. That refusal is the intended signal, and it is safe: it fails **before**
 changing anything, leaving dirsrv on its previous certificate, which is still
 valid for roughly 30 more days. There is time. Do not panic-force it.
 
-Current trust, from `ipa-cacert-manage list`:
+### Nicknames
 
-```
-ROOT            ISRG Root X1
-INTERMEDIATE    <Let's Encrypt intermediate, presently YR1>
-INTERMEDIATE_2  <cross-signing root, presently Root YR>
-R11 R12 R13     older intermediates, kept
-```
+NSS nicknames are labels only — trust is keyed on the certificate itself, so a
+badly named entry is misleading, never broken. Two conventions are in use:
+
+| nickname | actually holds | expires |
+|---|---|---|
+| `ROOT` | ISRG Root X1 — the only genuinely self-signed root here | 2035-06-04 |
+| `INTERMEDIATE` | `YR1` | 2028-09-02 |
+| `INTERMEDIATE_2` | `Root YR` — *not* a peer of `INTERMEDIATE`; it is what signs YR1/YR2 | 2032-09-02 |
+| `R11` `R12` `R13` | themselves | 2027-03-12 |
+
+The positional names (`INTERMEDIATE`, `INTERMEDIATE_2`) are the older mistake:
+they record where a certificate sat in one particular chain rather than what it
+is, and `INTERMEDIATE_2` is actively wrong about the hierarchy. **Name new
+entries after the CA's CN**, as `R11`/`R12`/`R13` already do.
+
+Renaming the existing ones means delete-then-reinstall — NSS has no rename —
+and is pure cosmetics for a nonzero risk. Two rules if you ever do it: never
+delete the intermediate that signed the certificate currently being served
+(check with `openssl s_client ... :636`), and never delete an intermediate just
+because it is not in use today, because the round-robin will hand it back.
+`ipa-cacert-manage prune` only removes *expired* certificates; nothing here is
+expired, so it is a no-op.
+
+**For anyone automating this:** decide "is this CA already trusted?" by
+certificate fingerprint, never by nickname. `YR1` is present under the nickname
+`INTERMEDIATE`, so a nickname-based check would conclude it is missing and
+collide on reinstall.
 
 When a renewal fails on an untrusted CA, extract the new chain and install it:
 
@@ -88,8 +116,8 @@ awk 'BEGIN{n=0} /BEGIN CERT/{n++} {print > ("chain-" n ".pem")}' $DOMAIN.fullcha
 for f in chain-*.pem; do echo "== $f"; openssl x509 -noout -subject -issuer -in $f; done
 
 # install whichever links are new, under names that are not already taken
-ipa-cacert-manage install chain-2.pem -n INTERMEDIATE_3
-ipa-cacert-manage install chain-3.pem -n ROOT_2
+# name each after its own CN, e.g. YR2 / YR3 -- see Nicknames above
+ipa-cacert-manage install chain-2.pem -n YR2
 
 ipa-certupdate
 ```
