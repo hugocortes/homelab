@@ -10,7 +10,10 @@ purpose.
 | | how often | who does it |
 |---|---|---|
 | issue, publish, install into dirsrv | ~60 days | `certbot-renew.timer` + the deploy hook |
-| teach IPA to trust a new Let's Encrypt intermediate | **most renewals** | a human, using this document — for now |
+| trust a rotated Let's Encrypt **intermediate** | most renewals | the deploy hook, automatically |
+| refresh the **clients'** CA bundles | whenever they fall behind | `roles/ipa_ca_trust`, from `base.yml` |
+| accept a new **root** / trust anchor | ~never | a human, using this document |
+| recover an expired certificate or a dead client anchor | ~never | a human, break-glass sections below |
 
 > **Corrected 2026-09-11.** This document originally said chain rotation was a
 > roughly yearly event. It is not. Let's Encrypt round-robins issuance across a
@@ -105,7 +108,15 @@ certificate fingerprint, never by nickname. `YR1` is present under the nickname
 `INTERMEDIATE`, so a nickname-based check would conclude it is missing and
 collide on reinstall.
 
-When a renewal fails on an untrusted CA, extract the new chain and install it:
+The deploy hook now does this by itself for **intermediates**: it compares the
+chain it was handed against `/etc/ipa/ca.crt` by fingerprint, installs anything
+missing under a nickname taken from the CA's CN, and runs `ipa-certupdate`. It
+refuses, changing nothing, if the chain no longer terminates in a root IPA
+already trusts — adding a link under a known anchor moves no trust boundary,
+accepting a new anchor does.
+
+So the steps below are for the case the hook deliberately will not handle: a
+genuinely new **root**. Extract the chain and install what is missing:
 
 ```sh
 DOMAIN=ipa-0.homelabops.dev
@@ -134,6 +145,46 @@ If they do not, the files to look at are `/etc/ipa/ca.crt`,
 `/var/lib/ipa-client/pki/ca-bundle.pem`,
 `/var/lib/ipa-client/pki/kdc-ca-bundle.pem`, followed by
 `update-ca-trust extract`.
+
+## Break glass: a client can no longer reach the server
+
+`ipa-certupdate` fetches the CA set over HTTPS and validates that connection
+against the very bundle it is about to repair. Once the last valid anchor in
+`/etc/ipa/ca.crt` expires, the two deadlock:
+
+```
+[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed:
+unable to get local issuer certificate
+```
+
+Seen on media 2026-09-11: its bundle held DST Root CA X3 and R3 and nothing
+else, both expired in 2021. Nothing had complained for four years, because
+sssd reaches the directory over GSSAPI on 389 and never exercises
+`ldap_tls_cacert`.
+
+Seed one valid anchor from the host's own OS trust store, then let
+`ipa-certupdate` do the real sync:
+
+```sh
+cd /tmp && rm -rf seed && mkdir seed && cd seed
+awk 'BEGIN{c=0} /BEGIN CERT/{c++} {print > ("sys" c ".pem")}' /etc/pki/tls/certs/ca-bundle.crt
+for g in sys*.pem; do
+  openssl x509 -noout -subject -in $g 2>/dev/null | grep -q 'CN=ISRG Root X1' && cp $g isrg.pem
+done
+
+cp -a /etc/ipa/ca.crt /etc/ipa/ca.crt.bak-$(date +%F)
+cat isrg.pem >> /etc/ipa/ca.crt      # OpenSSL looks the issuer up by subject;
+                                     # the expired certs alongside are inert
+ipa-certupdate
+```
+
+`ISRG Root X1` is the anchor for the current chain. Confirm before trusting
+that: `openssl s_client -connect <server>:443 -showcerts` and look at the
+issuer of the topmost certificate returned.
+
+`roles/ipa_ca_trust` exists to stop bundles reaching this state — it compares
+each client's fingerprints against the server's on every converge and runs
+`ipa-certupdate` when one is behind, while it still can.
 
 ## Break glass: the certificate already expired
 

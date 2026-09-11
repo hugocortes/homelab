@@ -1,0 +1,8 @@
+---
+# The bundle every IPA client validates the server against. sssd points
+# ldap_tls_cacert at it, and ipa-certupdate rewrites it.
+ipa_ca_trust_bundle: /etc/ipa/ca.crt
+
+# Whose trust set is authoritative. Clients compare against this host and
+# refresh when they are missing anything it has.
+ipa_ca_trust_server: "{{ groups['ipaservers'] | first | default('') }}"

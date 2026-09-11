@@ -1,0 +1,66 @@
+---
+# Client CA bundles rot silently. Found on 2026-09-11: media was carrying only
+# DST Root CA X3 and R3, both expired in 2021 -- four years stale, on a host
+# that authenticates the whole media stack. Nothing complained, because sssd
+# reaches the directory over GSSAPI on 389 and never exercises
+# ldap_tls_cacert. The first thing to actually need it would have found
+# nothing valid at all.
+#
+# Comparing fingerprints rather than running ipa-certupdate unconditionally:
+# it rewrites NSS databases and bounces certmonger, which is not something to
+# do on every converge for no reason.
+- name: ipa_ca_trust | Fingerprint the CA bundle this host trusts
+  become: true
+  ansible.builtin.shell: |
+    set -euo pipefail
+    [ -r {{ ipa_ca_trust_bundle | quote }} ] || exit 0
+    d=$(mktemp -d)
+    trap 'rm -rf "$d"' EXIT
+    awk -v d="$d" '/BEGIN CERT/{c++} c{print > (d "/c" c ".pem")}' {{ ipa_ca_trust_bundle | quote }}
+    for f in "$d"/c*.pem; do
+      [ -e "$f" ] || continue
+      openssl x509 -noout -fingerprint -sha256 -in "$f" 2>/dev/null | sed 's/.*=//'
+    done | sort
+  register: _ipa_ca_trust_local
+  changed_when: false
+  check_mode: false
+
+- name: ipa_ca_trust | Publish it for the clients to compare against
+  ansible.builtin.set_fact:
+    ipa_ca_trust_fingerprints: "{{ _ipa_ca_trust_local.stdout_lines | default([]) }}"
+
+# The server is authoritative and gets its own updates from the certbot deploy
+# hook, so it is only here to be read -- comparing it against itself is empty
+# by definition, and the guard below just says so out loud. Replicas are not
+# in ipaservers and do refresh, which is what we want.
+- name: ipa_ca_trust | Refresh this client from the server
+  when:
+    - not (is_freeipa_server | default(false) | bool)
+    - ipa_ca_trust_server | length > 0
+    - _ipa_ca_trust_missing | length > 0
+  become: true
+  ansible.builtin.command: ipa-certupdate
+  vars:
+    _ipa_ca_trust_missing: >-
+      {{ hostvars[ipa_ca_trust_server].ipa_ca_trust_fingerprints | default([])
+         | difference(ipa_ca_trust_fingerprints) }}
+  register: _ipa_ca_trust_refresh
+  changed_when: _ipa_ca_trust_refresh.rc == 0
+  failed_when: false
+
+# ipa-certupdate fetches the new CA set over HTTPS and validates that
+# connection against the very bundle it is trying to repair. Once the last
+# valid anchor in it expires the two deadlock, and the error is an opaque
+# CERTIFICATE_VERIFY_FAILED. Name the runbook rather than leave someone
+# staring at it.
+- name: ipa_ca_trust | Explain a refresh that could not reach the server
+  when:
+    - _ipa_ca_trust_refresh.rc | default(0) != 0
+  ansible.builtin.fail:
+    msg: >-
+      ipa-certupdate failed on {{ inventory_hostname }}. If the error mentions
+      CERTIFICATE_VERIFY_FAILED, {{ ipa_ca_trust_bundle }} has no valid anchor
+      left, so this host cannot reach the server to fetch one -- the
+      client break-glass in docs/freeipa-certificates.md seeds an anchor by
+      hand. Error was:
+      {{ _ipa_ca_trust_refresh.stderr | default(_ipa_ca_trust_refresh.stdout) | default('(none)') }}

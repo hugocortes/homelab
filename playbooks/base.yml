@@ -59,6 +59,20 @@
     - role: sssd
       when: is_freeipa | default(false) | bool
 
+# After the sssd play, because it reads the same trust the sssd config points
+# ldap_tls_cacert at. Runs on servers too -- they only publish their set for
+# the clients to compare against, and refresh themselves from the certbot
+# deploy hook instead.
+- name: Keep the FreeIPA CA trust current
+  hosts: ipaservers:ipareplicas:ipaclients
+  become: false
+  gather_facts: false
+  tags:
+    - ipa
+    - update
+  roles:
+    - ipa_ca_trust
+
 - name: Host maintenance
   hosts: all
   become: false
