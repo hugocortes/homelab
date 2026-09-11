@@ -50,6 +50,34 @@
     mode: "0600"
   no_log: true
 
+# The rpm ships none of these; certbot creates them lazily on its first run,
+# which is after we need one of them to exist.
+- name: certbot | Create the renewal hook directories
+  become: true
+  ansible.builtin.file:
+    path: "/etc/letsencrypt/renewal-hooks/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - pre
+    - deploy
+    - post
+
+# Registered TWICE on purpose, and certbot does not run it twice.
+#
+# `certbot renew` runs the deploy directory, then skips its configured
+# renew_hook when that hook is the same path it just ran ("Skipping
+# deploy-hook ... as it was already run", hooks.py renew_hook). But initial
+# issuance takes a different path: certonly calls hooks.deploy_hook, which
+# runs ONLY the configured --deploy-hook and ignores the directory entirely
+# (main.py, obtain_and_enroll_certificate).
+#
+# So the directory entry covers renewals, --deploy-hook on the certonly below
+# covers first issuance, and dropping either one leaves a hole. Removing the
+# apparent redundancy means the certificate silently never reaches the
+# directory server on the run that first creates it.
 - name: certbot | Install the deploy hook
   become: true
   ansible.builtin.template:
