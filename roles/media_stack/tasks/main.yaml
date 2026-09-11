@@ -37,22 +37,16 @@
       type: nfs
       device: ":/{{ item.mount }}"
       o: "addr={{ homelab.nfs.host }},nfsvers=4,vers=4,tcp,rw,port=2049"
+    # Default is `never`: editing homelab.nfs.host or the mount options used to
+    # report changed=0 and leave the volume pointing at the old export forever.
+    recreate: options-changed
   with_items:
-    - name: plexlogs
-      mount: "{{ homelab.media.nfs.plexlogs }}"
     - name: ebooks
       mount: "{{ homelab.pirate.nfs.ebooks }}"
     - name: movies
       mount: "{{ homelab.media.nfs.movies }}"
     - name: tvshows
       mount: "{{ homelab.media.nfs.tvshows }}"
-
-- name: Allow plex ssl cert to be readable
-  ansible.builtin.file:
-    dest: "/etc/ssl/{{ ansible_host }}/{{ ansible_host }}.pk12"
-    owner: root
-    group: root
-    mode: "0644"
 
 - name: Start calibre container
   become: true
@@ -179,22 +173,29 @@
       ADVERTISE_IP: "http://{{ ansible_host }}:32400"
       CHANGE_CONFIG_DIR_OWNERSHIP: "false"
       PLEX_CLAIM: "{{ homelab.plex.claim }}"
-      TV: America/Los_Angeles
-      NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: all
+      # `| string` is load-bearing: a bare "{{ int_var }}" templates back to an
+      # int under native types, and docker_container rejects non-string env.
+      PLEX_GID: "{{ media_stack_plex_gid | string }}"
+      PLEX_UID: "{{ media_stack_plex_uid | string }}"
+      # Was `TV`, which pms-docker ignores -- the server ran on UTC.
+      TZ: America/Los_Angeles
     devices:
       # tv tuner
       # need to look into how to fix this
       # - /dev/dvb:/dev/dvb
-      - /dev/dri/card0:/dev/dri/card0
+      #
+      # This host is an i3-8100 / UHD 630. There is no nvidia GPU and no
+      # container toolkit, so the NVIDIA_VISIBLE_DEVICES and
+      # NVIDIA_DRIVER_CAPABILITIES that used to sit above were inert.
+      # QSV uses the render node only; card0 is the legacy DRM node and is
+      # 0660 root:video on the host, which uid 1000 could never open.
       - /dev/dri/renderD128:/dev/dri/renderD128
     volumes:
-      - /etc/ssl/{{ ansible_host }}/{{ ansible_host }}.pk12:/etc/ssl/cert.pk12
       - /dev/shm/plex:/transcode
       - /opt/plex:/config
-      - movies:/data/movies
-      - plexlogs:/config/Library/Application Support/Plex Media Server/Logs
-      - tvshows:/data/tv-shows
+      # Sonarr/Radarr on the pirate host own these; Plex only reads them.
+      - movies:/data/movies:ro
+      - tvshows:/data/tv-shows:ro
 
 - name: Start tautulli container
   become: true
@@ -208,7 +209,9 @@
     restart_policy: always
     volumes:
       - /opt/tautulli:/config
-      - plexlogs:/tautulli_logs:ro
+      # Plex's own log dir on local disk. Tautulli gets everything else from
+      # the Plex API; this mount is only for its log viewer.
+      - /opt/plex/Library/Application Support/Plex Media Server/Logs:/tautulli_logs:ro
 
 - name: centos | Open firewalld ports
   ansible.builtin.import_tasks: firewalld.yaml

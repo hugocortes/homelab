@@ -61,8 +61,6 @@ homelab:
 
   media:
     nfs:
-      plex: ""
-      plexlogs: /volume1/services/plex/logs
       movies: /volume1/media/movies
       tvshows: /volume1/media/tv-shows
       xxx: /volume1/media/x
