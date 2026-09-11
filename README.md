@@ -66,10 +66,14 @@ Issuance, publication and the directory-server install renew themselves on
 `certbot-renew.timer`. `playbooks/acme.yml` sets that up — running it is a
 setup step, not a renewal step.
 
-What stays manual is teaching IPA to trust a *new Let's Encrypt chain*, which
-happens roughly yearly. Renewal fails loudly and harmlessly at exactly that
-point. See `docs/freeipa-certificates.md`, which also records which steps of
-the old hand-written runbook are now aimed at files nothing reads.
+Let's Encrypt rotates its issuing intermediate from a pool, so an unseen CA is
+the ordinary case at renewal rather than a yearly event. The deploy hook
+installs those itself; `roles/ipa_ca_trust` keeps the clients' bundles in step.
+What stays manual is a genuinely new *root*, which the hook refuses to accept
+on its own, and two break-glass recoveries.
+
+See `docs/freeipa-certificates.md`, which also records which steps of the old
+hand-written runbook are now aimed at files nothing reads.
 
 `playbooks/ipa.yml` gates everything that mutates the FreeIPA directory behind
 `-e freeipa_install_server=true` / `-e freeipa_configure=true`. Read the header

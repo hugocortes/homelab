@@ -48,13 +48,79 @@ log "published to ${FULLCHAIN}"
 # will never be answered.
 #
 # ipa-server-certinstall REFUSES a chain whose CA is not already trusted by
-# IPA. That is the intended seam: when Let's Encrypt rotates its intermediate,
-# this fails cleanly before changing anything, and the fix is the manual
-# ipa-cacert-manage runbook in docs/freeipa-certificates.md. A failure here
-# leaves dirsrv on its old certificate, which is still valid for ~30 days --
-# so there is time, and nothing is broken in the meantime.
+# IPA, so the intermediates have to go in first -- see below.
 DIRMAN_FILE="{{ certbot_ipa_dirman_file }}"
 [ -r "${DIRMAN_FILE}" ] || die "${DIRMAN_FILE} missing; cannot reach the directory server"
+
+# --- teach IPA any intermediate it has not met --------------------------
+#
+# Let's Encrypt hands out the issuing intermediate from a rotating pool: two
+# certificates requested forty minutes apart came back signed by YR1 and then
+# YR2. The R11/R12/R13 entries already in the trust store are the same thing,
+# installed by hand over previous years. So an unseen intermediate is the
+# ORDINARY case at renewal, not an exception, and leaving it manual means
+# renewal stalls silently most times and stays stalled until expiry.
+#
+# What stays manual is a new ROOT. Adding an intermediate under a root IPA
+# already trusts moves no trust boundary; accepting a new anchor does, and
+# that is a decision for a person. This refuses to cross that line.
+IPA_BUNDLE=/etc/ipa/ca.crt
+work=$(mktemp -d)
+trap 'rm -rf "${work}"' EXIT
+
+: > "${work}/trusted.fp"
+if [ -r "${IPA_BUNDLE}" ]; then
+    awk -v d="${work}" '/BEGIN CERT/{c++} c{print > (d "/trusted-" c ".pem")}' "${IPA_BUNDLE}"
+    for f in "${work}"/trusted-*.pem; do
+        [ -e "${f}" ] || continue
+        openssl x509 -noout -fingerprint -sha256 -in "${f}" 2>/dev/null | sed 's/.*=//' >> "${work}/trusted.fp"
+    done
+fi
+
+awk -v d="${work}" '/BEGIN CERT/{c++} c{print > (d "/new-" c ".pem")}' "${NEW_CERT}"
+topmost=$(find "${work}" -name 'new-*.pem' | sort -V | tail -1)
+
+# The chain must still terminate in something IPA knows. Compared by subject
+# rather than fingerprint because the root itself is not in certbot's chain --
+# only the name of whoever signed the topmost link.
+top_issuer=$(openssl x509 -noout -issuer -in "${topmost}" | sed 's/^issuer=//')
+anchor_known=no
+for f in "${work}"/trusted-*.pem; do
+    [ -e "${f}" ] || continue
+    if [ "$(openssl x509 -noout -subject -in "${f}" | sed 's/^subject=//')" = "${top_issuer}" ]; then
+        anchor_known=yes
+        break
+    fi
+done
+[ "${anchor_known}" = yes ] || die "this chain terminates at '${top_issuer}', which IPA does not trust. That is a new trust anchor, not a rotated intermediate, and this hook will not install one on its own. See docs/freeipa-certificates.md. Nothing has been changed."
+
+# ipa-cacert-manage is idempotent by certificate content -- re-installing one
+# it already holds exits 0 without adding a duplicate nickname -- so the
+# fingerprint test below is about not restarting things needlessly, and about
+# saying in the log what actually changed.
+installed_any=no
+for f in $(find "${work}" -name 'new-*.pem' | sort -V | tail -n +2); do
+    fp=$(openssl x509 -noout -fingerprint -sha256 -in "${f}" | sed 's/.*=//')
+    grep -qxF "${fp}" "${work}/trusted.fp" && continue
+
+    # Nickname from the CA's own CN, matching R11/R12/R13. The positional
+    # INTERMEDIATE / INTERMEDIATE_2 names are the older mistake and say
+    # nothing about what they hold.
+    cn=$(openssl x509 -noout -subject -in "${f}" | sed 's/.*CN *= *//; s/,.*//' | tr -cd 'A-Za-z0-9_-')
+    [ -n "${cn}" ] || die "could not derive a nickname for a new intermediate"
+
+    log "IPA has not seen intermediate ${cn}; installing it"
+    ipa-cacert-manage install "${f}" -n "${cn}" < "${DIRMAN_FILE}" \
+        || die "could not install intermediate ${cn}; see docs/freeipa-certificates.md"
+    installed_any=yes
+done
+
+if [ "${installed_any}" = yes ]; then
+    log "refreshing the local certificate databases"
+    ipa-certupdate || die "ipa-certupdate failed after installing a new intermediate"
+else
+    log "IPA already trusts this chain"
+fi
 
 log "installing into the FreeIPA directory server"
 if ! ipa-server-certinstall -d "${KEY}" "${FULLCHAIN}" --pin= < "${DIRMAN_FILE}"; then
