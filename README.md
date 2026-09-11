@@ -54,9 +54,22 @@ inventory/
   hosts.yml
   group_vars/*/main.yml    plaintext structure
   group_vars/*/vault.yml   ansible-vault encrypted
+docs/
 bin/vault-pass.sh
 requirements.yml
 ```
+
+## Certificates
+
+ipa-0 runs FreeIPA **CA-less**; its certificate comes from Let's Encrypt.
+Issuance, publication and the directory-server install renew themselves on
+`certbot-renew.timer`. `playbooks/acme.yml` sets that up — running it is a
+setup step, not a renewal step.
+
+What stays manual is teaching IPA to trust a *new Let's Encrypt chain*, which
+happens roughly yearly. Renewal fails loudly and harmlessly at exactly that
+point. See `docs/freeipa-certificates.md`, which also records which steps of
+the old hand-written runbook are now aimed at files nothing reads.
 
 `playbooks/ipa.yml` gates everything that mutates the FreeIPA directory behind
 `-e freeipa_install_server=true` / `-e freeipa_configure=true`. Read the header

@@ -34,3 +34,9 @@ firewalld_baseline_services:
     service: kerberos
   - name: freeipa kpasswd
     service: kpasswd
+
+# 389-ds serves :636 out of an NSS database, so certbot publishing a PEM does
+# nothing for it. Tells the deploy hook to run ipa-server-certinstall -d on
+# every renewal. See docs/freeipa-certificates.md for the part that stays
+# manual (Let's Encrypt chain rotation).
+certbot_ipa_dirsrv: true

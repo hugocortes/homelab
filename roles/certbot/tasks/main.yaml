@@ -26,6 +26,30 @@
     mode: "0600"
   no_log: true
 
+# Caught here rather than at renewal time: an empty password file would make
+# the hook fail unattended, 30 days before anyone had a reason to look.
+- name: certbot | Refuse to configure the directory server install without a password
+  when: certbot_ipa_dirsrv | bool
+  ansible.builtin.assert:
+    that:
+      - certbot_ipa_dirman_password | length > 0
+    fail_msg: >-
+      certbot_ipa_dirsrv is on but certbot_ipa_dirman_password is empty.
+      ipadm_password comes from group_vars/ipacluster/vault.yml -- this host
+      is probably not in the ipacluster group.
+    quiet: true
+
+- name: certbot | Write the directory manager password for the deploy hook
+  when: certbot_ipa_dirsrv | bool
+  become: true
+  ansible.builtin.copy:
+    content: "{{ certbot_ipa_dirman_password }}"
+    dest: "{{ certbot_ipa_dirman_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
 - name: certbot | Install the deploy hook
   become: true
   ansible.builtin.template:
