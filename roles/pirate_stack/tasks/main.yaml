@@ -202,6 +202,10 @@
       # forwarding in 2023, so no peer can reach it from outside; DHT and
       # outgoing connections need no inbound port.
       - 9091:9091
+    # strict: a port that is published but no longer declared gets the container
+    # recreated; the module's default only checks that declared ports are present.
+    comparisons:
+      published_ports: strict
     restart_policy: always
     volumes:
       - /opt/transmission:/config
