@@ -1,19 +1,18 @@
 ---
-# Let's Encrypt certificates via the Cloudflare DNS challenge.
+# Let's Encrypt certificates via the Cloudflare DNS-01 challenge.
+#
+# Issuance and renewal are certbot's job, driven by certbot-renew.timer on the
+# host. This playbook only installs and configures that -- running it is a
+# setup step, not a renewal step. Renewal happens on its own thereafter.
+#
+# Replaces a flow where nothing renewed automatically: the certificate was
+# reissued only when someone remembered to run this playbook.
 - import_playbook: bootstrap.yml
 
-- name: Configure acme certs
+- name: Configure automated certificate renewal
   hosts: acme
+  become: false
   gather_facts: false
   tags: acme
-  vars:
-    letsencrypt_production: true
-    include_intermediate: false
-  tasks:
-    - name: Obtain certificates
-      ansible.builtin.include_role:
-        name: letsencrypt_cloudflare
-
-    - name: Install certificates
-      ansible.builtin.include_role:
-        name: acme
+  roles:
+    - certbot

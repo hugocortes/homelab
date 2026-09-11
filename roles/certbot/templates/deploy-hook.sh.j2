@@ -1,0 +1,20 @@
+#!/bin/bash
+# {{ ansible_managed }}
+#
+# certbot runs this after every successful issuance or renewal, with
+# RENEWED_LINEAGE pointing at /etc/letsencrypt/live/<name>. It publishes the
+# certificate to the paths existing consumers already read, so nothing else
+# has to learn where certbot keeps things.
+set -euo pipefail
+
+FULLCHAIN="{{ certbot_deploy_fullchain }}"
+KEY="{{ certbot_deploy_key }}"
+
+install -o root -g root -m 0644 "${RENEWED_LINEAGE}/fullchain.pem" "${FULLCHAIN}"
+install -o root -g root -m 0600 "${RENEWED_LINEAGE}/privkey.pem"   "${KEY}"
+
+{% for svc in certbot_reload_services %}
+if systemctl is-active --quiet {{ svc }}; then
+    systemctl reload {{ svc }} || systemctl restart {{ svc }}
+fi
+{% endfor %}

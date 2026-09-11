@@ -1,0 +1,36 @@
+---
+# Certificate to obtain. Defaults to the host's own name, matching what the
+# previous flow used as certificate_common_name.
+certbot_common_name: "{{ certificate_common_name | default(inventory_hostname) }}"
+certbot_domains: ["{{ certbot_common_name }}"]
+certbot_email: "{{ letsencrypt_email }}"
+
+# DNS-01 via Cloudflare. The old role raced propagation with a 10s delay and
+# had to be patched to 60; certbot waits explicitly instead.
+certbot_dns_propagation_seconds: 60
+
+# Credentials. Prefer a SCOPED API TOKEN (Zone:DNS:Edit on the one zone) over
+# the legacy global key, which can do anything the account can -- see AI-43.
+# Set certbot_cloudflare_api_token and the other two are ignored.
+certbot_cloudflare_api_token: ""
+certbot_cloudflare_email: "{{ cloudflare_email | default('') }}"
+certbot_cloudflare_api_key: "{{ cloudflare_api_key | default('') }}"
+
+# Where the deploy hook publishes the certificate for consumers. These are the
+# paths /etc/httpd/conf.d/ssl.conf already points at, so httpd needs no change.
+certbot_deploy_dir: "/etc/ssl/{{ certbot_common_name }}"
+certbot_deploy_fullchain: "{{ certbot_deploy_dir }}/{{ certbot_common_name }}.fullchain.pem"
+certbot_deploy_key: "{{ certbot_deploy_dir }}/{{ certbot_common_name }}.key"
+
+# Reloaded by the deploy hook after every successful renewal.
+certbot_reload_services:
+  - httpd
+
+# Let's Encrypt staging issues an UNTRUSTED certificate, and the deploy hook
+# publishes whatever certbot produces -- so turning this on against a host that
+# serves real traffic will break it until the next production issuance. Only
+# useful on a host nothing depends on.
+#
+# ipa-0 does not need it: the Cloudflare DNS-01 path is already proven there by
+# the flow this replaces, which issued the currently-serving certificate.
+certbot_staging: false
