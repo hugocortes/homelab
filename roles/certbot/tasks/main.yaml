@@ -96,22 +96,31 @@
     group: root
     mode: "0755"
 
+# argv is built as one list rather than a YAML sequence with a templated tail,
+# because the domains have to expand into SEPARATE elements. Written as
+# `-d` + join(' ') they collapse into the single argument `-dipa-0.example`,
+# which argparse reads as bundled short flags and rejects with the splendidly
+# unhelpful "Action corresponding to argument -p is None". `--domain=` also
+# survives a value that starts with a dash, which bare `-d` would not.
 - name: certbot | Obtain the certificate
   become: true
   ansible.builtin.command:
-    argv:
-      - certbot
-      - certonly
-      - --non-interactive
-      - --agree-tos
-      - --email={{ certbot_email }}
-      - --dns-cloudflare
-      - --dns-cloudflare-credentials=/etc/letsencrypt/cloudflare.ini
-      - --dns-cloudflare-propagation-seconds={{ certbot_dns_propagation_seconds }}
-      - --cert-name={{ certbot_common_name }}
-      - "{{ '--staging' if certbot_staging | bool else '--no-eff-email' }}"
-      - --deploy-hook=/etc/letsencrypt/renewal-hooks/deploy/publish-and-reload.sh
-      - "{{ certbot_domains | map('regex_replace', '^', '-d') | join(' ') }}"
+    argv: >-
+      {{
+        [
+          'certbot',
+          'certonly',
+          '--non-interactive',
+          '--agree-tos',
+          '--email=' ~ certbot_email,
+          '--dns-cloudflare',
+          '--dns-cloudflare-credentials=/etc/letsencrypt/cloudflare.ini',
+          '--dns-cloudflare-propagation-seconds=' ~ certbot_dns_propagation_seconds,
+          '--cert-name=' ~ certbot_common_name,
+          '--staging' if certbot_staging | bool else '--no-eff-email',
+          '--deploy-hook=/etc/letsencrypt/renewal-hooks/deploy/publish-and-reload.sh',
+        ] + (certbot_domains | map('regex_replace', '^', '--domain=') | list)
+      }}
     creates: /etc/letsencrypt/live/{{ certbot_common_name }}/fullchain.pem
 
 # The package ships certbot-renew.timer, which runs `certbot renew` twice
