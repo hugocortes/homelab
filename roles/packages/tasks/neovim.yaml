@@ -25,6 +25,17 @@
         chdir: /tmp
       changed_when: true
 
+    # The previous extraction MUST go first. `mv src dst` where dst is an
+    # existing directory moves src INSIDE it, producing
+    # /opt/squashfs-root/squashfs-root -- which then makes every later run fail
+    # with "File exists". The shell original did `rm -rf /opt/squashfs-root &&
+    # mv ...`; converting it to `command` dropped the removal.
+    - name: neovim | Remove the previous extraction
+      become: true
+      ansible.builtin.file:
+        path: /opt/squashfs-root
+        state: absent
+
     - name: neovim | Move into /opt
       become: true
       ansible.builtin.command: mv /tmp/squashfs-root /opt/squashfs-root
