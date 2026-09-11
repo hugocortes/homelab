@@ -5,16 +5,84 @@
 # RENEWED_LINEAGE pointing at /etc/letsencrypt/live/<name>. It publishes the
 # certificate to the paths existing consumers already read, so nothing else
 # has to learn where certbot keeps things.
+#
+# Nobody watches this run. It fires from certbot-renew.timer roughly 30 days
+# before expiry, so anything it gets wrong has a month to be noticed and will
+# not be. Hence: verify before replacing, and fail loudly rather than half-way.
 set -euo pipefail
 
 FULLCHAIN="{{ certbot_deploy_fullchain }}"
 KEY="{{ certbot_deploy_key }}"
 
-install -o root -g root -m 0644 "${RENEWED_LINEAGE}/fullchain.pem" "${FULLCHAIN}"
-install -o root -g root -m 0600 "${RENEWED_LINEAGE}/privkey.pem"   "${KEY}"
+NEW_CERT="${RENEWED_LINEAGE}/fullchain.pem"
+NEW_KEY="${RENEWED_LINEAGE}/privkey.pem"
+
+log() { printf '[certbot-deploy] %s\n' "$*"; }
+die() { printf '[certbot-deploy] FATAL: %s\n' "$*" >&2; exit 1; }
+
+# A mismatched pair would be published to httpd and handed to FreeIPA, taking
+# down TLS on both at once. Cheap to check, so check.
+cert_mod=$(openssl x509 -noout -modulus -in "${NEW_CERT}" | openssl md5)
+key_mod=$(openssl rsa -noout -modulus -in "${NEW_KEY}" | openssl md5)
+[ "${cert_mod}" = "${key_mod}" ] || die "certificate and key do not match; refusing to publish"
+
+install -o root -g root -m 0644 "${NEW_CERT}" "${FULLCHAIN}"
+install -o root -g root -m 0600 "${NEW_KEY}"  "${KEY}"
+log "published to ${FULLCHAIN}"
+
+{% if certbot_ipa_dirsrv | bool %}
+# --- FreeIPA directory server -------------------------------------------
+#
+# 389-ds serves :636 from an NSS database, which the PEM install above cannot
+# touch. ipa-server-certinstall is the only thing that updates it, and it
+# restarts dirsrv on success.
+#
+# The Directory Manager password goes in on stdin rather than through -p, so
+# it never appears in ps. --pin= is empty because certbot writes an
+# unencrypted PEM key; without it the command sits waiting on a prompt that
+# will never be answered.
+#
+# ipa-server-certinstall REFUSES a chain whose CA is not already trusted by
+# IPA. That is the intended seam: when Let's Encrypt rotates its intermediate,
+# this fails cleanly before changing anything, and the fix is the manual
+# ipa-cacert-manage runbook in docs/freeipa-certificates.md. A failure here
+# leaves dirsrv on its old certificate, which is still valid for ~30 days --
+# so there is time, and nothing is broken in the meantime.
+DIRMAN_FILE="{{ certbot_ipa_dirman_file }}"
+[ -r "${DIRMAN_FILE}" ] || die "${DIRMAN_FILE} missing; cannot reach the directory server"
+
+log "installing into the FreeIPA directory server"
+if ! ipa-server-certinstall -d "${KEY}" "${FULLCHAIN}" --pin= < "${DIRMAN_FILE}"; then
+    die "ipa-server-certinstall failed. If it rejected the CA, Let's Encrypt \
+rotated its chain and the manual steps in docs/freeipa-certificates.md are \
+needed. dirsrv is untouched and still serving the previous certificate."
+fi
+
+# certinstall restarts dirsrv itself; confirm it actually came back rather
+# than trusting the exit code, because everything on this host authenticates
+# through it. Probed by FQDN rather than localhost on purpose: this box's
+# ldap.conf happens to be lenient about hostname verification, so a localhost
+# probe would prove only that the port answers. By name it also checks the
+# certificate that was just installed is valid for the name clients use.
+probe_ldaps() {
+    ldapsearch -x -H "ldaps://{{ certbot_common_name }}" -s base -b "" vendorVersion >/dev/null 2>&1
+}
+
+for _ in $(seq 1 30); do
+    if probe_ldaps; then
+        log "directory server is answering on ldaps"
+        break
+    fi
+    sleep 2
+done
+probe_ldaps || die "directory server did not come back after certinstall -- investigate now"
+{% endif %}
 
 {% for svc in certbot_reload_services %}
 if systemctl is-active --quiet {{ svc }}; then
     systemctl reload {{ svc }} || systemctl restart {{ svc }}
+    log "reloaded {{ svc }}"
 fi
 {% endfor %}
+
+log "done"

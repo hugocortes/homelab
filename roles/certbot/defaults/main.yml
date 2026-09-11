@@ -26,6 +26,26 @@ certbot_deploy_key: "{{ certbot_deploy_dir }}/{{ certbot_common_name }}.key"
 certbot_reload_services:
   - httpd
 
+# FreeIPA's directory server keeps its certificate in an NSS database
+# (/etc/dirsrv/slapd-<INSTANCE>/cert9.db), not in a file, so publishing the PEM
+# above is invisible to LDAPS on :636. Only ipa-server-certinstall updates it.
+#
+# httpd needs no equivalent step here: this deployment overrode the stock
+# ssl.conf to read the published PEM directly, so a reload is enough. Do not
+# add --http on that assumption without re-checking ssl.conf.
+certbot_ipa_dirsrv: false
+
+# Directory Manager password. Piped to ipa-server-certinstall on stdin by the
+# hook, never passed as -p, so it stays out of ps. Required when
+# certbot_ipa_dirsrv is on; group_vars/ipacluster already defines
+# ipadm_password for the hosts that need it.
+certbot_ipa_dirman_password: "{{ ipadm_password | default('') }}"
+certbot_ipa_dirman_file: /etc/letsencrypt/ipa-dirman
+
+# Instance whose NSS database holds the certificate, used only to confirm
+# dirsrv came back up after the install. Derived from the realm.
+certbot_ipa_dirsrv_instance: "{{ ipaserver_realm | default('') | regex_replace('\\.', '-') }}"
+
 # Let's Encrypt staging issues an UNTRUSTED certificate, and the deploy hook
 # publishes whatever certbot produces -- so turning this on against a host that
 # serves real traffic will break it until the next production issuance. Only
