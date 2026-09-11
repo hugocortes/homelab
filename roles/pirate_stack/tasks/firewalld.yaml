@@ -25,10 +25,14 @@
     firewalld_ports:
       - name: transmission
         port: 9091/tcp
-      - name: transmission-vpn
+      # The peer port stays closed on purpose: Mullvad cannot forward inbound
+      # peers, so the opening (once listed twice as tcp) never carried a packet.
+      - name: transmission-peer
         port: 54949/tcp
-      - name: transmission-vpn-udp
-        port: 54949/tcp
+        state: disabled
+      - name: transmission-peer-udp
+        port: 54949/udp
+        state: disabled
 
 - name: centos | Open sabnzbd services
   ansible.builtin.include_role:

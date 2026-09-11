@@ -1,0 +1,7 @@
+---
+- name: restart transmission
+  become: true
+  community.docker.docker_container:
+    name: transmission
+    state: started
+    restart: true

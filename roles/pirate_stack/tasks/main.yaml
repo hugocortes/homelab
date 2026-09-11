@@ -136,6 +136,60 @@
       - downloads:/downloads
       - tv:/tv
 
+# Transmission owns settings.json and rewrites it on shutdown: edit it only
+# while the container is stopped, and only when the values differ.
+- name: Transmission | Read the current settings
+  become: true
+  ansible.builtin.slurp:
+    src: /opt/transmission/settings.json
+  register: _transmission_settings_raw
+  failed_when: false
+
+- name: Transmission | Parse the current settings
+  ansible.builtin.set_fact:
+    _transmission_settings: >-
+      {{ (_transmission_settings_raw.content | default('e30=')) | b64decode | from_json }}
+
+- name: Transmission | Stop before editing settings.json
+  become: true
+  community.docker.docker_container:
+    name: transmission
+    state: stopped
+  when:
+    - _transmission_settings_raw.content is defined
+    - _transmission_settings.get('blocklist-enabled') != true
+      or _transmission_settings.get('lpd-enabled') != false
+
+- name: Transmission | Blocklist on, local peer discovery off
+  become: true
+  ansible.builtin.replace:
+    path: /opt/transmission/settings.json
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  loop:
+    - { regexp: '"blocklist-enabled": false', replace: '"blocklist-enabled": true' }
+    - { regexp: '"lpd-enabled": true', replace: '"lpd-enabled": false' }
+  when: _transmission_settings_raw.content is defined
+
+- name: Transmission | Blocklist directory (the container runs as 911)
+  become: true
+  ansible.builtin.file:
+    path: /opt/transmission/blocklists
+    state: directory
+    owner: "911"
+    group: "911"
+    mode: "0755"
+
+- name: Transmission | Blocklist of private address ranges
+  become: true
+  ansible.builtin.copy:
+    src: transmission-blocklist-private.txt
+    dest: /opt/transmission/blocklists/private-ranges.txt
+    owner: "911"
+    group: "911"
+    mode: "0644"
+  notify: restart transmission
+
 - name: Start transmission container
   become: true
   community.docker.docker_container:
@@ -144,9 +198,10 @@
     image: linuxserver/transmission:{{ version_transmission }}
     name: transmission
     ports:
+      # 9091 only: the peer port is not published. Mullvad dropped port
+      # forwarding in 2023, so no peer can reach it from outside; DHT and
+      # outgoing connections need no inbound port.
       - 9091:9091
-      - 54949:54949/udp
-      - 54949:54949
     restart_policy: always
     volumes:
       - /opt/transmission:/config
