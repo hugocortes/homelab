@@ -12,6 +12,30 @@
 #
 - import_playbook: bootstrap.yml
 
+# Ahead of the packages play on purpose: that play can reboot, and a disabled
+# unit does not come back from one. FreeIPA ships ipa.service as `disabled`,
+# so an update run could leave the KDC down while sssd went on answering from
+# cache -- an outage that stays quiet until the cache ages out.
+#
+# Only `enabled` is set, never `state`. This decides what happens at the next
+# boot; it will not start IPA underneath someone doing deliberate maintenance.
+# The individual units (httpd, krb5kdc, kadmin ...) stay disabled -- ipactl
+# supervises those, and enabling them separately fights it.
+- name: Keep FreeIPA starting at boot
+  hosts: ipaservers:ipareplicas
+  become: false
+  gather_facts: false
+  tags:
+    - packages
+    - update
+    - ipa
+  tasks:
+    - name: ipa | Enable ipa.service so a reboot does not take auth down
+      become: true
+      ansible.builtin.systemd:
+        name: ipa.service
+        enabled: true
+
 - name: Manage packages
   hosts: all
   become: false
