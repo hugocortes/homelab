@@ -117,9 +117,12 @@
           '--dns-cloudflare-credentials=/etc/letsencrypt/cloudflare.ini',
           '--dns-cloudflare-propagation-seconds=' ~ certbot_dns_propagation_seconds,
           '--cert-name=' ~ certbot_common_name,
+          '--key-type=' ~ certbot_key_type,
           '--staging' if certbot_staging | bool else '--no-eff-email',
           '--deploy-hook=/etc/letsencrypt/renewal-hooks/deploy/publish-and-reload.sh',
-        ] + (certbot_domains | map('regex_replace', '^', '--domain=') | list)
+        ]
+        + (['--rsa-key-size=' ~ certbot_rsa_key_size] if certbot_key_type == 'rsa' else [])
+        + (certbot_domains | map('regex_replace', '^', '--domain=') | list)
       }}
     creates: /etc/letsencrypt/live/{{ certbot_common_name }}/fullchain.pem
 

@@ -22,9 +22,14 @@ die() { printf '[certbot-deploy] FATAL: %s\n' "$*" >&2; exit 1; }
 
 # A mismatched pair would be published to httpd and handed to FreeIPA, taking
 # down TLS on both at once. Cheap to check, so check.
-cert_mod=$(openssl x509 -noout -modulus -in "${NEW_CERT}" | openssl md5)
-key_mod=$(openssl rsa -noout -modulus -in "${NEW_KEY}" | openssl md5)
-[ "${cert_mod}" = "${key_mod}" ] || die "certificate and key do not match; refusing to publish"
+#
+# Compared by public key, not by modulus: a modulus exists only for RSA, so
+# `openssl rsa -modulus` dies with "Not an RSA key" the moment anything issues
+# an EC certificate -- which certbot 3.x does by default. `x509 -pubkey` and
+# `pkey -pubout` are algorithm-agnostic and agree for both.
+cert_pub=$(openssl x509 -noout -pubkey -in "${NEW_CERT}" | openssl md5)
+key_pub=$(openssl pkey -pubout -in "${NEW_KEY}" | openssl md5)
+[ "${cert_pub}" = "${key_pub}" ] || die "certificate and key do not match; refusing to publish"
 
 install -o root -g root -m 0644 "${NEW_CERT}" "${FULLCHAIN}"
 install -o root -g root -m 0600 "${NEW_KEY}"  "${KEY}"

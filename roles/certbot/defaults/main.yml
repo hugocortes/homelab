@@ -5,6 +5,19 @@ certbot_common_name: "{{ certificate_common_name | default(inventory_hostname) }
 certbot_domains: ["{{ certbot_common_name }}"]
 certbot_email: "{{ letsencrypt_email }}"
 
+# certbot 3.x issues ECDSA by default. This deployment ran RSA 2048 for four
+# years, and FreeIPA's NSS-backed directory server is the least-trodden place
+# to find out whether an EC server certificate works. Pinned to match what is
+# known to work here -- changing the key algorithm and introducing unattended
+# renewal in the same move is how you end up debugging auth at midnight.
+#
+# certbot records the key type in the lineage's renewal config, and the
+# `creates:` guard below means certonly never runs again once issued, so
+# changing this does NOT affect an existing certificate. To actually switch:
+# `certbot delete --cert-name <cn>`, then re-run this playbook.
+certbot_key_type: rsa
+certbot_rsa_key_size: 2048
+
 # DNS-01 via Cloudflare. The old role raced propagation with a 10s delay and
 # had to be patched to 60; certbot waits explicitly instead.
 certbot_dns_propagation_seconds: 60
