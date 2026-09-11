@@ -25,23 +25,32 @@
         chdir: /tmp
       changed_when: true
 
-    # The previous extraction MUST go first. `mv src dst` where dst is an
-    # existing directory moves src INSIDE it, producing
-    # /opt/squashfs-root/squashfs-root -- which then makes every later run fail
-    # with "File exists". The shell original did `rm -rf /opt/squashfs-root &&
-    # mv ...`; converting it to `command` dropped the removal.
-    - name: neovim | Remove the previous extraction
-      become: true
-      ansible.builtin.file:
-        path: /opt/squashfs-root
-        state: absent
+    # The old install has to go before the new one lands: `mv src dst` with dst
+    # an existing directory moves src INSIDE it, giving
+    # /opt/squashfs-root/squashfs-root and "File exists" on every run after.
+    #
+    # Both halves of the swap are gated on the replacement actually being on
+    # disk, so a failed or skipped extraction can never delete a working nvim
+    # and leave /usr/bin/nvim dangling. `mv` deliberately carries no `removes:`
+    # guard -- reaching it with nothing to move is a bug, and should say so.
+    - name: neovim | Confirm the extraction landed
+      ansible.builtin.stat:
+        path: /tmp/squashfs-root
+      register: _packages_neovim_extracted
 
-    - name: neovim | Move into /opt
-      become: true
-      ansible.builtin.command: mv /tmp/squashfs-root /opt/squashfs-root
-      args:
-        removes: /tmp/squashfs-root
-      changed_when: true
+    - name: neovim | Swap the new extraction into /opt
+      when: _packages_neovim_extracted.stat.isdir | default(false)
+      block:
+        - name: neovim | Remove the previous extraction
+          become: true
+          ansible.builtin.file:
+            path: /opt/squashfs-root
+            state: absent
+
+        - name: neovim | Move into /opt
+          become: true
+          ansible.builtin.command: mv /tmp/squashfs-root /opt/squashfs-root
+          changed_when: true
 
     - name: neovim | Link into path
       become: true
