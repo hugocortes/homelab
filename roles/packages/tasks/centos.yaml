@@ -12,9 +12,9 @@
       # el10. Never name a specific minor version here -- the old list pinned
       # python3.9, which simply does not exist on el10.
       - python3
-      # TODO(el10): dnf5 replaces this with python3-libdnf5. Cannot verify
-      # without an el10 host; confirm before the in-place upgrade.
-      - python3-dnf
+      # dnf4 (el9) -> python3-dnf, dnf5 (el10) -> python3-libdnf5.
+      # See packages_dnf_python_binding in this role's defaults.
+      - "{{ packages_dnf_python_binding }}"
       - python3-pip
       # provides /usr/bin/python. The role used to create that symlink by hand
       # over an RPM-owned path; this is the packaged way to get it.

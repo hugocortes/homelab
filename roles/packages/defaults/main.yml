@@ -23,3 +23,11 @@ packages_pip:
   - pytest
 
 packages_neovim_url: https://github.com/neovim/neovim/releases/download/nightly/nvim-linux-x86_64.appimage
+
+# el9 ships dnf4 with the python3-dnf bindings; el10 ships dnf5, where the
+# equivalent is python3-libdnf5 and python3-dnf no longer exists. Ansible's
+# dnf/dnf5 action plugins need whichever matches. Selected from the host's own
+# major version rather than pinned, so the el9 -> el10 move needs no edit here.
+packages_dnf_python_binding: >-
+  {{ 'python3-libdnf5' if (ansible_facts.distribution_major_version | int >= 10)
+     else 'python3-dnf' }}
