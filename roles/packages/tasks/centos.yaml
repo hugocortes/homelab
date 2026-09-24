@@ -76,6 +76,13 @@
       - tree # display directory tree
       - util-linux-user
       - vim
+      # Provides /usr/bin/needs-restarting, which tasks/reboot.yaml shells out
+      # to. It was never declared here: every host built before olympus had it
+      # pulled in incidentally, so the reboot probe only broke on the first
+      # genuinely minimal install -- as rc=2 with empty stdout AND stderr,
+      # which is what ansible's command module reports for "no such file",
+      # not for a command that ran and failed.
+      - yum-utils
       - zsh
     state: present
 
