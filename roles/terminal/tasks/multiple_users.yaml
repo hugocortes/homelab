@@ -19,8 +19,17 @@
         dest: "/tmp/ohmyzsh-install-{{ item.user }}.sh"
         mode: "0755"
 
+    # --unattended is load-bearing, not tidiness. Without it the installer ends
+    # by exec'ing an interactive login shell (RUNZSH), which never exits, and
+    # the play hangs on this task until the connection times out. It never
+    # surfaced before because `creates:` skips the task on every host that
+    # already has ~/.oh-my-zsh -- it only bites on a genuinely fresh one.
+    #
+    # The flag also suppresses the installer's chsh (CHSH), which is what we
+    # want: the two `user:` tasks in main.yaml already own the login shell, and
+    # do it idempotently, which chsh does not.
     - name: Run oh-my-zsh install script
-      ansible.builtin.command: "/bin/sh /tmp/ohmyzsh-install-{{ item.user }}.sh"
+      ansible.builtin.command: "/bin/sh /tmp/ohmyzsh-install-{{ item.user }}.sh --unattended"
       args:
         creates: "{{ item.home }}/.oh-my-zsh"
 
