@@ -1,0 +1,145 @@
+---
+# olympus only. This role assumes a CPU-only, large-RAM, low-bandwidth host and
+# is tuned for that shape: MoE models, batch work, nothing interactive.
+
+# Not /opt, which every other stack role uses, because on olympus /opt is on a
+# 70G root volume and one model alone is 59GiB. The install put nearly the whole
+# machine -- 3.4T -- into /home, and XFS cannot shrink, so root is not growable
+# without recreating that filesystem. Weights live where the space actually is.
+#
+# Six of the eight drives carry an unimported ZFS pool from the machine's
+# previous life. If that pool is ever brought up this should point into it
+# instead; every path in the role derives from this one variable.
+llm_stack_root: /home/llm
+llm_stack_image: homelab/llama-cpp
+# Pinned in group_vars/all alongside the container image versions, so the whole
+# fleet's "what version is this" question has one answer in one file.
+llm_stack_ref: "{{ version_llama_cpp }}"
+
+# --- serving ------------------------------------------------------------
+llm_stack_port: 8080
+
+# llama.cpp warns about this at every startup and it is right to. With NUMA
+# balancing on, the kernel keeps migrating pages between the two sockets while
+# llama.cpp is streaming weights out of them -- work that is pure overhead for
+# a process that already pins its own threads. Measured on olympus at 9.5 tok/s
+# with it enabled; the bench sweep is the way to see what turning it off buys.
+llm_stack_disable_numa_balancing: true
+
+# Token generation on this host is memory-bandwidth bound, not compute bound,
+# and the two sockets have separate memory controllers. Threads past the point
+# where bandwidth saturates do not help and start costing QPI traffic, so this
+# is deliberately NOT ansible_processor_vcpus. The bench sweep exists to find
+# the real number -- set this from its output rather than from intuition.
+# Measured, not guessed: 24/distribute took prefill from 26.8 to 39.6 tok/s and
+# generation from 9.6 to 11.3 against the original 16/distribute guess.
+llm_stack_threads: 24
+
+# distribute = spread threads and page allocation over both NUMA nodes.
+# isolate   = pin everything to one node, trading half the cores for all-local
+#             memory. On DDR3 this frequently wins. Measure, do not assume.
+# distribute wins on both axes here; isolate only ever looked cheap because it
+# uses half the machine and therefore half the watts. Worse: this host has 12
+# cores per socket, and isolate above 12 threads oversubscribes that single
+# node and falls off a cliff -- 11.3 tok/s at 24/distribute against 0.21 at
+# 24/isolate. Keep the isolate arm of the bench sweep at or below 12.
+llm_stack_numa: distribute
+
+# Left to itself llama.cpp sizes the context from the model and can allocate an
+# enormous KV cache -- it picked 163840 unprompted for Qwen3-30B. With a 157GiB
+# model on a 188GiB host there is no room for that surprise, so the window is
+# declared rather than inherited. 32k is far more than any batch summarisation
+# or classification prompt needs here, and prefill runs at ~13 tok/s, so a full
+# 32k prompt would take 40 minutes to read regardless.
+llm_stack_ctx_size: 32768
+
+# One slot, because one person uses this. llama.cpp divides the context across
+# parallel slots by default, so the stock 4 would quarter the window above for
+# no benefit on a host with a single consumer.
+llm_stack_parallel: 1
+
+# Which entry of llm_stack_models llama-server loads. The rest stay on disk for
+# the bench sweep and for anything that wants to compare across sizes.
+#
+# gpt-oss-120b rather than the faster 30B because it is the only model here that
+# justifies the hardware: 59GiB resident, which no GPU at this price can hold.
+# It gives up some speed for it -- more active parameters per token -- so any
+# job that wants throughput over quality should name a smaller one explicitly
+# rather than change this.
+llm_stack_served_model: gpt-oss-120b
+
+# HuggingFace resolve URLs are deterministic, so these stay plain get_url
+# fetches rather than llama.cpp's own `-hf` downloader: get_url is idempotent,
+# honours --check, and fails loudly instead of half-populating a cache dir.
+#
+# `files` is a list because a GGUF can be published split across shards, and
+# llama.cpp opens such a set from shard 1 -- so when that happens every shard
+# has to be named. None of the three below are split today.
+#
+# Confirm names against https://huggingface.co/api/models/<repo> before adding
+# an entry. Filename, case and shard count are all repo conventions rather than
+# rules, and a wrong guess costs a 404 per file with nothing downloaded. Sizes
+# below are what the CDN actually reported, not estimates.
+llm_stack_models:
+  # 17.3GiB, 3B active. The one that is genuinely usable at conversation speed.
+  - name: qwen3-30b-a3b
+    repo: Qwen/Qwen3-30B-A3B-GGUF
+    files:
+      - Qwen3-30B-A3B-Q4_K_M.gguf
+  # 59GiB, ~5B active. The point of having 190GB of DDR3: a 24GB GPU cannot
+  # load this at all, and here it still generates faster than a dense 8B.
+  #
+  # One file, not the three shards this list first guessed at, and the quant is
+  # spelled in caps. All three invented names 404'd together.
+  - name: gpt-oss-120b
+    repo: ggml-org/gpt-oss-120b-GGUF
+    files:
+      - gpt-oss-120b-MXFP4.gguf
+  # 230B total, 10B active, 157.2GiB across FIVE shards -- the largest model
+  # that both fits this host and still moves. Chosen over the bigger 2026 MoEs
+  # on ACTIVE parameters, not total: Kimi K3 (2.8T/104B), Qwen3.8-Max (2.4T/95B)
+  # and GLM-5.2 (744B/40B) would all be under 1 tok/s here even if they fitted,
+  # and DeepSeek V4.1-Flash is 340GiB at Q2 and needs an architecture that is
+  # not in upstream llama.cpp.
+  #
+  # Q5_K_M leaves roughly 31GiB for the KV cache, the page cache and the OS,
+  # which is why llm_stack_ctx_size exists below. Q4_K_M (130.5GiB, four
+  # shards) is the same model with more headroom if this ever gets tight.
+  #
+  # The shard count differs per quant -- Q4_K_M is of-00004 and Q5_K_M is
+  # of-00005. Do not pattern-match one from the other; check the repo.
+  - name: minimax-m2-7
+    repo: unsloth/MiniMax-M2.7-GGUF
+    files:
+      - UD-Q5_K_M/MiniMax-M2.7-UD-Q5_K_M-00001-of-00005.gguf
+      - UD-Q5_K_M/MiniMax-M2.7-UD-Q5_K_M-00002-of-00005.gguf
+      - UD-Q5_K_M/MiniMax-M2.7-UD-Q5_K_M-00003-of-00005.gguf
+      - UD-Q5_K_M/MiniMax-M2.7-UD-Q5_K_M-00004-of-00005.gguf
+      - UD-Q5_K_M/MiniMax-M2.7-UD-Q5_K_M-00005-of-00005.gguf
+  # Dense 8B control, 4.7GiB. Included to make the MoE claim falsifiable rather
+  # than asserted: same quant, a quarter the size of the 30B MoE, and it should
+  # still lose on tokens/sec because it reads every weight for every token.
+  - name: qwen3-8b
+    repo: Qwen/Qwen3-8B-GGUF
+    files:
+      - Qwen3-8B-Q4_K_M.gguf
+
+# --- evaluation harness -------------------------------------------------
+# pp = prompt processing (compute bound, hurt most by the missing AVX2/FMA).
+# tg = token generation (bandwidth bound). Both are reported; they answer
+# different questions and on this host they differ by an order of magnitude.
+llm_stack_bench_prompt_tokens: 512
+llm_stack_bench_gen_tokens: 128
+llm_stack_bench_repetitions: 3
+llm_stack_bench_thread_sweep: [8, 12, 16, 24]
+llm_stack_bench_numa_sweep: [distribute, isolate]
+
+# Sampling cadence for the IPMI power reader, in seconds. The iDRAC updates its
+# own reading roughly this often; polling faster just re-reads a stale value.
+llm_stack_bench_power_interval: 2
+
+# Used only to turn watt-hours into dollars in the report. There is no correct
+# single value here -- self-consumed solar is near zero at midday and full
+# import rate at 3am -- so the harness prints watt-hours per million tokens
+# alongside, which is the rate-independent number.
+llm_stack_usd_per_kwh: 0.30

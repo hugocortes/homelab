@@ -1,0 +1,9 @@
+---
+- name: centos | Open llama-server services
+  ansible.builtin.include_role:
+    name: firewalld
+  vars:
+    firewalld_rule_name: llama-server
+    firewalld_ports:
+      - name: llama-server
+        port: "{{ llm_stack_port }}/tcp"

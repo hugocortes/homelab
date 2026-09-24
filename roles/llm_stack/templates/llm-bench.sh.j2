@@ -1,0 +1,250 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+#
+# llm-bench -- measure tokens/sec and wall power at the same time, then price
+# the result against metered API rates.
+#
+# The question this exists to answer is "is olympus worth the electricity", and
+# tokens/sec alone cannot answer it. So every llama-bench run is wrapped in an
+# IPMI power sample taken from the PSUs, and the two are combined into watt-
+# hours per million tokens -- the rate-independent number -- and then into
+# dollars at {{ llm_stack_usd_per_kwh }}/kWh.
+#
+# Cost is reported two ways because solar makes the honest answer ambiguous:
+#
+#   total  -- the machine's entire draw. Correct if olympus exists only to do
+#             this and would otherwise be powered off.
+#   delta  -- draw above measured idle. Correct if the box is up anyway for
+#             storage, and inference is the marginal load.
+#
+# Usage:  llm-bench [model-name ...]      (default: every model in the role)
+set -euo pipefail
+
+IMAGE="{{ llm_stack_image }}:{{ llm_stack_ref }}"
+MODELS_DIR="{{ llm_stack_root }}/models"
+RESULTS_DIR="{{ llm_stack_root }}/results"
+PP="{{ llm_stack_bench_prompt_tokens }}"
+TG="{{ llm_stack_bench_gen_tokens }}"
+REPS="{{ llm_stack_bench_repetitions }}"
+INTERVAL="{{ llm_stack_bench_power_interval }}"
+USD_PER_KWH="{{ llm_stack_usd_per_kwh }}"
+THREAD_SWEEP=({{ llm_stack_bench_thread_sweep | join(' ') }})
+NUMA_SWEEP=({{ llm_stack_bench_numa_sweep | join(' ') }})
+
+declare -A MODEL_FILE=(
+{% for model in llm_stack_models %}
+  [{{ model.name }}]="{{ model.files[0] | basename }}"
+{% endfor %}
+)
+
+RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
+OUT="${RESULTS_DIR}/bench-${RUN_ID}.csv"
+WORK="$(mktemp -d)"
+trap 'rm -rf "${WORK}"' EXIT
+
+# Root, and named by absolute path. The script reads the BMC over IPMI, drives
+# docker and writes into a root-owned results directory, so there is no useful
+# non-root mode to degrade into -- better to say so in one line than to fail
+# three commands deep. The absolute path matters because RHEL's sudoers sets
+# secure_path to /sbin:/bin:/usr/sbin:/usr/bin, which excludes /usr/local/bin:
+# a bare `sudo llm-bench` reports "command not found" for a file that is
+# plainly there and on root's own PATH.
+if [[ "$(id -u)" -ne 0 ]]; then
+  {
+    echo "llm-bench must run as root (IPMI, docker, ${RESULTS_DIR})."
+    echo
+    echo "    sudo /usr/local/bin/llm-bench $*"
+  } >&2
+  exit 1
+fi
+
+# --- power -------------------------------------------------------------------
+
+# Two spellings because 12G iDRACs are inconsistent about DCMI. dcmi is the
+# standard path; the named sensor is the Dell-specific fallback. If neither
+# answers, the run still produces tokens/sec -- it just cannot price them, and
+# that is worth saying out loud rather than silently reporting 0W.
+read_watts() {
+  local w
+  w="$(ipmitool dcmi power reading 2>/dev/null \
+       | awk '/Instantaneous power reading/ { print $4; exit }')" || true
+  if [[ -z "${w}" ]]; then
+    w="$(ipmitool sensor get 'Pwr Consumption' 2>/dev/null \
+         | awk -F: '/Sensor Reading/ { print $2; exit }' | awk '{ print $1 }')" || true
+  fi
+  [[ -n "${w}" ]] && printf '%s' "${w}"
+}
+
+sample_power_into() {
+  local dest="$1"
+  : >"${dest}"
+  while true; do
+    read_watts >>"${dest}" 2>/dev/null && printf '\n' >>"${dest}"
+    sleep "${INTERVAL}"
+  done
+}
+
+mean_of() {
+  awk 'NF { s += $1; n++ } END { if (n) printf "%.1f", s / n; else print "" }' "$1"
+}
+
+# --- preflight ---------------------------------------------------------------
+
+if ! read_watts >/dev/null; then
+  echo "WARNING: no IPMI power reading available -- is ipmi_si loaded?" >&2
+  echo "         tokens/sec will be recorded, watt and dollar columns will not." >&2
+fi
+
+mkdir -p "${RESULTS_DIR}"
+
+echo "==> sampling idle power for 30s (leave the box alone)"
+sample_power_into "${WORK}/idle" &
+IDLE_PID=$!
+sleep 30
+kill "${IDLE_PID}" 2>/dev/null || true
+wait "${IDLE_PID}" 2>/dev/null || true
+IDLE_W="$(mean_of "${WORK}/idle")"
+echo "    idle: ${IDLE_W:-unknown} W"
+
+# --- sweep -------------------------------------------------------------------
+
+printf 'model,threads,numa,test,tokens_per_sec,watts_avg,watts_idle,' >"${OUT}"
+printf 'wh_per_mtok_total,wh_per_mtok_delta,usd_per_mtok_total,usd_per_mtok_delta\n' >>"${OUT}"
+
+targets=("$@")
+# Emptiness is tested through [*] rather than through the obvious array-length
+# form. This is a Jinja template, and an open brace followed immediately by a
+# hash is how Jinja opens a comment -- so bash's dollar-brace-hash length
+# syntax makes the template fail to RENDER, long before bash ever sees it.
+# Do not "simplify" this back; the error message points at the wrong thing.
+if [[ -z "${targets[*]:-}" ]]; then
+  targets=("${!MODEL_FILE[@]}")
+fi
+
+for model in "${targets[@]}"; do
+  file="${MODEL_FILE[${model}]:-}"
+  if [[ -z "${file}" ]]; then
+    echo "!! unknown model '${model}', skipping" >&2
+    continue
+  fi
+  if [[ ! -f "${MODELS_DIR}/${file}" ]]; then
+    echo "!! ${model}: ${file} not downloaded, skipping" >&2
+    continue
+  fi
+
+  for threads in "${THREAD_SWEEP[@]}"; do
+    for numa in "${NUMA_SWEEP[@]}"; do
+      echo "==> ${model}  threads=${threads}  numa=${numa}"
+
+      sample_power_into "${WORK}/run" &
+      POWER_PID=$!
+
+      # llama-bench emits one row for prompt processing (n_gen=0) and one for
+      # token generation (n_prompt=0). Both matter and they differ by an order
+      # of magnitude on this host, so neither is collapsed into the other.
+      docker run --rm \
+        -v "${MODELS_DIR}:/models:ro" \
+        "${IMAGE}" \
+        llama-bench \
+          --model "/models/${file}" \
+          -p "${PP}" -n "${TG}" -r "${REPS}" \
+          --threads "${threads}" \
+          --numa "${numa}" \
+          -o csv >"${WORK}/bench.csv" 2>"${WORK}/bench.err" || {
+            echo "!! llama-bench failed; tail of stderr:" >&2
+            tail -5 "${WORK}/bench.err" >&2
+            kill "${POWER_PID}" 2>/dev/null || true
+            continue
+          }
+
+      kill "${POWER_PID}" 2>/dev/null || true
+      wait "${POWER_PID}" 2>/dev/null || true
+      RUN_W="$(mean_of "${WORK}/run")"
+
+      # Parsed in python rather than awk: llama-bench's CSV quotes cpu_info,
+      # which contains commas on some SKUs, and column order is not stable
+      # across releases -- so fields are looked up by header name.
+      python3 - "${WORK}/bench.csv" "${model}" "${threads}" "${numa}" \
+                "${RUN_W}" "${IDLE_W}" "${USD_PER_KWH}" >>"${OUT}" <<'PY'
+import csv, sys
+
+path, model, threads, numa, run_w, idle_w, rate = sys.argv[1:8]
+run_w = float(run_w) if run_w else None
+idle_w = float(idle_w) if idle_w else None
+rate = float(rate)
+
+def cost(tps, watts):
+    if not tps or watts is None or watts <= 0:
+        return "", ""
+    hours = (1_000_000 / tps) / 3600
+    wh = watts * hours
+    return f"{wh:.1f}", f"{wh / 1000 * rate:.2f}"
+
+with open(path, newline="") as fh:
+    for row in csv.DictReader(fh):
+        tps = float(row["avg_ts"])
+        test = "pp" if int(row["n_prompt"]) > 0 else "tg"
+        delta_w = None
+        if run_w is not None and idle_w is not None:
+            delta_w = max(run_w - idle_w, 0.0)
+        wh_t, usd_t = cost(tps, run_w)
+        wh_d, usd_d = cost(tps, delta_w)
+        print(",".join([
+            model, threads, numa, test, f"{tps:.2f}",
+            f"{run_w:.1f}" if run_w is not None else "",
+            f"{idle_w:.1f}" if idle_w is not None else "",
+            wh_t, wh_d, usd_t, usd_d,
+        ]))
+PY
+    done
+  done
+done
+
+# --- report ------------------------------------------------------------------
+
+echo
+echo "results: ${OUT}"
+echo
+column -s, -t "${OUT}"
+echo
+python3 - "${OUT}" <<'PY'
+import csv, sys
+
+# Reference rates, USD per million tokens, from the Anthropic pricing table.
+# Split by direction on purpose. Prompt processing consumes INPUT tokens and
+# generation produces OUTPUT tokens, and upstream prices those 5x apart -- an
+# earlier version of this report compared both local numbers against the input
+# column, which understated generation by exactly that factor.
+REFERENCE = dict(
+    pp=[("Haiku 4.5", 1.00), ("Sonnet 5", 2.00), ("Opus 5", 5.00)],
+    tg=[("Haiku 4.5", 5.00), ("Sonnet 5", 10.00), ("Opus 5", 25.00)],
+)
+LABEL = dict(pp="prefill / input", tg="generation / output")
+
+rows = [r for r in csv.DictReader(open(sys.argv[1])) if r["usd_per_mtok_total"]]
+if not rows:
+    sys.exit(0)
+
+for test in ("pp", "tg"):
+    here = [r for r in rows if r["test"] == test]
+    if not here:
+        continue
+    fast = max(here, key=lambda r: float(r["tokens_per_sec"]))
+    cheap = min(here, key=lambda r: float(r["usd_per_mtok_total"]))
+    print(f"=== {LABEL[test]} ===")
+    for tag, r in (("fastest", fast), ("cheapest", cheap)):
+        print(f"  {tag:9} {r['model']}  threads={r['threads']}  numa={r['numa']}")
+        print(f"            {r['tokens_per_sec']} tok/s at {r['watts_avg']}W "
+              f"(idle {r['watts_idle']}W)")
+        print(f"            ${float(r['usd_per_mtok_total']):.2f}/Mtok total, "
+              f"${float(r['usd_per_mtok_delta']):.2f}/Mtok over idle")
+    best = float(fast["usd_per_mtok_total"])
+    for name, price in REFERENCE[test]:
+        verdict = "cheaper than" if best < price else "MORE EXPENSIVE than"
+        print(f"    vs {name:<10} (${price:.2f}/Mtok): electricity alone is "
+              f"{verdict} the API")
+    print()
+
+print("Hardware is not amortised here. This is electricity only -- the box,")
+print("the RAM and the hours are already spent and are not coming back.")
+PY

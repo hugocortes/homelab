@@ -1,0 +1,28 @@
+---
+# Local LLM inference on olympus.
+#
+# The host is CPU-only, 190GB of DDR3, and memory-bandwidth starved: generation
+# speed is bandwidth divided by the bytes of weights touched per token, which is
+# why the model list is mixture-of-experts and why nothing here is interactive.
+#
+# Converge without re-fetching ~90GB of weights:
+#
+#     ansible-playbook playbooks/llm.yml --skip-tags models
+#
+# Then, on the host, measure what it actually costs to run. Named by absolute
+# path because RHEL's sudoers sets secure_path to /sbin:/bin:/usr/sbin:/usr/bin,
+# which excludes /usr/local/bin -- a bare `sudo llm-bench` is "command not
+# found" even though the file is right there and on root's own PATH:
+#
+#     sudo /usr/local/bin/llm-bench            # every model
+#     sudo /usr/local/bin/llm-bench qwen3-30b-a3b   # just one
+#
+- import_playbook: bootstrap.yml
+
+- name: Configure llm
+  hosts: olympus
+  become: true
+  gather_facts: false
+  tags: llm
+  roles:
+    - llm_stack

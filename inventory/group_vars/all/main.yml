@@ -30,6 +30,10 @@ version_ghost: 6.21.0
 version_gramps: 26.2.0
 version_jackett: 0.24.1287
 version_keycloak: 26.5.0
+# Upstream tag, e.g. b6100. `master` means the llama.cpp build on olympus is
+# still being evaluated; pin it once a build is known good -- a rebuild there is
+# a ~20 minute compile.
+version_llama_cpp: master
 version_miniflux: 2.2.17
 version_ombi: 4.55.7-development
 version_pomerium: v0.32.0

@@ -1,0 +1,203 @@
+---
+- name: Create service dirs
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  with_items:
+    - "{{ llm_stack_root }}"
+    - "{{ llm_stack_root }}/build"
+    # get_url stages its download here rather than in remote_tmp. See the
+    # tmp_dest note in models.yaml -- this has to sit on the same filesystem
+    # as models/ or the staging alone can exhaust the root volume.
+    - "{{ llm_stack_root }}/.download"
+    - "{{ llm_stack_root }}/models"
+    - "{{ llm_stack_root }}/results"
+
+# The harness reads wall power from the PSUs via the BMC. In-band IPMI over the
+# KCS interface needs no iDRAC credentials and no network path to it, which is
+# why this is preferred over redfish -- one less secret and it keeps working
+# when the iDRAC's own NIC is unconfigured.
+- name: centos | Install ipmitool for the power harness
+  become: true
+  ansible.builtin.package:
+    name: ipmitool
+    state: present
+  when: is_centos
+
+- name: Load the in-band IPMI interfaces
+  become: true
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+    persistent: present
+  with_items:
+    - ipmi_devintf
+    - ipmi_si
+
+- name: Disable automatic NUMA balancing
+  become: true
+  ansible.posix.sysctl:
+    name: kernel.numa_balancing
+    value: "0"
+    sysctl_file: /etc/sysctl.d/90-llm-numa.conf
+    state: present
+    reload: true
+  when: llm_stack_disable_numa_balancing | bool
+
+- name: Stage the llama.cpp build context
+  become: true
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../dockerfiles/llama-cpp/"
+    dest: "{{ llm_stack_root }}/build/llama-cpp/"
+    owner: root
+    group: root
+    mode: "0644"
+  register: _llm_stack_context
+
+# Under --check neither the directory nor the staged context above was really
+# written, and docker_image_build fails outright on a missing path -- which
+# aborts the play and hides everything else --check had to say. Same reasoning
+# and same shape as roles/firewalld (AI-23): decide whether the prerequisite
+# genuinely exists, report when it does not, and skip rather than fail.
+#
+# check_mode: false so the probe reports the disk as it actually is, not as
+# --check pretends it will be.
+- name: Check whether the build context is really on disk
+  become: true
+  ansible.builtin.stat:
+    path: "{{ llm_stack_root }}/build/llama-cpp/Dockerfile"
+    get_checksum: false
+    get_mime: false
+    get_attributes: false
+  register: _llm_stack_context_file
+  changed_when: false
+  check_mode: false
+
+- name: Decide whether the image can be built
+  ansible.builtin.set_fact:
+    _llm_stack_buildable: >-
+      {{ _llm_stack_context_file.stat.exists or not ansible_check_mode }}
+
+- name: Explain why the image build is being skipped
+  ansible.builtin.debug:
+    msg: >-
+      {{ inventory_hostname }}: not building {{ llm_stack_image }} -- the build
+      context would be created by this run; re-run without --check to build it.
+  when: not (_llm_stack_buildable | bool)
+
+# docker_image lost its build support in community.docker 4.x; this is the
+# module that replaced it. rebuild=never keeps converges cheap -- a rebuild is
+# a ~20 minute compile here, so it happens when the ref changes or when the
+# context does, not on every run.
+- name: Build the llama.cpp image
+  become: true
+  community.docker.docker_image_build:
+    name: "{{ llm_stack_image }}:{{ llm_stack_ref }}"
+    path: "{{ llm_stack_root }}/build/llama-cpp"
+    args:
+      LLAMA_CPP_REF: "{{ llm_stack_ref }}"
+    pull: true
+    rebuild: "{{ 'always' if _llm_stack_context.changed else 'never' }}"
+  when: _llm_stack_buildable | bool
+
+- name: Fetch model weights
+  ansible.builtin.import_tasks: models.yaml
+  tags: models
+
+- name: Install the evaluation harness
+  become: true
+  ansible.builtin.template:
+    src: llm-bench.sh.j2
+    dest: /usr/local/bin/llm-bench
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Resolve the served model
+  ansible.builtin.set_fact:
+    _llm_stack_served: >-
+      {{ llm_stack_models
+         | selectattr('name', 'eq', llm_stack_served_model)
+         | list }}
+
+- name: Verify llm_stack_served_model names a declared model
+  ansible.builtin.assert:
+    that:
+      - _llm_stack_served | length == 1
+    fail_msg: >-
+      llm_stack_served_model is "{{ llm_stack_served_model }}", which is not a
+      name in llm_stack_models
+      ({{ llm_stack_models | map(attribute='name') | join(', ') }}).
+    quiet: true
+
+# The weights are ~90GB and tagged `models`, so --skip-tags models is the
+# normal way to converge everything else. Without this guard that run would
+# start the server against a model file that is not there and leave the
+# container restarting forever, which looks like a broken role rather than a
+# deliberately deferred download.
+# get_checksum defaults to TRUE, and these are model weights. Left on, this
+# task sha1s 59GiB (gpt-oss) or 157GiB (MiniMax) single-threaded to answer a
+# question that only reads .stat.exists -- measured at 78 minutes and still
+# going, on a box whose page cache was full and whose cores were busy serving.
+# Nothing here ever looks at the checksum. Same for the two cheaper probes.
+- name: Check whether the served weights are on disk
+  become: true
+  ansible.builtin.stat:
+    path: "{{ llm_stack_root }}/models/{{ _llm_stack_served[0].files[0] | basename }}"
+    get_checksum: false
+    get_mime: false
+    get_attributes: false
+  register: _llm_stack_model_file
+  changed_when: false
+  check_mode: false
+
+- name: Decide whether llama-server can start
+  ansible.builtin.set_fact:
+    _llm_stack_servable: >-
+      {{ (_llm_stack_buildable | bool) and _llm_stack_model_file.stat.exists }}
+
+- name: Explain why llama-server is not being started
+  ansible.builtin.debug:
+    msg: >-
+      {{ inventory_hostname }}: not starting llama-server --
+      {{ 'the image has not been built yet'
+         if not (_llm_stack_buildable | bool)
+         else 'weights for ' ~ llm_stack_served_model ~ ' are not on disk;
+               run without --skip-tags models' }}
+  when: not (_llm_stack_servable | bool)
+
+- name: Start llama-server container
+  become: true
+  when: _llm_stack_servable | bool
+  community.docker.docker_container:
+    name: llama-server
+    image: "{{ llm_stack_image }}:{{ llm_stack_ref }}"
+    command:
+      - llama-server
+      - --model
+      - "/models/{{ _llm_stack_served[0].files[0] | basename }}"
+      - --host
+      - 0.0.0.0
+      - --port
+      - "{{ llm_stack_port }}"
+      - --threads
+      - "{{ llm_stack_threads }}"
+      - --numa
+      - "{{ llm_stack_numa }}"
+      - --ctx-size
+      - "{{ llm_stack_ctx_size }}"
+      - --parallel
+      - "{{ llm_stack_parallel }}"
+    ports:
+      - "{{ llm_stack_port }}:{{ llm_stack_port }}"
+    restart_policy: always
+    volumes:
+      - "{{ llm_stack_root }}/models:/models:ro"
+
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
+  when: is_centos

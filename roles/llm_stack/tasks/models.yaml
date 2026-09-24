@@ -1,0 +1,33 @@
+---
+# Roughly 90GB across the three models. Tagged `models` so a routine converge
+# does not have to consider them at all:
+#
+#     ansible-playbook playbooks/llm.yml --skip-tags models
+#
+# HF serves these from a CDN that redirects; get_url follows it. force=false is
+# load-bearing -- a GGUF is immutable for a given filename, and without it every
+# run re-issues a conditional GET for 90GB of weights.
+- name: models | Fetch GGUF weights
+  become: true
+  ansible.builtin.get_url:
+    url: "https://huggingface.co/{{ item.0.repo }}/resolve/main/{{ item.1 }}"
+    # basename, because some repos publish quants under a per-quant directory
+    # (unsloth does: UD-Q4_K_M/...). The path is part of the URL but must not
+    # be part of the destination -- models/ stays flat, so nothing downstream
+    # has to know how a given repo chose to lay itself out.
+    dest: "{{ llm_stack_root }}/models/{{ item.1 | basename }}"
+    owner: root
+    group: root
+    mode: "0644"
+    force: false
+    timeout: 60
+    # Without this, get_url stages the download in ansible's remote_tmp
+    # (/tmp/.ansible-* per ansible.cfg) and only then moves it to dest. On a
+    # host where /tmp and the model directory are different filesystems that
+    # needs the full file size free on BOTH, and olympus's root volume is far
+    # smaller than the weights. Staging beside dest makes the final step a
+    # rename instead of a copy, so peak usage is one file, not two.
+    tmp_dest: "{{ llm_stack_root }}/.download"
+  loop: "{{ llm_stack_models | subelements('files') }}"
+  loop_control:
+    label: "{{ item.0.name }} :: {{ item.1 }}"
