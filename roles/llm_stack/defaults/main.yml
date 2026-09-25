@@ -134,6 +134,14 @@ llm_stack_bench_repetitions: 3
 llm_stack_bench_thread_sweep: [8, 12, 16, 24]
 llm_stack_bench_numa_sweep: [distribute, isolate]
 
+# isolate pins every thread to one NUMA node, and this host has 12 cores per
+# socket. Above that the single node is oversubscribed and throughput does not
+# degrade, it collapses -- 11.3 tok/s at 24/distribute against 0.21 at
+# 24/isolate on qwen3-30b-a3b. That cliff is already characterised, and on a
+# model that generates at 2.3 tok/s to begin with, re-measuring it costs hours
+# per config to learn nothing. Configurations above this are skipped out loud.
+llm_stack_bench_isolate_max_threads: 12
+
 # Sampling cadence for the IPMI power reader, in seconds. The iDRAC updates its
 # own reading roughly this often; polling faster just re-reads a stale value.
 llm_stack_bench_power_interval: 2

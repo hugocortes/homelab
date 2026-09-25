@@ -30,6 +30,7 @@ INTERVAL="{{ llm_stack_bench_power_interval }}"
 USD_PER_KWH="{{ llm_stack_usd_per_kwh }}"
 THREAD_SWEEP=({{ llm_stack_bench_thread_sweep | join(' ') }})
 NUMA_SWEEP=({{ llm_stack_bench_numa_sweep | join(' ') }})
+ISOLATE_MAX_THREADS="{{ llm_stack_bench_isolate_max_threads }}"
 
 declare -A MODEL_FILE=(
 {% for model in llm_stack_models %}
@@ -134,6 +135,12 @@ for model in "${targets[@]}"; do
 
   for threads in "${THREAD_SWEEP[@]}"; do
     for numa in "${NUMA_SWEEP[@]}"; do
+      if [[ "${numa}" == "isolate" && "${threads}" -gt "${ISOLATE_MAX_THREADS}" ]]; then
+        echo "==> skip ${model} threads=${threads} numa=isolate"
+        echo "    (one socket holds ${ISOLATE_MAX_THREADS} cores; above that it collapses, already measured)"
+        continue
+      fi
+
       echo "==> ${model}  threads=${threads}  numa=${numa}"
 
       sample_power_into "${WORK}/run" &
