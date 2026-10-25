@@ -1,0 +1,6 @@
+---
+# Publish 5432 on every host address. Off by default: consumers on the
+# 'postgres' docker network reach it by name and need nothing published (AI-36).
+# Docker-published ports bypass firewalld, so turning this on exposes 5432 to
+# whatever the network in front of the host lets through.
+postgresql_publish: false

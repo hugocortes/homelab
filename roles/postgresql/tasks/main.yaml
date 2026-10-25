@@ -25,10 +25,11 @@
     name: postgres
     networks:
       - name: postgres
-    # not published: consumers reach postgres over the 'postgres' network by name.
+    # unpublished unless postgresql_publish: consumers reach postgres over the
+    # 'postgres' network by name.
     # published_ports defaults to allow_more_present, so an empty list alone will
     # NOT unpublish an already-running container -- strict is required.
-    ports: []
+    ports: "{{ ['5432:5432'] if postgresql_publish else [] }}"
     comparisons:
       published_ports: strict
     restart_policy: always
