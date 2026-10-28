@@ -93,6 +93,10 @@ gramps_smtp_password: '{{ vault_gramps_smtp_password }}'
 miniflux_admin_password: '{{ vault_miniflux_admin_password }}'
 miniflux_oidc_client_secret: '{{ vault_miniflux_oidc_client_secret }}'
 
+# --- pomerium (ipa-0) ---
+pomerium_idp_client_secret: '{{ vault_pomerium_idp_client_secret }}'
+pomerium_signing_key: '{{ vault_pomerium_signing_key }}'
+
 # --- grafana (ops) ---
 grafana_oidc_client_secret: '{{ vault_grafana_oidc_client_secret }}'
 grafana_smtp_password: '{{ vault_grafana_smtp_password }}'

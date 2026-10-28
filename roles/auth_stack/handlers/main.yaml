@@ -1,0 +1,10 @@
+---
+# The config is a single-file bind mount; template replaces the file rather
+# than writing in place, so the running container keeps the old inode until
+# it is restarted.
+- name: restart pomerium
+  become: true
+  community.docker.docker_container:
+    name: pomerium
+    state: started
+    restart: true

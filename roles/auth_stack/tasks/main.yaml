@@ -18,6 +18,17 @@
     force: true
     mode: "0644"
 
+- name: Write pomerium config
+  become: true
+  ansible.builtin.template:
+    src: pomerium-config.yaml.j2
+    dest: /opt/pomerium/config.yaml
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  notify: restart pomerium
+
 - name: Start pomerium container
   become: true
   community.docker.docker_container:

@@ -1,0 +1,77 @@
+---
+# Managed by ansible (auth_stack). Edits on ipa-0 are overwritten on the next run.
+address: :8080
+jwt_claims_headers: email
+log_level: warn
+insecure_server: true
+grpc_insecure: true
+autocert: false
+idp_client_id: pomerium
+idp_client_secret: {{ pomerium_idp_client_secret }}
+idp_provider: oidc
+idp_scopes: openid,email,profile,groups
+idp_provider_url: https://auth.corteshq.net/realms/master
+
+signing_key: {{ pomerium_signing_key }}
+
+authenticate_service_url: https://auth.docker.corteshq.net
+
+routes:
+  - allowed_idp_claims:
+      groups:
+        - /ipa
+        - /ipa/media
+        - /ipa/media/ebooks
+    from: https://calibre.corteshq.net
+    pass_identity_headers: true
+    preserve_host_header: true
+    to: http://media.internal.corteshq.net:8083
+  - allowed_idp_claims:
+      groups:
+        - /ipa
+    from: https://jackett.corteshq.net
+    preserve_host_header: true
+    to: http://pirate.internal.corteshq.net:9117
+  - allowed_idp_claims:
+      groups:
+        - /ipa
+        - /ipa/media
+        - /ipa/media/movies
+    from: https://radarr.corteshq.net
+    preserve_host_header: true
+    to: http://pirate.internal.corteshq.net:7878
+  - allowed_idp_claims:
+      groups:
+        - /ipa
+    from: https://sabnzbd.corteshq.net
+    preserve_host_header: true
+    to: http://pirate.internal.corteshq.net:8080
+  - allowed_idp_claims:
+      groups:
+        - /ipa
+        - /ipa/media
+        - /ipa/media/tvshows
+    from: https://sonarr.corteshq.net
+    preserve_host_header: true
+    to: http://pirate.internal.corteshq.net:8989
+  - allowed_idp_claims:
+      groups:
+        - /ipa
+        - /ipa/media
+    from: https://tautulli.corteshq.net
+    set_request_headers:
+      X-Forwarded-Host: tautulli.corteshq.net
+    to: http://media.internal.corteshq.net:8181
+  - allowed_idp_claims:
+      groups:
+        - /ipa
+    from: https://transmission.corteshq.net
+    preserve_host_header: true
+    to: http://pirate.internal.corteshq.net:9091
+  - allow_websockets: true
+    allowed_idp_claims:
+      groups:
+        - /ipa
+    from: https://x.corteshq.net
+    preserve_host_header: true
+    to: http://media.internal.corteshq.net:9999
