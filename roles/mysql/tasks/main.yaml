@@ -38,7 +38,7 @@
     command:
       - "--mysqld.username=root:{{ mysql_password }}"
       - "--mysqld.address=mysql:3306"
-    image: prom/mysqld-exporter:v0.15.1
+    image: prom/mysqld-exporter:v0.21.0
     name: mysql-metrics
     networks:
       - name: mysql
