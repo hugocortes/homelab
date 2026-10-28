@@ -61,15 +61,6 @@
       - name: sonarr
         port: 8989/tcp
 
-- name: centos | Open readarr services
-  ansible.builtin.include_role:
-    name: firewalld
-  vars:
-    firewalld_rule_name: readarr
-    firewalld_ports:
-      - name: readarr
-        port: 8787/tcp
-
 - name: centos | Open calibre-server services
   ansible.builtin.include_role:
     name: firewalld

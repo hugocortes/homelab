@@ -26,7 +26,6 @@ docker_username: ''
 version_calibre: 8.0.0
 version_calibre_web: 0.6.26
 version_flaresolverr: v3.4.6
-version_ghost: 6.21.0
 version_gramps: 26.2.0
 version_jackett: 0.24.1287
 version_keycloak: 26.5.0
@@ -38,7 +37,6 @@ version_miniflux: 2.2.17
 version_ombi: 4.55.7-development
 version_pomerium: v0.32.0
 version_radarr: 6.0.4
-version_readarr: 0.4.18-develop
 version_sabnzbd: 4.5.5
 version_sonarr: 4.0.16
 version_tautulli: v2.16.1
@@ -109,15 +107,6 @@ bastion_duo_ikey: '{{ vault_bastion_duo_ikey }}'
 bastion_duo_skey: '{{ vault_bastion_duo_skey }}'
 bastion_host: ''
 bastion_user: ''
-
-# --- sish (bastion) ---
-sish_domain: ''
-sish_forwarding_ports_http: '80'
-sish_forwarding_ports_https: '443'
-sish_forwarding_ports_tcp: []
-sish_private_key_passphrase: '{{ vault_sish_private_key_passphrase }}'
-sish_ssh_port: '8022'
-sish_tag: ''
 
 # --- spinnaker cli (unused) ---
 spin_cli_auth_enabled: true

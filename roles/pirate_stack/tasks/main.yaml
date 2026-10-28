@@ -30,7 +30,6 @@
     - path: /opt/jackett
     - path: /opt/jackett/config
     - path: /opt/jackett/downloads
-    - path: /opt/readarr
     - path: /opt/radarr
     - path: /opt/sabnzbd
     - path: /opt/sonarr
@@ -91,21 +90,6 @@
       - /opt/radarr:/config
       - downloads:/downloads
       - movies:/movies
-
-# - name: start readarr container
-#   become: true
-#   docker_container:
-#     env:
-#       TZ: America/Los_Angeles
-#     image: linuxserver/readarr:{{ version_readarr }}
-#     name: readarr
-#     ports:
-#       - 8787:8787
-#     restart_policy: always
-#     volumes:
-#       - /opt/readarr:/config
-#       - downloads:/downloads
-#       - ebooks:/books
 
 - name: Start sabnzbd container
   become: true

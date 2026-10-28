@@ -1,5 +1,5 @@
 ---
-# SSH bastion with Duo and sish. No bastion host is currently defined in the
+# SSH bastion with Duo. No bastion host is currently defined in the
 # inventory, so this playbook matches no hosts.
 - import_playbook: bootstrap.yml
 
@@ -20,5 +20,3 @@
   roles:
     - duo
     - ssh_bastion
-    - role: sish
-      tags: docker/sish
