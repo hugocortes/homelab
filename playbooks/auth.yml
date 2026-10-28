@@ -8,5 +8,6 @@
   gather_facts: false
   tags: auth
   roles:
-    - postgresql
+    - role: postgresql
+      tags: postgresql
     - auth_stack

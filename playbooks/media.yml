@@ -9,5 +9,6 @@
   tags: media
   roles:
     - mysql
-    - postgresql
+    - role: postgresql
+      tags: postgresql
     - media_stack

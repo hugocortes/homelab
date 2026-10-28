@@ -3,15 +3,16 @@
   community.docker.docker_network:
     name: postgres
 
-- name: Create service dirs
+# /opt/postgres is the bitnami 15 data dir, left in place for rollback until
+# the 18 migration is known good (docs/postgres-18-migration.md). Nothing
+# mounts it any more.
+- name: Create data dir
   ansible.builtin.file:
-    group: nobody
-    mode: "0777"
-    owner: nobody
-    path: "{{ item.path }}"
+    group: root
+    mode: "0755"
+    owner: root
+    path: /opt/postgresql
     state: directory
-  with_items:
-    - path: /opt/postgres
 
 - name: Start container
   become: true
@@ -19,9 +20,12 @@
     env:
       POSTGRES_USER: "{{ postgresql_username }}"
       POSTGRES_PASSWORD: "{{ postgresql_password }}"
-      PGDATA: /var/lib/postgresql/data/data
       PGUSER: postgres
-    image: public.ecr.aws/bitnami/postgresql:15.8.0
+    # Official image. From 18 it keeps PGDATA at /var/lib/postgresql/<major>/docker
+    # and expects the mount one level up, so the next major can pg_upgrade
+    # --link within the same mount. Pinned to the Debian release as well:
+    # a base-image swap changes glibc, and with it collation order.
+    image: postgres:18.6-trixie
     name: postgres
     networks:
       - name: postgres
@@ -34,7 +38,7 @@
       published_ports: strict
     restart_policy: always
     volumes:
-      - /opt/postgres:/var/lib/postgresql/data
+      - /opt/postgresql:/var/lib/postgresql
 
 - name: Start exporter container
   become: true
@@ -43,7 +47,7 @@
       DATA_SOURCE_URI: "postgres:5432/?sslmode=disable"
       DATA_SOURCE_USER: "{{ postgresql_username }}"
       DATA_SOURCE_PASS: "{{ postgresql_password }}"
-    image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1
     name: postgresql-metrics
     networks:
       - name: postgres
