@@ -23,11 +23,11 @@ docker_password: '{{ vault_docker_password }}'
 docker_username: ''
 
 # --- container image pins ---
-version_calibre: 8.0.0
+version_calibre: 9.17.0
 version_calibre_web: 0.6.26
-version_flaresolverr: v3.4.6
+version_flaresolverr: v3.5.2
 version_gramps: 26.2.0
-version_jackett: 0.24.1287
+version_jackett: 0.24.2949
 version_keycloak: 26.5.0
 # Upstream tag, e.g. b6100. `master` means the llama.cpp build on olympus is
 # still being evaluated; pin it once a build is known good -- a rebuild there is
@@ -36,11 +36,11 @@ version_llama_cpp: master
 version_miniflux: 2.2.17
 version_ombi: 4.55.7-development
 version_pomerium: v0.32.0
-version_radarr: 6.0.4
-version_sabnzbd: 4.5.5
-version_sonarr: 4.0.16
+version_radarr: 6.4.4
+version_sabnzbd: 5.1.3
+version_sonarr: 4.0.20
 version_tautulli: v2.16.1
-version_transmission: 4.1.1
+version_transmission: 4.1.3
 
 # --- postgresql + per-app credentials ---
 postgresql_gramps_database_search: gramps_cortes
