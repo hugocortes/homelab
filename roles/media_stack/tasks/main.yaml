@@ -99,9 +99,11 @@
       # GRAMPSWEB_POSTGRES_USER: "{{ postgresql_gramps_username }}"
       # GRAMPSWEB_DB_URI: postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_search }}
 
-      GRAMPSWEB_SEARCH_INDEX_DB_URI: "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_search
+      GRAMPSWEB_SEARCH_INDEX_DB_URI:
+        "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_search
         }}"
-      GRAMPSWEB_USER_DB_URI: "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_user
+      GRAMPSWEB_USER_DB_URI:
+        "postgresql://{{ postgresql_gramps_username }}:{{ postgresql_gramps_password }}@postgres:5432/{{ postgresql_gramps_database_user
         }}"
     image: ghcr.io/gramps-project/grampsweb:{{ version_gramps }}
     name: gramps
@@ -128,7 +130,8 @@
       CREATE_ADMIN: "0"
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: "{{ miniflux_admin_password }}"
-      DATABASE_URL: "postgres://{{ postgresql_miniflux_username }}:{{ postgresql_miniflux_password }}@postgres:5432/{{ postgresql_miniflux_database
+      DATABASE_URL:
+        "postgres://{{ postgresql_miniflux_username }}:{{ postgresql_miniflux_password }}@postgres:5432/{{ postgresql_miniflux_database
         }}?sslmode=disable"
       OAUTH2_PROVIDER: oidc
       OAUTH2_CLIENT_ID: miniflux
@@ -166,7 +169,7 @@
   become: true
   community.docker.docker_container:
     name: plex
-    image: plexinc/pms-docker:plexpass
+    image: lscr.io/linuxserver/plex:latest
     network_mode: host
     restart_policy: always
     env:
@@ -175,10 +178,11 @@
       PLEX_CLAIM: "{{ plex_claim }}"
       # `| string` is load-bearing: a bare "{{ int_var }}" templates back to an
       # int under native types, and docker_container rejects non-string env.
-      PLEX_GID: "{{ media_stack_plex_gid | string }}"
-      PLEX_UID: "{{ media_stack_plex_uid | string }}"
+      PGID: "{{ media_stack_plex_gid | string }}"
+      PUID: "{{ media_stack_plex_uid | string }}"
       # Was `TV`, which pms-docker ignores -- the server ran on UTC.
       TZ: America/Los_Angeles
+      VERSION: docker
     devices:
       # tv tuner
       # need to look into how to fix this
