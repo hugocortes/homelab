@@ -5,7 +5,7 @@ Ansible for three CentOS Stream 9 hosts.
 | host | runs |
 |---|---|
 | `ipa-0` | FreeIPA, Keycloak, Pomerium, Postgres |
-| `media` | Plex, Gramps, Miniflux, Ombi, Calibre-Web, Tautulli |
+| `media` | Plex, Gramps, Miniflux, Ombi, Calibre-Web, Tautulli, KitchenRiff |
 | `pirate` | Sonarr, Radarr, Jackett, SABnzbd, Transmission, Calibre |
 
 `ops` is down; its entry in `inventory/hosts.yml` is commented out with

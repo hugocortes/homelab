@@ -1,0 +1,9 @@
+---
+- name: centos | Open kitchenriff services
+  ansible.builtin.include_role:
+    name: firewalld
+  vars:
+    firewalld_rule_name: kitchenriff
+    firewalld_ports:
+      - name: kitchenriff
+        port: "{{ kitchenriff_web_port }}/tcp"

@@ -1,5 +1,6 @@
 ---
-# Plex, Gramps, Miniflux, Ombi, Calibre-Web, Tautulli and their databases.
+# Plex, Gramps, Miniflux, Ombi, Calibre-Web, Tautulli, KitchenRiff and their
+# databases.
 - import_playbook: bootstrap.yml
 
 - name: Configure media
@@ -12,3 +13,5 @@
     - role: postgresql
       tags: postgresql
     - media_stack
+    - role: kitchenriff
+      tags: kitchenriff

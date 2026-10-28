@@ -22,6 +22,11 @@ docker_email: ''
 docker_password: '{{ vault_docker_password }}'
 docker_username: ''
 
+# --- ghcr.io login, private images ---
+# Classic PAT with read:packages and nothing else.
+ghcr_read_token: '{{ vault_ghcr_read_token }}'
+ghcr_username: hugocortes
+
 # --- container image pins ---
 version_calibre: 9.17.0
 version_calibre_web: 0.6.27
@@ -50,6 +55,9 @@ postgresql_gramps_username: gramps
 postgresql_keycloak_database: keycloak
 postgresql_keycloak_password: '{{ vault_postgresql_keycloak_password }}'
 postgresql_keycloak_username: keycloak
+postgresql_kitchenriff_database: kitchenriff
+postgresql_kitchenriff_password: '{{ vault_postgresql_kitchenriff_password }}'
+postgresql_kitchenriff_username: kitchenriff
 postgresql_miniflux_database: miniflux
 postgresql_miniflux_password: '{{ vault_postgresql_miniflux_password }}'
 postgresql_miniflux_username: miniflux
@@ -92,6 +100,12 @@ gramps_smtp_password: '{{ vault_gramps_smtp_password }}'
 # --- miniflux (media) ---
 miniflux_admin_password: '{{ vault_miniflux_admin_password }}'
 miniflux_oidc_client_secret: '{{ vault_miniflux_oidc_client_secret }}'
+
+# --- kitchenriff (media) ---
+# One full commit SHA for BOTH images; never `master`. The role refuses
+# anything else. Rolling back: set the previous SHA and pass
+# -e kitchenriff_migrate=false.
+kitchenriff_image_tag: 0143b724596b50c2a36932e8164e5a3eaff8ab56
 
 # --- pomerium (ipa-0) ---
 pomerium_idp_client_secret: '{{ vault_pomerium_idp_client_secret }}'

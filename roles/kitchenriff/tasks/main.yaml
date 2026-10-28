@@ -1,0 +1,147 @@
+---
+# Deploy order is kitchenriff's, not ours: migrate with the new api image, swap
+# api, swap web, then check through web. See ../kitchenriff/docs/deployment.md.
+
+- name: Refuse anything but a full commit SHA
+  ansible.builtin.assert:
+    that: kitchenriff_image_tag is match('^[0-9a-f]{40}$')
+    fail_msg: >-
+      kitchenriff_image_tag must be a full commit SHA, got
+      '{{ kitchenriff_image_tag }}'. `master` moves under you.
+    quiet: true
+
+- name: Log into ghcr.io
+  become: true
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    username: "{{ ghcr_username }}"
+    password: "{{ ghcr_read_token }}"
+
+- name: Create network
+  community.docker.docker_network:
+    name: "{{ kitchenriff_network }}"
+    ipam_config:
+      - subnet: "{{ kitchenriff_subnet }}"
+
+- name: Read the running api container
+  become: true
+  community.docker.docker_container_info:
+    name: kitchenriff-api
+  register: kitchenriff_api_info
+
+# A one-shot container of the NEW image. detach: false waits for it and fails
+# the task on a non-zero exit, which stops the play before anything is swapped;
+# the running containers keep serving.
+- name: Migrate the database
+  become: true
+  community.docker.docker_container:
+    command: [node, dist/app/migrate.js]
+    cleanup: true
+    detach: false
+    env: "{{ kitchenriff_api_env }}"
+    image: "{{ kitchenriff_api_image }}"
+    name: kitchenriff-migrate
+    networks:
+      - name: postgres
+    restart_policy: "no"
+  when:
+    - kitchenriff_migrate | bool
+    - not kitchenriff_api_info.exists or kitchenriff_api_info.container.Config.Image != kitchenriff_api_image
+
+- name: Start api container
+  become: true
+  community.docker.docker_container:
+    env: "{{ kitchenriff_api_env }}"
+    # The image ships node and nothing else to probe with.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health/ready').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    image: "{{ kitchenriff_api_image }}"
+    name: kitchenriff-api
+    networks:
+      # web proxies /api/ to http://api:3000 and resolves it through docker's DNS.
+      - name: "{{ kitchenriff_network }}"
+        aliases:
+          - api
+      - name: postgres
+    # Deliberately unpublished. Only web talks to it.
+    restart_policy: always
+
+- name: Wait for api to report healthy
+  become: true
+  community.docker.docker_container_info:
+    name: kitchenriff-api
+  register: kitchenriff_api_health
+  until: kitchenriff_api_health.container.State.Health.Status == 'healthy'
+  retries: 12
+  delay: 5
+  when: not ansible_check_mode
+
+- name: Start web container
+  become: true
+  community.docker.docker_container:
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/healthz]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    image: "{{ kitchenriff_web_image }}"
+    name: kitchenriff-web
+    networks:
+      - name: "{{ kitchenriff_network }}"
+    ports:
+      - "{{ kitchenriff_web_port }}:8080"
+    restart_policy: always
+
+- name: centos | Open firewalld ports
+  ansible.builtin.import_tasks: firewalld.yaml
+  when: is_centos
+
+- name: Verify through web
+  when: not ansible_check_mode
+  block:
+    - name: Check web /healthz
+      ansible.builtin.uri:
+        url: http://localhost:{{ kitchenriff_web_port }}/healthz
+        return_content: true
+      register: kitchenriff_healthz
+      until: kitchenriff_healthz.status == 200
+      retries: 12
+      delay: 5
+
+    # No token, so 401 is the answer that proves web -> api -> its auth path
+    # are all wired. Anything else means the proxy or the api is wrong.
+    - name: Check /api/v1/me answers 401 problem+json through web
+      ansible.builtin.uri:
+        url: http://localhost:{{ kitchenriff_web_port }}/api/v1/me
+        status_code: 401
+      register: kitchenriff_me
+      failed_when: >-
+        kitchenriff_me.status != 401
+        or not (kitchenriff_me.content_type | default('')).startswith('application/problem+json')
+
+    # The api fetches the realm's signing keys from OIDC_ISSUER. If this fails
+    # the containers are fine and the home network is not: DNS or hairpin NAT.
+    - name: Check api can reach the OIDC issuer
+      become: true
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - kitchenriff-api
+          - node
+          - -e
+          - >-
+            fetch('{{ kitchenriff_api_env.OIDC_ISSUER }}/.well-known/openid-configuration')
+            .then(r => console.log(r.status), e => console.log(e.cause?.code ?? e.message))
+      register: kitchenriff_oidc
+      changed_when: false
+      failed_when: kitchenriff_oidc.stdout != '200'

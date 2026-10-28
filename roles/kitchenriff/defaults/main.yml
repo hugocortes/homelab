@@ -1,0 +1,34 @@
+---
+# The images and their env are specified by ../kitchenriff/docs/deployment.md.
+# The tag itself (kitchenriff_image_tag) is pinned in group_vars/all/main.yml
+# with the other image pins; it is one full commit SHA for both images.
+kitchenriff_api_image: ghcr.io/hugocortes/kitchenriff-api:{{ kitchenriff_image_tag }}
+kitchenriff_web_image: ghcr.io/hugocortes/kitchenriff-web:{{ kitchenriff_image_tag }}
+
+# Pinned so TRUST_PROXY can name it. Left to docker, the subnet is whatever
+# was free when the network was created, and TRUST_PROXY would silently stop
+# matching the day the network is recreated somewhere else.
+kitchenriff_network: kitchenriff
+kitchenriff_subnet: 172.30.0.0/24
+
+# Only web is published. api is reachable by its alias on kitchenriff_network
+# and nowhere else.
+kitchenriff_web_port: 5180
+
+# Run the one-shot migration before swapping api, whenever the running api is
+# not already on kitchenriff_image_tag. Pass -e kitchenriff_migrate=false to
+# roll back: the previous image's migrate.js has no business touching a schema
+# that is newer than it.
+kitchenriff_migrate: true
+
+kitchenriff_api_env:
+  DATABASE_URL:
+    "postgres://{{ postgresql_kitchenriff_username }}:{{ postgresql_kitchenriff_password }}@postgres:5432/{{ postgresql_kitchenriff_database
+    }}?sslmode=disable"
+  # Part of every user's identity (users.idp_issuer). Exactly this; no trailing
+  # slash. Changing it signs everyone in as a stranger -- kitchenriff ADR 0046.
+  OIDC_ISSUER: https://auth.kitchenriff.com/realms/kitchenriff
+  TRUST_PROXY: "{{ kitchenriff_subnet }}"
+  # Only the operator scripts read this; see the README.
+  PUBLIC_ORIGIN: https://app.kitchenriff.com
+  LOG_LEVEL: info
