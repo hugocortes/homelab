@@ -3,7 +3,7 @@
   become: true
   community.docker.docker_container:
     name: node-exporter
-    image: prom/node-exporter:v1.8.2
+    image: prom/node-exporter:v1.12.1
     restart_policy: unless-stopped
     command: --path.rootfs=/hostfs
     hostname: "{{ inventory_hostname }}"
@@ -16,7 +16,7 @@
   become: true
   community.docker.docker_container:
     name: cadvisor
-    image: gcr.io/cadvisor/cadvisor:v0.50.0
+    image: ghcr.io/google/cadvisor:v0.60.6
     restart_policy: unless-stopped
     hostname: "{{ inventory_hostname }}"
     ports:
