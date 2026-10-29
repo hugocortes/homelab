@@ -10,6 +10,7 @@
     - path: /opt/pomerium
     - path: /opt/keycloak
     - path: /opt/keycloak/providers
+    - path: /opt/keycloak/password-blacklists
 
 - name: Download keycloakify theme
   ansible.builtin.get_url:
@@ -40,9 +41,12 @@
     volumes:
       - /opt/pomerium/config.yaml:/pomerium/config.yaml:ro
 
-# The theme image is FROM scratch: one jar, nothing to run. Copy it out of a
-# throwaway container into a temp dir, then let copy decide by checksum whether
-# providers/ actually changed. Only that restarts Keycloak; Pomerium leans on it.
+# The theme image is FROM scratch: the jar and, from 0.4.0, the realm's
+# leaked-password list, nothing to run. Copy both out of a throwaway container
+# into a temp dir, then let copy decide by checksum whether anything changed.
+# Only a new jar restarts Keycloak; Pomerium leans on it. The list doesn't:
+# Keycloak reloads it on change, and copy writes it to a temp file and renames
+# it, so Keycloak never reads half of one.
 - name: Log into ghcr.io
   become: true
   community.docker.docker_login:
@@ -97,6 +101,26 @@
         mode: "0644"
       notify: restart keycloak
 
+    - name: Copy kitchenriff password list out of the image
+      become: true
+      ansible.builtin.command:
+        argv:
+          - docker
+          - cp
+          - kitchenriff-theme:/password-blacklists/kitchenriff-leaked-passwords.txt
+          - "{{ auth_stack_theme_tmp.path }}/kitchenriff-leaked-passwords.txt"
+      changed_when: false
+
+    # The kitchenriff realm's passwordBlacklist(kitchenriff-leaked-passwords.txt)
+    # names this file; it must be here before that realm's tofu apply.
+    - name: Install kitchenriff password list
+      become: true
+      ansible.builtin.copy:
+        src: "{{ auth_stack_theme_tmp.path }}/kitchenriff-leaked-passwords.txt"
+        dest: /opt/keycloak/password-blacklists/kitchenriff-leaked-passwords.txt
+        remote_src: true
+        mode: "0644"
+
   always:
     - name: Remove kitchenriff theme container
       become: true
@@ -148,6 +172,7 @@
     restart_policy: always
     volumes:
       - /opt/keycloak/providers:/opt/keycloak/providers
+      - /opt/keycloak/password-blacklists:/opt/keycloak/data/password-blacklists:ro
       - /opt/keycloak/secrets:/secrets/auth
       - /opt/keycloak/x509:/etc/x509/https
 
