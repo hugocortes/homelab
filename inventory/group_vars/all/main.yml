@@ -105,10 +105,10 @@ miniflux_oidc_client_secret: '{{ vault_miniflux_oidc_client_secret }}'
 # One full commit SHA for BOTH images; never `master`. The role refuses
 # anything else. Rolling back: set the previous SHA and pass
 # -e kitchenriff_migrate=false.
-kitchenriff_image_tag: 0143b724596b50c2a36932e8164e5a3eaff8ab56
+kitchenriff_image_tag: 8be1b312ff50fd2bc30413a6abeb4d94e4f97164
 # The Keycloak login theme, deployed into ipa-0's providers/ by auth_stack.
 # Versioned on its own, not on the SHA above; a published version never changes.
-kitchenriff_theme_version: 0.5.0
+kitchenriff_theme_version: 0.6.0
 
 # --- pomerium (ipa-0) ---
 pomerium_idp_client_secret: '{{ vault_pomerium_idp_client_secret }}'
