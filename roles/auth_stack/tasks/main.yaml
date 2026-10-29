@@ -40,6 +40,79 @@
     volumes:
       - /opt/pomerium/config.yaml:/pomerium/config.yaml:ro
 
+# The theme image is FROM scratch: one jar, nothing to run. Copy it out of a
+# throwaway container into a temp dir, then let copy decide by checksum whether
+# providers/ actually changed. Only that restarts Keycloak; Pomerium leans on it.
+- name: Log into ghcr.io
+  become: true
+  community.docker.docker_login:
+    registry_url: ghcr.io
+    username: "{{ ghcr_username }}"
+    password: "{{ ghcr_read_token }}"
+
+- name: Pull kitchenriff theme image
+  become: true
+  community.docker.docker_image:
+    name: ghcr.io/hugocortes/kitchenriff-keycloak-theme
+    tag: "{{ kitchenriff_theme_version }}"
+    source: pull
+
+- name: Install kitchenriff theme
+  when: not ansible_check_mode
+  block:
+    - name: Create kitchenriff theme staging dir
+      become: true
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: kitchenriff-theme
+      register: auth_stack_theme_tmp
+      changed_when: false
+
+    # No CMD in a scratch image, so `none` is only there to satisfy create.
+    - name: Create kitchenriff theme container
+      become: true
+      community.docker.docker_container:
+        command: none
+        image: ghcr.io/hugocortes/kitchenriff-keycloak-theme:{{ kitchenriff_theme_version }}
+        name: kitchenriff-theme
+        state: present
+      changed_when: false
+
+    - name: Copy kitchenriff theme jar out of the image
+      become: true
+      ansible.builtin.command:
+        argv:
+          - docker
+          - cp
+          - kitchenriff-theme:/kitchenriff-keycloak-theme.jar
+          - "{{ auth_stack_theme_tmp.path }}/kitchenriff-keycloak-theme.jar"
+      changed_when: false
+
+    - name: Install kitchenriff theme jar
+      become: true
+      ansible.builtin.copy:
+        src: "{{ auth_stack_theme_tmp.path }}/kitchenriff-keycloak-theme.jar"
+        dest: /opt/keycloak/providers/kitchenriff-keycloak-theme.jar
+        remote_src: true
+        mode: "0644"
+      notify: restart keycloak
+
+  always:
+    - name: Remove kitchenriff theme container
+      become: true
+      community.docker.docker_container:
+        name: kitchenriff-theme
+        state: absent
+      changed_when: false
+
+    - name: Remove kitchenriff theme staging dir
+      become: true
+      ansible.builtin.file:
+        path: "{{ auth_stack_theme_tmp.path }}"
+        state: absent
+      when: auth_stack_theme_tmp.path is defined
+      changed_when: false
+
 - name: Start keycloak container
   become: true
   community.docker.docker_container:

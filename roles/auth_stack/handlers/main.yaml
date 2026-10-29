@@ -8,3 +8,23 @@
     name: pomerium
     state: started
     restart: true
+
+# Keycloak scans providers/ on boot (plain `start`, not --optimized), so a new
+# theme jar needs a restart and nothing more.
+- name: restart keycloak
+  become: true
+  community.docker.docker_container:
+    name: keycloak
+    state: started
+    restart: true
+
+# 9000 (health) isn't published; the master realm answering on 7080 is the
+# cheapest proof it booted with the new providers.
+- name: wait for keycloak
+  listen: restart keycloak
+  ansible.builtin.uri:
+    url: http://localhost:7080/realms/master
+  register: auth_stack_keycloak_ready
+  until: auth_stack_keycloak_ready.status == 200
+  retries: 24
+  delay: 5
