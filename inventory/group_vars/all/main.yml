@@ -108,7 +108,7 @@ miniflux_oidc_client_secret: '{{ vault_miniflux_oidc_client_secret }}'
 kitchenriff_image_tag: 5fb1286a4359490e9558f451f62a4af5b95c391e
 # The Keycloak login theme, deployed into ipa-0's providers/ by auth_stack.
 # Versioned on its own, not on the SHA above; a published version never changes.
-kitchenriff_theme_version: 0.7.1
+kitchenriff_theme_version: 0.7.2
 
 # --- pomerium (ipa-0) ---
 pomerium_idp_client_secret: '{{ vault_pomerium_idp_client_secret }}'
