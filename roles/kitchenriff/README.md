@@ -24,6 +24,7 @@ pfSense/Cloudflare send `app.kitchenriff.com` to `media:5180`.
 | `ghcr_username`                   | `group_vars/all/main.yml` |
 | `vault_ghcr_read_token`           | `group_vars/all/vault.yml` (classic PAT, `read:packages` only) |
 | `vault_postgresql_kitchenriff_password` | `group_vars/all/vault.yml` |
+| `vault_kitchenriff_blob_access_key_id`, `vault_kitchenriff_blob_secret_access_key` | `group_vars/all/vault.yml` (the R2 token for the `kitchenriff` bucket) |
 
 Everything else (subnet, port, api env) is in `defaults/main.yml`.
 

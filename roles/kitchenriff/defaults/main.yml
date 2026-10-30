@@ -32,3 +32,10 @@ kitchenriff_api_env:
   # Only the operator scripts read this; see the README.
   PUBLIC_ORIGIN: https://app.kitchenriff.com
   LOG_LEVEL: info
+  # Recipe photos and cookbook covers (kitchenriff ADR 0058): one R2 bucket,
+  # shared with local development because the database is shared too. The
+  # key is an R2 API token scoped to that bucket, Object Read & Write.
+  BLOB_ENDPOINT: https://903186df2e5484e94184876a4d948d95.r2.cloudflarestorage.com
+  BLOB_BUCKET: kitchenriff
+  BLOB_ACCESS_KEY_ID: "{{ vault_kitchenriff_blob_access_key_id }}"
+  BLOB_SECRET_ACCESS_KEY: "{{ vault_kitchenriff_blob_secret_access_key }}"
