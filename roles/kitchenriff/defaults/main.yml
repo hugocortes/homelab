@@ -39,3 +39,7 @@ kitchenriff_api_env:
   BLOB_BUCKET: kitchenriff
   BLOB_ACCESS_KEY_ID: "{{ vault_kitchenriff_blob_access_key_id }}"
   BLOB_SECRET_ACCESS_KEY: "{{ vault_kitchenriff_blob_secret_access_key }}"
+  # The kitchen's agents (kitchenriff ADR 0075): Anthropic through Mastra.
+  # Unset, the api starts and the agents refuse. KITCHENRIFF_AI_MODEL picks
+  # the model; the api's default is anthropic/claude-sonnet-5-5.
+  ANTHROPIC_API_KEY: "{{ vault_kitchenriff_anthropic_api_key }}"
