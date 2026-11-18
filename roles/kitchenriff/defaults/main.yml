@@ -43,3 +43,10 @@ kitchenriff_api_env:
   # Unset, the api starts and the agents refuse. KITCHENRIFF_AI_MODEL picks
   # the model; the api's default is anthropic/claude-sonnet-5-5.
   ANTHROPIC_API_KEY: "{{ vault_kitchenriff_anthropic_api_key }}"
+  # Telemetry (kitchenriff ADRs 0076, 0077). Langfuse gets the agents' spans
+  # for opted-in kitchens. Grafana Cloud stays off until
+  # OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OTLP_HEADERS are set.
+  KITCHENRIFF_ENVIRONMENT: production
+  LANGFUSE_BASE_URL: https://us.cloud.langfuse.com
+  LANGFUSE_PUBLIC_KEY: "{{ vault_kitchenriff_langfuse_public_key }}"
+  LANGFUSE_SECRET_KEY: "{{ vault_kitchenriff_langfuse_secret_key }}"

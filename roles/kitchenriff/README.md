@@ -26,6 +26,7 @@ pfSense/Cloudflare send `app.kitchenriff.com` to `media:5180`.
 | `vault_postgresql_kitchenriff_password` | `group_vars/all/vault.yml` |
 | `vault_kitchenriff_blob_access_key_id`, `vault_kitchenriff_blob_secret_access_key` | `group_vars/all/vault.yml` (the R2 token for the `kitchenriff` bucket) |
 | `vault_kitchenriff_anthropic_api_key` | `group_vars/all/vault.yml` (the Anthropic key for the agents, ADR 0075) |
+| `vault_kitchenriff_langfuse_public_key`, `vault_kitchenriff_langfuse_secret_key` | `group_vars/all/vault.yml` (Langfuse project `kitchenriff`, ADR 0076) |
 
 Everything else (subnet, port, api env) is in `defaults/main.yml`.
 
