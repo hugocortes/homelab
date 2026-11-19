@@ -105,7 +105,7 @@ miniflux_oidc_client_secret: '{{ vault_miniflux_oidc_client_secret }}'
 # One full commit SHA for BOTH images; never `master`. The role refuses
 # anything else. Rolling back: set the previous SHA and pass
 # -e kitchenriff_migrate=false.
-kitchenriff_image_tag: bea7ef5ef48c1c82547b5564fba30f02e68eacdc
+kitchenriff_image_tag: 37ea7a0eb9e8bac23a47f45ce8d5894d3697c2ac
 # The Keycloak login theme, deployed into ipa-0's providers/ by auth_stack.
 # Versioned on its own, not on the SHA above; a published version never changes.
 kitchenriff_theme_version: 0.7.2
